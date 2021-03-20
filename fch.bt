@@ -64,7 +64,11 @@ typedef struct mapPOIs {
 } mapPOIs;
 
 typedef struct Map {
-    char unknown_header[60] <bgcolor=cLtYellow>;
+    char unknown_a[22] <bgcolor=cLtYellow>;
+    float x;
+    float y; // y-up ;(
+    float z;
+    char unknown_b[26] <bgcolor=cLtYellow>;
     int map_size;
     char map_bytes[map_size];
     //char visibility_data[0x400000];
