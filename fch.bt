@@ -102,7 +102,8 @@ typedef struct {
     int column;
     int row;
     char equipped;
-    char unknown[16] <bgcolor=cLtYellow>;
+    int quality;
+    char unknown[12] <bgcolor=cLtYellow>;
     PString creator <name="creator">;
 } Item;
 
