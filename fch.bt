@@ -1,0 +1,237 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+LittleEndian();
+
+typedef struct {
+    char len;
+    if (len > 0) {
+        char value[len];
+    }
+} PString <read=ReadPString>;
+
+string ReadPString( PString &str ) {
+    if( exists( str.value ) )
+        return str.value;
+    else
+        return "";
+}
+
+typedef struct fileHeader {
+    int checksum_offset <format=hex, name = "checksum offset">; 
+    int thirty_tree;    
+    int unknown_a[4] <bgcolor=cLtYellow>;
+    int map_count <name = "Map count">;
+//    int interesting[3];
+//    int unknown_b[10];
+} fileHeader;
+
+typedef struct {
+    //int zeroes;
+    int length;
+    char checksum[length] <format=decimal>; ;
+} Checksum;
+
+typedef struct {
+    PString name;
+//    char name_len;
+//    if (name_len > 0) {
+//    char name[name_len];
+//    }
+    char unknown[17] <bgcolor=cLtYellow>;
+} POI <read=ReadPOI>;
+
+string ReadPOI( POI &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
+
+typedef struct mapPOIs {
+    int count;
+    POI entries[count] <optimize=false, name="poi">;
+} mapPOIs;
+
+typedef struct Map {
+    char unknown_header[60] <bgcolor=cLtYellow>;
+    int map_size;
+    char map_bytes[map_size];
+    //char visibility_data[0x400000];
+    //int unknown[2];
+    // char padding;    
+    //mapPOIs pois;
+    // char padding;
+} Map;
+
+void skip_maps(void) {
+    local int skipped;
+    local int skipping = 1;
+    local char value;
+
+    while (skipping == 1) {
+        value = ReadByte();
+        if (value == 0 || value == 1) {
+            FSkip(1);
+            skipped += 1;
+        } else {
+            skipping = 0;
+        }
+    }
+    Printf("Skipped 0x%x bytes of \"map data\"\n", skipped);
+};
+
+typedef struct {
+    PString name <name="name">;
+    int quantity;
+    float durability;
+    int column;
+    int row;
+    char equipped;
+    char unknown[16] <bgcolor=cLtYellow>;
+    PString creator <name="creator">;
+} Item;
+
+string ReadItem( Item &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
+
+typedef struct Inventory {
+    int len;
+    Item items[len] <name="item",optimize=false, read=ReadItem>;
+} Inventory;
+
+typedef struct {
+    PString name;
+    int max_grade;
+} UpgradableEntry;
+
+typedef struct {
+    PString name;
+    PString text;
+} PStringPair;
+
+
+typedef struct {
+    int len;
+    if (len > 0) {
+        PString entries[len] <optimize=false>;
+    }
+} PStringList;
+
+typedef struct {
+    PStringList items_seen;
+    
+    //int len;
+    //PString entries[len] <optimize=false>;
+    int len2;
+    UpgradableEntry craftbenches_seen[len2] <optimize=false>;
+    //int len3;
+    //PString entries3[len3] <optimize=false>;
+    PStringList recipe_list;
+    //int len4;
+    //PString entries4[len4] <optimize=false>;
+    PStringList places;
+    PStringList unknown_list;
+//    int len5;
+//    PString entries5[len5] <optimize=false>;
+    //int len6;
+    //PString entries6[len6] <optimize=false>;
+    PStringList trophies;
+    int len7;
+    int integers[len7] <bgcolor=cLtYellow>;
+    int len8;
+    PStringPair tutorials[len8] <optimize=false>;
+} Compendium;
+
+typedef struct {
+    PString name;
+    int a;
+    int b;
+} Food;
+
+typedef struct {
+    int a;
+    int b;
+    int c;
+} Twelve;
+
+typedef struct {
+    PString name <name="name">;
+    char unknown_a[35] <bgcolor=cLtYellow>;
+    PString selected_gp <name="selected_gp">;
+    char unknown_b[8] <bgcolor=cLtYellow>;
+    Inventory inventory <name="inventory">;
+   // char unknown_c[32];
+    Compendium compendium;    
+
+    PString beard;
+    PString hair;
+    float float1 <bgcolor=cLtYellow>; // these are just guesses
+    float float2 <bgcolor=cLtYellow>; // these are just guesses
+    float float3 <bgcolor=cLtYellow>; // these are just guesses
+    float float4 <bgcolor=cLtYellow>;
+    char unknown_c[12] <bgcolor=cLtYellow>;
+    int food_count;
+    Food foods[food_count] <optimize=false>;
+    int two <bgcolor=cLtYellow>;
+    int twelve_count;
+    Twelve unknown_d[twelve_count] <bgcolor=cLtYellow>;
+    
+} Character <read=ReadCharacter>;
+
+string ReadCharacter( Character &cha ) {
+    if( exists( cha.name.value ) )
+        return cha.name.value;
+    else
+        return "";
+}
+
+
+
+typedef struct ChacterFile {
+    fileHeader header <name="File Header">;
+    Map maps[header.map_count] <optimize=false, name="Maps">;
+    Character character <name="Character">;
+    Checksum check <name="Checksum">;
+} CharacterFile <name="Character File">;;
+
+
+CharacterFile file;
+
+// fileHeader header;
+
+// skip_maps();
+// mapPOIs map;
+// int unknown_post_map_a[18];
+// skip_maps();
+// int after_skipped;
+
+// local int i = header.map_count;
+
+//for (i; i > 0; i--) {
+//    Map map;
+//}
+
+// int after_map;
+
+//Character character;
+
+//FSeek(header.offset + 4);
+
+//Checksum end;
+
+
