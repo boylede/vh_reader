@@ -1,0 +1,38 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+
+LittleEndian();
+
+typedef struct {
+    char len;
+    if (len > 0) {
+        char value[len];
+    }
+} PString <read=ReadPString>;
+
+string ReadPString( PString &str ) {
+    if( exists( str.value ) )
+        return str.value;
+    else
+        return "";
+}
+
+int unknown_a;
+int unknown_b;
+
+PString name;
+
+PString seed;
+
+char unknown_c[16];
