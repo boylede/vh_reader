@@ -103,8 +103,9 @@ typedef struct {
     int row;
     char equipped;
     int quality;
-    char unknown[12] <bgcolor=cLtYellow>;
-    PString creator <name="creator">;
+    int unknown_a <bgcolor=cLtYellow>;
+    uquad creator_id <name="creator id">;
+    PString creator_name <name="creator name">;
 } Item;
 
 string ReadItem( Item &it ) {
@@ -213,19 +214,24 @@ string ReadSkill ( Skill &sk ) {
 
 typedef struct {
     PString name <name="name">;
-    char unknown_a[35] <bgcolor=cLtYellow>;
+    uquad player_id;
+    char unknown_aa[10] <bgcolor=cLtYellow>;
+    float floata <bgcolor=cLtYellow>; // these are just guesses
+    float floatb <bgcolor=cLtYellow>; // these are just guesses
+    float floatc <bgcolor=cLtYellow>; // these are just guesses
+    char unknown_ab[5] <bgcolor=cYellow>;
     PString selected_gp <name="selected_gp">;
-    char unknown_b[8] <bgcolor=cLtYellow>;
+    char unknown_b[8] <bgcolor=cYellow>;
     Inventory inventory <name="inventory">;
    // char unknown_c[32];
     Compendium compendium;    
 
     PString beard;
     PString hair;
-    float float1 <bgcolor=cLtYellow>; // these are just guesses
-    float float2 <bgcolor=cLtYellow>; // these are just guesses
-    float float3 <bgcolor=cLtYellow>; // these are just guesses
-    float float4 <bgcolor=cLtYellow>;
+    float float1 <bgcolor=cYellow>; // these are just guesses
+    float float2 <bgcolor=cYellow>; // these are just guesses
+    float float3 <bgcolor=cYellow>; // these are just guesses
+    float float4 <bgcolor=cYellow>;
     char unknown_c[12] <bgcolor=cLtYellow>;
     int food_count;
     Food foods[food_count] <optimize=false>;
