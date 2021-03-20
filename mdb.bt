@@ -1,0 +1,98 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: read .db files from Valheim maps
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+// PString
+LittleEndian();
+
+
+// assumptions based on second.db
+
+
+typedef struct {
+    char len;
+    if (len > 0) {
+        char value[len];
+    }
+} PString <read=ReadPString>;
+
+string ReadPString( PString &str ) {
+    if( exists( str.value ) )
+        return str.value;
+    else
+        return "";
+}
+
+// blocks
+typedef struct Block {
+    char unknown[109];
+} Block;
+
+// small repetitive structures start at 65 38 60 and continue until bitmap
+// aprox size a8c0
+/// bitmap starts at 65 e1 20
+// ends at 65 ed 60
+// size approx c40
+
+
+
+// structures
+typedef struct {
+    PString name;
+    float x;
+    float y;
+    float z;
+    char unknown;
+} Structure <read=ReadStructure>;
+
+string ReadStructure( Structure &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
+
+
+// generated structures list
+// at 65 ed 60
+typedef struct Structures {
+    int len;
+    Structure structures[len] <optimize=false>;
+} Structures;
+
+
+
+
+
+
+typedef struct FileEnd {
+    char unknown[21];
+} FileEnd;
+
+
+//char header[24];
+//int len;
+//Block unknown[len];
+
+//local int file_size = 6859762;
+
+// second.db
+//FSeek(file_size-21);
+
+//FSeek(-21);
+//FileEnd header;
+
+
+FSeek(0x65ed60);
+Structures list;
+
+FileEnd end;
