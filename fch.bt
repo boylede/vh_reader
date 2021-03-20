@@ -197,7 +197,7 @@ typedef enum SkillName {
 typedef struct {
     SkillName id;
     float level;
-    float progress;
+    float progress <name="progress", comment="percentage of progress, next level is reached at 100.0">;
 } Skill <read=ReadSkill>;
 
 string ReadSkill ( Skill &sk ) {
