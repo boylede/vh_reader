@@ -136,6 +136,11 @@ typedef struct {
     }
 } PStringList;
 
+typedef enum Biomes {
+    BIOME_MEADOWS = 1,
+    BIOME_BLACKFOREST = 8
+} Biomes;
+
 typedef struct {
     PStringList items_seen;
     
@@ -155,8 +160,8 @@ typedef struct {
     //int len6;
     //PString entries6[len6] <optimize=false>;
     PStringList trophies;
-    int len7;
-    int integers[len7] <bgcolor=cLtYellow>;
+    int biomes_seen;
+    Biomes biomes[biomes_seen];
     int len8;
     PStringPair tutorials[len8] <optimize=false>;
 } Compendium;
