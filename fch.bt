@@ -163,11 +163,43 @@ typedef struct {
     int b;
 } Food;
 
+typedef enum SkillName {
+    SKILL_SWORDS = 1,
+    SKILL_KNIVES = 2,
+    SKILL_CLUBS = 3,
+    SKILL_POLEARMS = 4,
+    SKILL_SPEARS = 5,
+    SKILL_BLOCKING = 6,
+    SKILL_AXES = 7,
+    SKILL_BOWS = 8,
+    // 9
+    // 10
+    // 11
+    SKILL_UNARMED = 11,
+    SKILL_PICKAXES = 12,
+    SKILL_WOODCUTTING = 13,
+    // SKIP A FEW..?
+    SKILL_JUMP = 100,
+    SKILL_SNEAK = 101,
+    SKILL_RUN = 102,
+    SKILL_SWIM = 103
+} SkillName;
+
 typedef struct {
-    int a;
-    int b;
-    int c;
-} Twelve;
+    SkillName id;
+    float level;
+    float progress;
+} Skill <read=ReadSkill>;
+
+string ReadSkill ( Skill &sk ) {
+    string s;
+    SPrintf( s, "%d", sk.id );
+    return s;
+//    if( exists( sk.cha.name.value ) )
+//        return cha.name.value;
+//    else
+//        return "";
+}
 
 typedef struct {
     PString name <name="name">;
@@ -188,8 +220,8 @@ typedef struct {
     int food_count;
     Food foods[food_count] <optimize=false>;
     int two <bgcolor=cLtYellow>;
-    int twelve_count;
-    Twelve unknown_d[twelve_count] <bgcolor=cLtYellow>;
+    int skill_count;
+    Skill skills[skill_count] <name="Skill">;
     
 } Character <read=ReadCharacter>;
 
