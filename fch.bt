@@ -52,7 +52,7 @@ typedef struct {
     float y; // always zero?
     float z;
     char type; // an enum for the icon.
-    int unknown <bgcolor=cLtYellow>;
+    int flags; // bit 24 should be if the icon is crossed out.
 } POI <read=ReadPOI>;
 
 string ReadPOI( POI &it ) {
