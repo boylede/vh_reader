@@ -174,8 +174,8 @@ typedef struct {
 
 typedef struct {
     PString name;
-    int a;
-    int b;
+    float health;
+    float stamina;
 } Food;
 
 typedef enum SkillName {
