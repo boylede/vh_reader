@@ -172,13 +172,20 @@ typedef struct {
     Biomes biomes[biomes_seen];
     int len8;
     PStringPair tutorials[len8] <optimize=false>;
-} Compendium;
+} Compendium <name="Compendium">;
 
 typedef struct {
     PString name;
     float health;
     float stamina;
-} Food;
+} Food <read=ReadFood>;
+
+string ReadFood( Food &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
 
 typedef enum SkillName {
     SKILL_SWORDS = 1,
@@ -220,28 +227,28 @@ string ReadSkill ( Skill &sk ) {
 
 typedef struct {
     PString name <name="name">;
-    uquad player_id;
+    uquad player_id <name="player id">;
     char unknown_aa[10] <bgcolor=cLtYellow>;
-    float max_hp;
-    float current_hp; // value appears to be recalculated at launch
-    float stamina;
+    float max_hp <name="max hp">;
+    float current_hp <name="current hp">; // value appears to be recalculated at launch
+    float stamina <name="stamina">;
     char unknown_ab <bgcolor=cYellow>;
-    float unknown_countdown <bgcolor=cYellow>;
-    PString selected_gp <name="selected_gp">;
+    float unknown_counter <bgcolor=cYellow>;
+    PString selected_gp <name="selected god power">;
     char unknown_b[8] <bgcolor=cYellow>;
     Inventory inventory <name="inventory">;
    // char unknown_c[32];
-    Compendium compendium;    
+    Compendium compendium;
 
-    PString beard;
-    PString hair;
+    PString beard <name="beard">;
+    PString hair <name="hair">;
     float float1 <bgcolor=cYellow>; // these are just guesses
     float float2 <bgcolor=cYellow>; // these are just guesses
     float float3 <bgcolor=cYellow>; // these are just guesses
     float float4 <bgcolor=cYellow>;
     char unknown_c[12] <bgcolor=cLtYellow>;
     int food_count;
-    Food foods[food_count] <optimize=false>;
+    Food foods[food_count] <optimize=false, name="food">;
     int two <bgcolor=cLtYellow>;
     int skill_count;
     Skill skills[skill_count] <name="Skill">;
