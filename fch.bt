@@ -74,12 +74,14 @@ typedef struct Map {
     float z;
     char unknown_b[26] <bgcolor=cLtYellow>;
     int map_size;
-    char map_bytes[map_size];
-    //char visibility_data[0x400000];
-    //int unknown[2];
+    local int map_end = FTell() + map_size;
+    char visibility_data[0x400000];
+    int unknown[2];
     // char padding;    
-    //mapPOIs pois;
-    // char padding;
+    mapPOIs pois;
+    if (FTell() != map_end) {
+        char padding;
+    }
 } Map;
 
 void skip_maps(void) {
