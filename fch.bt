@@ -67,6 +67,27 @@ typedef struct mapPOIs {
     POI entries[count] <optimize=false, name="poi">;
 } mapPOIs;
 
+
+typedef struct {
+    int four;
+    int twenty_fourty_eight;
+    char data[3FFFF8h]; // some napkin-math estimates there is enough data here to store the map in 3x3 chunks. this is probably super wrong tho.
+    local int i;    
+    local float seen;
+    for (i = 0; i < 3FFFF8h; i++) {
+        if (data[i] != 0) {
+            seen += 1;
+        }
+    }
+} VisibilityData <read=ReadVisibilty>;
+
+string ReadVisibilty( VisibilityData &vis ) {
+    float max = 4194296.0;
+    string s;   
+    SPrintf( s, "%f percent seen", (vis.seen * 100) / max);
+    return s;
+}
+
 typedef struct Map {
     char unknown_a[22] <bgcolor=cLtYellow>;
     float x;
@@ -75,7 +96,7 @@ typedef struct Map {
     char unknown_b[26] <bgcolor=cLtYellow>;
     int map_size;
     local int map_end = FTell() + map_size;
-    char visibility_data[0x400000];
+    VisibilityData fog_of_war <name="fog of war">;
     int unknown[2];
     // char padding;    
     mapPOIs pois;
