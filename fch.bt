@@ -48,7 +48,11 @@ typedef struct {
 //    if (name_len > 0) {
 //    char name[name_len];
 //    }
-    char unknown[17] <bgcolor=cLtYellow>;
+    float x;
+    float y; // always zero?
+    float z;
+    char type; // an enum for the icon.
+    int unknown <bgcolor=cLtYellow>;
 } POI <read=ReadPOI>;
 
 string ReadPOI( POI &it ) {
