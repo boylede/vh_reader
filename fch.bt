@@ -235,9 +235,7 @@ typedef struct {
 } Skill <read=ReadSkill>;
 
 string ReadSkill ( Skill &sk ) {
-    string s;
-    SPrintf( s, "%d", sk.id );
-    return s;
+    return EnumToString(sk.id);
 //    if( exists( sk.cha.name.value ) )
 //        return cha.name.value;
 //    else
