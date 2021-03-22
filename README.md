@@ -1,7 +1,7 @@
 # vh_reader
  Work on reading savefiles from the game Valheim. Current progress is a template for the 010 hex editor but once I understand what is stored in each file I'd like to work on some utilities for editing.
 
-![Screenshot of template on a character file](/screenshots/screenshot.png?raw=true "Screenshot of template on a character file")
+![gif of the template in action](/screenshots/vh_reader.gif?raw=true "gif of the template in action")
 
 # What is this
 I wanted to share a simple project I worked on this past weekend, and maybe it will grow into something more in the future. I’ve always enjoyed file formats for some reason so I had decided to open the savegame format used in Valheim and see if I could figure it out. I didn't look too hard online to see if someone else has done this, or if it is a common Unity format. Maybe my google-fu isn't very good but I never find much when looking up file formats even for formats well understood by the modding community.
@@ -273,3 +273,5 @@ I create a local variable, ie a variable that isn’t actually in the struct on 
 Finally, most important things are wrapped up. I still need to work out the crc check so that it is complete, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think the second int in the file is the version number, but no proof of that yet, etc.
 
 I don't know what future changes the game dev(s) will make that affect the file layout, but most things are developed iteratively so even if the encasulation format is totally changed in a future version the underlaying data should change more slowly as the game grows.
+
+![Screenshot of template on a character file](/screenshots/screenshot.png?raw=true "Screenshot of template on a character file")
