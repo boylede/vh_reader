@@ -62,7 +62,18 @@ A few bytes before the sea of 0x00’s and 0x01’s there was the number I sough
 
 ![todo: add alt text](/screenshots/8.png?raw=true "todo: add title text")
 
-Looking at the strings here I recognized that this was the points-of-interest from one of my maps, as they were mostly strings I had written in the game, spelling mistakes and all. The 17 bytes of higher-entropy binary data in between each one was easy to skip over for now. Later it would be trivial to see that this data is three 32-bit floats (12 bytes) storing the position (x,y,z where y is always zero), a single byte defining the icon used, and 32 bits for boolean flags.
+Looking at the strings here I recognized that this was the points-of-interest from one of my maps, as they were mostly strings I had written in the game, spelling mistakes and all. The 17 bytes of higher-entropy binary data in between each one was easy to skip over for now. Later it would be trivial to see that this data is a position (three 32-bit floats, 12 bytes), a single byte defining the icon used, and 32 bits extra used for flags.
+
+```c
+typedef struct {
+    PString name;
+    float x;
+    float y;
+    float z;
+    char type;
+    int flags; // bit 24 = icon crossed out
+} POI;
+```
 
 ![todo: add alt text](/screenshots/9.png?raw=true "todo: add title text")
 
@@ -257,4 +268,8 @@ typedef struct Map {
 
 I create a local variable, ie a variable that isn’t actually in the struct on disk but 010 will compute each time it attempts to map this structure onto the bytes in the file, that stores the map end address. Then, when we get to the end of the map, if we aren’t at that address we add a byte. This is somewhat fragile in that there could in theory be multiple bytes here, but I haven’t encountered any maps like that yet. 
 
+# current status
 
+Finally, most important things are wrapped up. I still need to work out the crc check so that it is complete, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think the second int in the file is the version number, but no proof of that yet, etc.
+
+I don't know what future changes the game dev(s) will make that affect the file layout, but most things are developed iteratively so even if the encasulation format is totally changed in a future version the underlaying data should change more slowly as the game grows.
