@@ -75,9 +75,7 @@ typedef struct {
     local int i;    
     local float seen;
     for (i = 0; i < 3FFFF8h; i++) {
-        if (data[i] != 0) {
-            seen += 1;
-        }
+        seen += data[i];        
     }
 } VisibilityData <read=ReadVisibilty>;
 
