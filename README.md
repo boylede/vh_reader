@@ -12,7 +12,7 @@ I also wanted to make a "template" in the 010 hex editor, which I have read abou
 I wanted to take a look at these files and see what is in them, and get a better understanding of how the game works and how it thinks about the various entities within. What better way to do that then go directly to the source and see what data it is writing. Reverse engineering the entire game would likely be too big a task for me but looking at some savegame files should be more realistic, especially if they are not intentionally obfuscated too much.
 
 # First look
-In this case, the file format turns out to be relatively simple and easy to read. Not too much foreknowledge is needed and the game is currently very permissive in what it will accept from the file. Currently it doesn’t even deny files with invalid crc checks, which is really good for me because trying to figure out what specific algorithm, parameters, and range of input data used might have been so time consuming I might have lost motivation early.
+In this case, the file format turns out to be relatively simple and easy to read. Not too much foreknowledge is needed and the game is currently very permissive in what it will accept from the file. Currently it doesn’t even deny files with invalid hashes, which is really good for me because trying to figure out what specific algorithm, parameters, and range of input data used might have been so time consuming I might have lost motivation early.
 
 Scrolling through a file for the first time I immediately see there are three sections with different data cadence and byte value ranges. 
 
@@ -40,9 +40,9 @@ The third section appears to start at byte 0xC0112D, so I thought there might be
 
 ![todo: add alt text](/screenshots/5.png?raw=true "todo: add title text")
 
-In my example file this address was the first of four 0x00 bytes. Not very informative, but following that was the number 64 (0x40) in little-endian int32 format, and it was followed by 64 bytes of high-entropy data. Later, I decided that this must be a CRC of some kind. I later realized that the reason there were four 0’s was because I was actually looking at the end of the previous data structure which coincidentally had a zero value there, and the offset address is meant to be read as an offset after the first 4 bytes in the file. 
+In my example file this address was the first of four 0x00 bytes. Not very informative, but following that was the number 64 (0x40) in little-endian int32 format, and it was followed by 64 bytes of high-entropy data. I decided that this must be a hash of the file's contents. I later realized that the reason there were four 0’s was because I was actually looking at the end of the previous data structure which coincidentally had a zero value there, and the offset address is meant to be read as an offset after the first 4 bytes in the file. 
 
-This was somewhat of a dead end, as the values in what I now assume are a CRC obviously do not point me towards anything else in the file, nor directly represent anything I could decode. However, I had at least figured out, to some degree, that the first four bytes in the file could be ignored for now and that the data structure at the very end of the file isn’t a table of contents or anything immediately useful. 
+This was somewhat of a dead end, as the values in what I now assume are a hash obviously do not point me towards anything else in the file, nor directly represent anything I could decode. However, I had at least figured out, to some degree, that the first four bytes in the file could be ignored for now and that the data structure at the very end of the file isn’t a table of contents or anything immediately useful. 
 
 
 # Maps, and how to ignore them
@@ -121,7 +121,7 @@ typedef struct {
 } Item;
 ```
 
-The quantity is obvious, because most of them were 1 except items I know I would have multiple of, like food. Figuring out the rest took some back-and-forth between different items, characters, and loading the game to see what it did if I changed a value. This is where the CRC-ignoring really helped as I hadn’t figured out the CRC yet (and I still haven’t bothered) and I wouldn’t have been able to test this had the game been enforcing that. 
+The quantity is obvious, because most of them were 1 except items I know I would have multiple of, like food. Figuring out the rest took some back-and-forth between different items, characters, and loading the game to see what it did if I changed a value. This is where the hash-ignoring really helped as I hadn’t figured out the hash algorithm yet (and I still haven’t bothered) and I wouldn’t have been able to test this had the game been enforcing that. 
 
 It took me an embarrassingly long time to figure out the durability. I thought initially that it was more complicated than it is. It’s just a float. I think I had the hex editor in big-endian mode or something when I was initially looking at it and never realized it was as simple as it was. I ended up accidentally creating a mace with several billion-billions durability due to not realizing this. The fact that the equipped-state is just a char confused me at first as well, since all the other items are 4-byte values neatly aligned. 
 
@@ -270,7 +270,7 @@ I create a local variable, ie a variable that isn’t actually in the struct on 
 
 # current status
 
-Finally, most important things are wrapped up. I still need to work out the crc check so that it is complete, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think the second int in the file is the version number, but no proof of that yet, etc.
+Finally, most important things are wrapped up. I still need to work out how the game is hashing the file so that my files are identical to the game's output, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think the second int in the file is the version number, but no proof of that yet, etc.
 
 I don't know what future changes the game dev(s) will make that affect the file layout, but most things are developed iteratively so even if the encasulation format is totally changed in a future version the underlaying data should change more slowly as the game grows.
 

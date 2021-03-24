@@ -28,7 +28,7 @@ string ReadPString( PString &str ) {
 }
 
 typedef struct fileHeader {
-    int checksum_offset <format=hex, name = "checksum offset">; 
+    int data_length <format=hex, name = "data length">; 
     int thirty_tree;    
     int unknown_a[4] <bgcolor=cLtYellow>;
     int map_count <name = "Map count">;
@@ -39,8 +39,8 @@ typedef struct fileHeader {
 typedef struct {
     //int zeroes;
     int length;
-    char checksum[length] <format=decimal>; ;
-} Checksum;
+    char hash[length] <format=decimal>; ;
+} Hash;
 
 typedef struct {
     PString name;
@@ -287,7 +287,7 @@ typedef struct ChacterFile {
     fileHeader header <name="File Header">;
     Map maps[header.map_count] <optimize=false, name="Maps">;
     Character character <name="Character">;
-    Checksum check <name="Checksum">;
+    Hash hash <name="Hash">;
 } CharacterFile <name="Character File">;;
 
 
