@@ -268,12 +268,12 @@ typedef struct {
 
     PString beard <name="beard">;
     PString hair <name="hair">;
-    float float1 <bgcolor=cYellow>; // hair color
+    float float1 <bgcolor=cYellow>; // these 3 are all the same on new character
     float float2 <bgcolor=cYellow>; // these 3 are all the same on new character
     float float3 <bgcolor=cYellow>; // these 3 are all the same on new character
     float float4 <bgcolor=cYellow>;
-    float hair_color;
-    float skin_color;
+    float float5 <bgcolor=cYellow>;
+    float float6 <bgcolor=cYellow>;
     int gender;
     int food_count;
     Food foods[food_count] <optimize=false, name="food">;
