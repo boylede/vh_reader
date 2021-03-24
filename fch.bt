@@ -29,7 +29,7 @@ string ReadPString( PString &str ) {
 
 typedef struct fileHeader {
     int data_length <format=hex, name = "data length">; 
-    int thirty_tree;    
+    int thirty_tree;
     int unknown_a[4] <bgcolor=cLtYellow>;
     int map_count <name = "Map count">;
 //    int interesting[3];
@@ -86,12 +86,21 @@ string ReadVisibilty( VisibilityData &vis ) {
     return s;
 }
 
-typedef struct Map {
-    char unknown_a[22] <bgcolor=cLtYellow>;
+typedef struct {
     float x;
-    float y; // y-up ;(
+    float y;
     float z;
-    char unknown_b[26] <bgcolor=cLtYellow>;
+} Position;
+
+typedef struct Map {
+    char unknown_a[9] <bgcolor=cLtYellow>;
+    Position unknown_triple_a;
+    char unknown_byte_a;
+    Position current_location;
+    char unknown_byte_b;
+    Position unknown_triple_b;
+    Position unknown_triple_c;
+    char unknown_byte_c;
     int map_size;
     local int map_end = FTell() + map_size;
     VisibilityData fog_of_war <name="fog of war">;
@@ -292,27 +301,4 @@ typedef struct ChacterFile {
 
 
 CharacterFile file;
-
-// fileHeader header;
-
-// skip_maps();
-// mapPOIs map;
-// int unknown_post_map_a[18];
-// skip_maps();
-// int after_skipped;
-
-// local int i = header.map_count;
-
-//for (i; i > 0; i--) {
-//    Map map;
-//}
-
-// int after_map;
-
-//Character character;
-
-//FSeek(header.offset + 4);
-
-//Checksum end;
-
 
