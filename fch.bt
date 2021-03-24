@@ -90,16 +90,16 @@ typedef struct {
     float x;
     float y;
     float z;
-} Position;
+} Triple;
 
 typedef struct Map {
     char unknown_a[9] <bgcolor=cLtYellow>;
-    Position unknown_triple_a;
+    Triple unknown_triple_a;
     char unknown_byte_a;
-    Position current_location;
+    Triple current_location;
     char unknown_byte_b;
-    Position unknown_triple_b;
-    Position unknown_triple_c;
+    Triple unknown_triple_b;
+    Triple unknown_triple_c;
     char unknown_byte_c;
     int map_size;
     local int map_end = FTell() + map_size;
