@@ -94,13 +94,13 @@ typedef struct {
 
 typedef struct Map {
     char unknown_a[9] <bgcolor=cLtYellow>;
-    Triple unknown_triple_a;
-    char unknown_byte_a;
+    Triple unknown_triple_a <bgcolor=cYellow>;
+    char unknown_byte_a <bgcolor=cYellow>;
     Triple current_location;
-    char unknown_byte_b;
-    Triple unknown_triple_b;
-    Triple unknown_triple_c;
-    char unknown_byte_c;
+    char unknown_byte_b <bgcolor=cYellow>;
+    Triple unknown_triple_b <bgcolor=cYellow>;
+    Triple unknown_triple_c <bgcolor=cYellow>;
+    char unknown_byte_c <bgcolor=cYellow>;
     int map_size;
     local int map_end = FTell() + map_size;
     VisibilityData fog_of_war <name="fog of war">;
@@ -180,24 +180,19 @@ typedef enum Biomes {
 typedef struct {
     PStringList items_seen;
     
-    //int len;
-    //PString entries[len] <optimize=false>;
     int len2;
     UpgradableEntry craftbenches_seen[len2] <optimize=false>;
-    //int len3;
-    //PString entries3[len3] <optimize=false>;
+
     PStringList recipe_list;
-    //int len4;
-    //PString entries4[len4] <optimize=false>;
+
     PStringList places;
     PStringList unknown_list;
-//    int len5;
-//    PString entries5[len5] <optimize=false>;
-    //int len6;
-    //PString entries6[len6] <optimize=false>;
+
     PStringList trophies;
+
     int biomes_seen;
     Biomes biomes[biomes_seen];
+
     int len8;
     PStringPair tutorials[len8] <optimize=false>;
 } Compendium <name="Compendium">;
@@ -226,7 +221,6 @@ typedef enum SkillName {
     SKILL_BOWS = 8,
     // 9
     // 10
-    // 11
     SKILL_UNARMED = 11,
     SKILL_PICKAXES = 12,
     SKILL_WOODCUTTING = 13,
@@ -245,16 +239,12 @@ typedef struct {
 
 string ReadSkill ( Skill &sk ) {
     return EnumToString(sk.id);
-//    if( exists( sk.cha.name.value ) )
-//        return cha.name.value;
-//    else
-//        return "";
 }
 
 typedef struct {
     PString name <name="name">;
     uquad player_id <name="player id">;
-    char unknown_aa[10] <bgcolor=cLtYellow>;
+    char unknown_aa[10] <bgcolor=cLtYellow>; // never seems to change
     float max_hp <name="max hp">;
     float current_hp <name="current hp">; // value appears to be recalculated at launch
     float stamina <name="stamina">;
@@ -263,7 +253,6 @@ typedef struct {
     PString selected_gp <name="selected god power">;
     char unknown_b[8] <bgcolor=cYellow>;
     Inventory inventory <name="inventory">;
-   // char unknown_c[32];
     Compendium compendium;
 
     PString beard <name="beard">;
@@ -290,8 +279,6 @@ string ReadCharacter( Character &cha ) {
         return "";
 }
 
-
-
 typedef struct ChacterFile {
     fileHeader header <name="File Header">;
     Map maps[header.map_count] <optimize=false, name="Maps">;
@@ -301,4 +288,3 @@ typedef struct ChacterFile {
 
 
 CharacterFile file;
-
