@@ -323,14 +323,17 @@ string ReadSkill ( Skill &sk ) {
 typedef struct {
     PString name <name="name">;
     uquad player_id <name="player id">;
-    char unknown_aa[10] <bgcolor=cLtYellow>; // never seems to change
+    char zero;
+    char one;
+    int char_data_length;
+    int twenty_four <bgcolor=cLtYellow>; // never changes
     float max_hp <name="max hp">;
     float current_hp <name="current hp">; // value appears to be recalculated at launch
     float stamina <name="stamina">;
-    char unknown_ab <bgcolor=cYellow>;
+    char unknown_d <bgcolor=cYellow>;
     float unknown_counter <bgcolor=cYellow>;
     PString selected_gp <name="selected god power">;
-    char unknown_b[8] <bgcolor=cYellow>;
+    char unknown_e[8] <bgcolor=cYellow>;
     Inventory inventory <name="inventory">;
     Compendium compendium;
 
