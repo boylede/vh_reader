@@ -92,7 +92,7 @@ typedef struct Map {
     char unknown_byte_b <bgcolor=cYellow>;
     Triple unknown_triple_b <bgcolor=cYellow>;
     Triple unknown_triple_c <bgcolor=cYellow>;
-    char unknown_byte_c <bgcolor=cYellow>;
+    char always_one;
     int map_size;
     local int map_end = FTell() + map_size;
     
