@@ -158,15 +158,7 @@ void analyze_maps(int length) {
 };
 
 void analyze_map_chunks(int size, int length) {
-    //local int bytes_read = 0;
-    //local int done = 0;
-    //local char value;
-//    local int current_region_type = 0;
-    //local int64 region_start = FTell();
-    //local int64 region_end = region_start;
-    //local int counted = 0;
     local int file = FileNew("Hex", false);
-    //DisableUndo();
     local int region;
     local int byt;
     local int value;
@@ -339,12 +331,8 @@ typedef struct {
 
     PString beard <name="beard">;
     PString hair <name="hair">;
-    float float1 <bgcolor=cYellow>; // these 3 are all the same on new character
-    float float2 <bgcolor=cYellow>; // these 3 are all the same on new character
-    float float3 <bgcolor=cYellow>; // these 3 are all the same on new character
-    float float4 <bgcolor=cYellow>;
-    float float5 <bgcolor=cYellow>;
-    float float6 <bgcolor=cYellow>;
+    Triple skin;
+    Triple hair;
     int gender;
     int food_count;
     Food foods[food_count] <optimize=false, name="food">;
