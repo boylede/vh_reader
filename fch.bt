@@ -70,14 +70,10 @@ typedef struct mapPOIs {
 
 typedef struct {
     int four;
-    int twenty_fourty_eight;
-    char data[3FFFF8h]; // some napkin-math estimates there is enough data here to store the map in 3x3 chunks. this is probably super wrong tho.
-    local int i;    
-    local float seen;
-    for (i = 0; i < 3FFFF8h; i++) {
-        seen += data[i];        
-    }
-} VisibilityData <read=ReadVisibilty>;
+    int chunk_size; // assumption based on empirical analysis
+    FSkip(400000h);
+    //analyze_map_chunks(chunk_size, 400000h);
+} VisibilityData;
 
 string ReadVisibilty( VisibilityData &vis ) {
     float max = 4194296.0;
@@ -103,9 +99,8 @@ typedef struct Map {
     char unknown_byte_c <bgcolor=cYellow>;
     int map_size;
     local int map_end = FTell() + map_size;
+    
     VisibilityData fog_of_war <name="fog of war">;
-    int unknown[2];
-    // char padding;    
     mapPOIs pois;
     if (FTell() != map_end) {
         char padding;
@@ -128,6 +123,94 @@ void skip_maps(void) {
     }
     Printf("Skipped 0x%x bytes of \"map data\"\n", skipped);
 };
+
+void analyze_maps(int length) {
+    local int skipped;
+    local int skipping = 1;
+    local char value;
+    local int current_region_type = 0;
+    local int64 region_start = FTell();
+    local int64 region_end = region_start;
+    local int counted = 0;
+
+    while (skipping == 1) {
+        value = ReadByte();
+        if (skipped < length) {
+            if (value != current_region_type) {
+                region_end = FTell();
+                Printf("Found new 0x%Lx-byte region of %d's at 0x%Lx\n", region_end - region_start, current_region_type, region_start);
+                counted += region_end - region_start;                
+                region_start = region_end;
+                regions += 1;
+                current_region_type = value;
+                char chunk_start;
+            } else {
+                skipped += 1;
+                FSkip(1);
+            }
+
+        } else {
+            region_end = FTell();
+            Printf("Found new 0x%Lx-byte region of %d's at 0x%Lx\n", region_end - region_start, current_region_type, region_start);
+            regions += 1;
+            skipping = 0;
+            counted += region_end - region_start;
+        }
+    }
+    
+    Printf("Skipped 0x%x, found %d regions. debug: %x, %x\n", length, regions, skipped, counted);
+};
+
+void analyze_map_chunks(int size, int length) {
+    //local int bytes_read = 0;
+    //local int done = 0;
+    //local char value;
+//    local int current_region_type = 0;
+    //local int64 region_start = FTell();
+    //local int64 region_end = region_start;
+    //local int counted = 0;
+    local int file = FileNew("Hex", false);
+    //DisableUndo();
+    local int region;
+    local int byt;
+    local int value;
+    local int found_ones;
+    local int found_zeros;
+    local int line_length = 4 * size;
+    local char line[line_length];
+    FPrintf(file, "P6\n%d %d\n255\n", size, size);
+    for (region = 0; region < 2048; region++) {
+        Memset(line, 0, line_length);
+        // Printf("writing region %d\n", region);
+        found_ones = 0;
+        found_zeros = 0;
+        for (byt = 0; byt < 2048; byt++) {
+            // if (!found_ones) {
+            value = ReadByte();
+
+            if (value == 0) {
+                found_zeros += 1;
+                Strcat(line, "   ");
+                // FPrintf(file, "%c%c%c", 254, 254, 254);
+                // FPrintf(file, "   ");
+            } else {
+                found_ones += 1;
+                //Strcat(s, "1");
+                Strcat(line, "~~~");
+                // FPrintf(file, "%c%c%c", 1, 1, 1);
+                // FPrintf(file, "~~~");
+            }
+            // }
+            FSkip(1);
+        }
+        FPrintf(file, "%s", line);
+        if (found_ones != 0) {
+            // Printf("Found %d set bytes in region %d at address %Lx, had size %d\n", found_ones, region, FTell(), found_ones + found_zeros);
+        }
+    }
+    // Printf("Skipped 0x%x, found %d regions. debug: %x, %x\n", length, regions, skipped, counted);
+};
+
 
 typedef struct {
     PString name <name="name">;

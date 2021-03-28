@@ -268,9 +268,86 @@ typedef struct Map {
 
 I create a local variable, ie a variable that isn’t actually in the struct on disk but 010 will compute each time it attempts to map this structure onto the bytes in the file, that stores the map end address. Then, when we get to the end of the map, if we aren’t at that address we add a byte. This is somewhat fragile in that there could in theory be multiple bytes here, but I haven’t encountered any maps like that yet. 
 
+# map visibility data
+
+```c
+void analyze_maps(int length) {
+    local int regions;
+    local int skipped;
+    local int skipping = 1;
+    local char value;
+    local int current_region_type = 0;
+    local int64 region_start = FTell();
+    local int64 region_end = region_start;
+
+    while (skipping == 1) {
+        value = ReadByte();
+        if (skipped < length) {
+            if (value != current_region_type) {
+                region_end = FTell();
+                Printf("Found new 0x%Lx-byte region of %d's at 0x%Lx\n", region_end - region_start, current_region_type, region_start);
+                region_start = region_end;
+                regions += 1;
+                current_region_type = value;
+            }
+            skipped += 1;
+            FSkip(1);
+        } else {
+            skipping = 0;
+        }
+    }
+    Printf("Skipped 0x%x, found %d regions. debug: %x\n", length, regions, skipped);
+};
+```
+Outputs the below on a brand new character, first loading into a world:
+```
+Found new 0x204c0a-byte region of 0's at 0x801475
+Found new 0x5-byte region of 1's at 0xa0607f
+Found new 0x7f8-byte region of 0's at 0xa06084
+Found new 0xb-byte region of 1's at 0xa0687c
+Found new 0x7f4-byte region of 0's at 0xa06887
+Found new 0xd-byte region of 1's at 0xa0707b
+Found new 0x7f3-byte region of 0's at 0xa07088
+Found new 0xd-byte region of 1's at 0xa0787b
+Found new 0x7f2-byte region of 0's at 0xa07888
+Found new 0xe-byte region of 1's at 0xa0807a
+Found new 0x7f2-byte region of 0's at 0xa08088
+Found new 0xf-byte region of 1's at 0xa0887a
+Found new 0x7f1-byte region of 0's at 0xa08889
+Found new 0xe-byte region of 1's at 0xa0907a
+Found new 0x7f1-byte region of 0's at 0xa09088
+Found new 0xf-byte region of 1's at 0xa09879
+Found new 0x7f1-byte region of 0's at 0xa09888
+Found new 0xf-byte region of 1's at 0xa0a079
+Found new 0x7f1-byte region of 0's at 0xa0a088
+Found new 0xe-byte region of 1's at 0xa0a879
+Found new 0x7f2-byte region of 0's at 0xa0a887
+Found new 0xc-byte region of 1's at 0xa0b079
+Found new 0x7f5-byte region of 0's at 0xa0b085
+Found new 0xa-byte region of 1's at 0xa0b87a
+Found new 0x7f6-byte region of 0's at 0xa0b884
+Found new 0xa-byte region of 1's at 0xa0c07a
+Found new 0x7f6-byte region of 0's at 0xa0c084
+Found new 0xa-byte region of 1's at 0xa0c87a
+Found new 0x7f7-byte region of 0's at 0xa0c884
+Found new 0x8-byte region of 1's at 0xa0d07b
+Found new 0x7fb-byte region of 0's at 0xa0d083
+Found new 0x2-byte region of 1's at 0xa0d87e
+Found new 0x1f3bf5-byte region of 0's at 0xa0d880
+Skipped 0x400000, found 33 regions. debug: 400000
+```
+
+This shows several approximately 0x800-sized regions of the map data with an average of 16 1's separating them. 
+We "know" that the map sets bytes to 1 when the area is cleared, evidenced by the fact that the map is entirely set to 1's when the map is entirely revealed. I also observed that the game will not load a character if you carelessly overwrite large regions of bytes with 1's, so it evidently isn't completely indescriminate, although maybe that was a fluke. I also was unable to get the in-game map to reveal any extra areas by overwriting small regions with 1's, but maybe I was selecting regions that were outside the "circle" of actual map, if those areas are for some reason stored in the visibility data.
+
+Now, we know that the initial map will have an area near the center of the map revealed, and this group of 0x800-sized chunks is about in the middle of the data, so it looks about as we would expect if the data was set up in the simplest possible format - a 2d array of positions each with 1 byte of data storing weather that block has been explored. The one piece of information we didn't have initially was how large these rows should be and how many of them there were, but as with everything else this file format has provided that number right up front: before the visiblity data is the number 0x800, which we now know is the row size (and/or number of rows). Initally when I saw this number in the file, I didn't think it could be the row size because the coordinates of points near the edges of the maps appear to be around 10,500, so I expected a number in that magnitude. 
+
+After writing some code to export .ppm images (the simplest image format), it is clear that this is correct. The data starts at the bottom left of the map, ending at the top right. Directly reading the information into an image buffer results in a vertically mirrored image because most image formats start at the top left and end at the bottom right.
+
+
 # current status
 
-Finally, most important things are wrapped up. I still need to work out how the game is hashing the file so that my files are identical to the game's output, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think the second int in the file is the version number, but no proof of that yet, etc.
+Finally, most important things are wrapped up. I still need to work out how the game is hashing the file so that my files are identical to the game's output, but I can leave that for now. I also have several sections of unknowns, but hopefully I can chip away at these as I see more files. I have some idea of what some things are, but no confirmation so I've left it out of the template. I think several fixed int's are file versioning checks, but no proof of that until we see something change in future versions.
 
 I don't know what future changes the game dev(s) will make that affect the file layout, but most things are developed iteratively so even if the encasulation format is totally changed in a future version the underlaying data should change more slowly as the game grows.
 
