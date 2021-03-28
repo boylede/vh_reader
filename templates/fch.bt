@@ -30,24 +30,20 @@ string ReadPString( PString &str ) {
 typedef struct fileHeader {
     int data_length <format=hex, name = "data length">; 
     int thirty_tree;
-    int unknown_a[4] <bgcolor=cLtYellow>;
+    int unknown;
+    int deaths;
+    int crafts;
+    int builds;
     int map_count <name = "Map count">;
-//    int interesting[3];
-//    int unknown_b[10];
 } fileHeader;
 
 typedef struct {
-    //int zeroes;
     int length;
     char hash[length] <format=decimal>; ;
 } Hash;
 
 typedef struct {
     PString name;
-//    char name_len;
-//    if (name_len > 0) {
-//    char name[name_len];
-//    }
     float x;
     float y; // always zero?
     float z;
