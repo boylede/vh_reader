@@ -28,7 +28,8 @@ string ReadPString( PString &str ) {
         return "";
 }
 
-int unknown_a;
+int file_size;  // offset to byte after end of file
+                // counting from after this int
 int unknown_b;
 
 PString name;

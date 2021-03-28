@@ -42,6 +42,7 @@ typedef struct Block {
 /// bitmap starts at 65 e1 20
 // ends at 65 ed 60
 // size approx c40
+// could be 56x56?
 
 
 
