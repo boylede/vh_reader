@@ -1,8 +1,9 @@
 use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
-#[derive(Data, Clone, Lens)]
+#[derive(Data, Clone, Lens, Debug)]
 pub struct LoadedCharacter {
     pub kill_count: u32,
     pub death_count: u32,
@@ -263,7 +264,7 @@ impl Default for Biomes {
     }
 }
 
-#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize_repr, Deserialize_repr)]
 #[repr(u32)]
 #[non_exhaustive]
 pub enum Gender {
