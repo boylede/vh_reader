@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "vhr_chardata",
+    "vhr_serde",
+    "vhr_gui",
+]

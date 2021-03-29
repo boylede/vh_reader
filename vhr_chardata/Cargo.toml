@@ -1,0 +1,9 @@
+[package]
+name = "vhr_chardata"
+version = "0.1.0"
+authors = ["Daniel Boyle <boylede+github@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+druid = { version = "0.7.0", features = ["im"] }
+serde = { version = "1.0", features = ["derive", "rc"] }
