@@ -37,7 +37,7 @@ impl Default for LoadedCharacter {
             death_count: 94,
             crafting_count: 502,
             building_count: 87125,
-            maps: Rc::new(vec![]),
+            maps: Rc::new(vec![Map::default()]),
             name: "Bobbleth".into(),
             player_id: 5,
             max_hp: 52.2,
@@ -194,8 +194,7 @@ impl Color {
 pub struct VisibilityData {
     four: u32,
     twenty_fourty_eight: u32,
-    // todo: remove box by specifying length; requires custom serde impls because len > 32
-    fog: Rc<Box<[u8]>>,
+    fog: Rc<VisibilityRow>,
 }
 
 impl Default for VisibilityData {
@@ -203,7 +202,50 @@ impl Default for VisibilityData {
         VisibilityData {
             four: 4,
             twenty_fourty_eight: 2048,
-            fog: Rc::new(Box::new([0u8; FOG_LENGTH])),
+            fog: Rc::new(VisibilityRow::default()),
+        }
+    }
+}
+
+/// A hack to get around lack of impls for slices larger than 32
+#[derive(PartialEq, Eq, Clone, Lens, Debug, Deserialize, Serialize)]
+pub struct VisibilityRow {
+    inner: [VisibilityRowPart;8],
+}
+
+/// A hack to get around lack of impls for slices larger than 32
+#[derive(PartialEq, Eq, Copy, Clone, Lens, Debug, Deserialize, Serialize)]
+pub struct VisibilityRowPart {
+    inner: [VisibilityRowPartInner;16],
+}
+
+/// A hack to get around lack of impls for slices larger than 32
+#[derive(PartialEq, Eq, Copy, Clone, Lens, Debug, Deserialize, Serialize)]
+pub struct VisibilityRowPartInner {
+    inner: [u8;16],
+}
+
+impl Default for VisibilityRow {
+    fn default() -> Self {
+        VisibilityRow {
+            inner: [VisibilityRowPart::default(); 8]
+        }
+    }
+}
+
+impl Default for VisibilityRowPart {
+    fn default() -> Self {
+        VisibilityRowPart {
+            inner: [VisibilityRowPartInner::default(); 16]
+        }
+    }
+}
+
+
+impl Default for VisibilityRowPartInner {
+    fn default() -> Self {
+        VisibilityRowPartInner {
+            inner: [0u8; 16]
         }
     }
 }
