@@ -190,68 +190,6 @@ impl Color {
     };
 }
 
-#[derive(PartialEq, Eq, Data, Clone, Lens, Debug, Deserialize, Serialize)]
-pub struct VisibilityData {
-    four: u32,
-    twenty_fourty_eight: u32,
-    fog: Rc<VisibilityRow>,
-}
-
-impl Default for VisibilityData {
-    fn default() -> Self {
-        VisibilityData {
-            four: 4,
-            twenty_fourty_eight: 2048,
-            fog: Rc::new(VisibilityRow::default()),
-        }
-    }
-}
-
-/// A hack to get around lack of impls for slices larger than 32
-#[derive(PartialEq, Eq, Clone, Lens, Debug, Deserialize, Serialize)]
-pub struct VisibilityRow {
-    inner: [VisibilityRowPart;8],
-}
-
-/// A hack to get around lack of impls for slices larger than 32
-#[derive(PartialEq, Eq, Copy, Clone, Lens, Debug, Deserialize, Serialize)]
-pub struct VisibilityRowPart {
-    inner: [VisibilityRowPartInner;16],
-}
-
-/// A hack to get around lack of impls for slices larger than 32
-#[derive(PartialEq, Eq, Copy, Clone, Lens, Debug, Deserialize, Serialize)]
-pub struct VisibilityRowPartInner {
-    inner: [u8;16],
-}
-
-impl Default for VisibilityRow {
-    fn default() -> Self {
-        VisibilityRow {
-            inner: [VisibilityRowPart::default(); 8]
-        }
-    }
-}
-
-impl Default for VisibilityRowPart {
-    fn default() -> Self {
-        VisibilityRowPart {
-            inner: [VisibilityRowPartInner::default(); 16]
-        }
-    }
-}
-
-
-impl Default for VisibilityRowPartInner {
-    fn default() -> Self {
-        VisibilityRowPartInner {
-            inner: [0u8; 16]
-        }
-    }
-}
-
-const FOG_LENGTH: usize = 0x400000;
-
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
 #[repr(u32)]
 #[non_exhaustive]

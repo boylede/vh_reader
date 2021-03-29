@@ -167,7 +167,7 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
-        Err(Error::NotYetImplemented)
+        Ok(self)
     }
 
     fn serialize_tuple_struct(
