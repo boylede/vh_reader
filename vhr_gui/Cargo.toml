@@ -1,0 +1,14 @@
+[package]
+name = "vhr_gui"
+version = "0.1.0"
+authors = ["Daniel Boyle <boylede+github@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+druid = { version = "0.7.0", features = ["im"] }
+instant = { version = "0.1.6", features = ["wasm-bindgen"] }
+log = "0.4.11"
+serde = "1.0.125"
+
+vhr_chardata = {path = "../vhr_chardata"}
+vhr_serde = {path = "../vhr_serde"}
