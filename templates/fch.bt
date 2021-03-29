@@ -312,6 +312,15 @@ string ReadSkill ( Skill &sk ) {
     return EnumToString(sk.id);
 }
 
+typedef enum {
+    GENDER_MALE = 0,
+    GENDER_FEMALE = 1
+} Gender <read=ReadGender>;
+
+string ReadGender ( Gender &g ) {
+    return EnumToString(g);
+}
+
 typedef struct {
     PString name <name="name">;
     uquad player_id <name="player id">;
@@ -333,7 +342,7 @@ typedef struct {
     PString hair <name="hair">;
     Triple skin;
     Triple hair;
-    int gender;
+    Gender gender;
     int food_count;
     Food foods[food_count] <optimize=false, name="food">;
     int two <bgcolor=cLtYellow>;
