@@ -2,12 +2,15 @@ use druid::{Data, Lens};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub mod color;
 pub mod hair;
+pub mod skill;
 mod vis_data;
 
 pub use color::Color;
+pub use skill::Skill;
 
 pub use vis_data::VisibilityData;
 
@@ -35,7 +38,7 @@ pub struct LoadedCharacter {
     pub hair: Color,
     pub gender: Gender,
     pub stomach: Rc<Vec<Food>>,
-    pub skills: Rc<Vec<Skill>>,
+    pub skills: Arc<Vec<Skill>>,
 }
 
 // fn map_compare(a: &Vec<Map>, b: &Vec<Map>) -> bool {
@@ -115,7 +118,7 @@ impl Default for LoadedCharacter {
             hair: Color::WHITE,
             gender: Gender::Female,
             stomach: Rc::new(vec![]),
-            skills: Rc::new(vec![]),
+            skills: Arc::new(vec![Skill::AXES, Skill::RUN, Skill::SNEAK]),
         }
     }
 }
@@ -324,93 +327,6 @@ pub struct Point {
     pub x: f32,
     pub y: f32,
     pub z: f32,
-}
-
-#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
-#[repr(u32)]
-#[non_exhaustive]
-pub enum SkillName {
-    None = 0,
-    Swords = 1,
-    Knives = 2,
-    Clubs = 3,
-    Polearms = 4,
-    Spears = 5,
-    Blocking = 6,
-    Axes = 7,
-    Bows = 8,
-    // 9
-    // 10
-    // 11
-    Unarmed = 11,
-    Pickaxes = 12,
-    Woodcutting = 13,
-    // SKIP A FEW..?
-    Jump = 100,
-    Sneak = 101,
-    Run = 102,
-    Swim = 103,
-}
-
-impl Default for SkillName {
-    fn default() -> Self {
-        SkillName::None
-    }
-}
-
-#[derive(Debug)]
-pub struct ParseErr;
-impl std::fmt::Display for ParseErr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ParseError")?;
-        Ok(())
-    }
-}
-
-impl std::error::Error for ParseErr {}
-
-impl std::str::FromStr for SkillName {
-    type Err = ParseErr;
-
-    fn from_str(s: &str) -> Result<Self, ParseErr> {
-        use SkillName::*;
-        let name = match s {
-            "None" => None,
-            "Swords" => Swords,
-            "Knives" => Knives,
-            "Clubs" => Clubs,
-            "Polearms" => Polearms,
-            "Spears" => Spears,
-            "Blocking" => Blocking,
-            "Axes" => Axes,
-            "Bows" => Bows,
-            // 9
-            // 10
-            "Unarmed" => Unarmed,
-            "Pickaxes" => Pickaxes,
-            "Woodcutting" => Woodcutting,
-            // Skip A Few..?
-            "Jump" => Jump,
-            "Sneak" => Sneak,
-            "Run" => Run,
-            "Swim" => Swim,
-            _ => None,
-        };
-        Ok(name)
-    }
-}
-
-#[derive(Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
-pub struct Skill {
-    id: SkillName,
-    level: f32,
-    progress: f32,
-}
-
-impl Skill {
-    pub fn pre_serialize(&mut self) -> usize {
-        12
-    }
 }
 
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]

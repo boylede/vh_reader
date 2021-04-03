@@ -9,11 +9,13 @@ use druid::widget::{
 use druid::{
     theme, AppLauncher, Color as DruidColor, Data, Env, Lens, Widget, WidgetExt, WindowDesc,
 };
+
 use instant::Duration;
 
 use std::io::Write;
+use std::sync::Arc;
 
-use vhr_chardata::{Color, Gender, LoadedCharacter};
+use vhr_chardata::{Color, Gender, LoadedCharacter, Skill};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -184,7 +186,97 @@ fn build_appearance_tab() -> impl Widget<LoadedCharacter> {
 }
 
 fn build_stats_tab() -> impl Widget<LoadedCharacter> {
-    Label::new("Stats")
+    let kill_count = Flex::row()
+        .with_child(Label::new("Kill Count"))
+        .with_default_spacer()
+        .with_child(TextBox::new().with_formatter(ParseFormatter::default()))
+        .lens(LoadedCharacter::kill_count)
+        .fix_width(200.0);
+    let death_count = Flex::row()
+        .with_child(Label::new("Death Count"))
+        .with_default_spacer()
+        .with_child(TextBox::new().with_formatter(ParseFormatter::default()))
+        .lens(LoadedCharacter::death_count)
+        .fix_width(200.0);
+    let craft_count = Flex::row()
+        .with_child(Label::new("Crafts Count"))
+        .with_default_spacer()
+        .with_child(TextBox::new().with_formatter(ParseFormatter::default()))
+        .lens(LoadedCharacter::crafting_count)
+        .fix_width(200.0);
+    let build_count = Flex::row()
+        .with_child(Label::new("Builds Count"))
+        .with_default_spacer()
+        .with_child(TextBox::new().with_formatter(ParseFormatter::default()))
+        .lens(LoadedCharacter::building_count)
+        .fix_width(200.0);
+
+    Align::left(
+        Flex::row()
+            .with_child(
+                Flex::column()
+                    .with_default_spacer()
+                    .with_child(kill_count)
+                    .with_default_spacer()
+                    .with_child(death_count)
+                    .with_default_spacer()
+                    .with_child(craft_count)
+                    .with_default_spacer()
+                    .with_child(build_count)
+                    .with_flex_spacer(1.0),
+            )
+            .with_child(
+                Flex::column()
+                    .with_child(Align::left(Button::new("Add Skill").on_click(
+                        |_, data: &mut LoadedCharacter, _| {
+                            if let Some(s) = Arc::get_mut(&mut data.skills) {
+                                s.push(Skill::None);
+                            } else {
+                                Arc::make_mut(&mut data.skills).push(Skill::None)
+                            }
+                        },
+                    )))
+                    .with_child(
+                        Scroll::new(List::new(|| {
+                            Flex::row()
+                                .with_child(Label::new(|skill: &Skill, _env: &_| {
+                                    format!("Skill {:?}", skill.id)
+                                }))
+                                .with_default_spacer()
+                                .with_child(
+                                    TextBox::new()
+                                        .with_formatter(ParseFormatter::new())
+                                        .lens(Skill::id)
+                                        .padding(2.0),
+                                )
+                                .with_default_spacer()
+                                .with_child(
+                                    TextBox::new()
+                                        .with_formatter(ParseFormatter::new())
+                                        .lens(Skill::level),
+                                )
+                                .with_default_spacer()
+                                .with_child(
+                                    Slider::new()
+                                        .with_range(0.0, 100.0)
+                                        .lens(vhr_chardata::skill::f32Lens)
+                                        .lens(Skill::progress),
+                                )
+                                .with_child(Button::new("Delete")
+                                .on_click(|_, data: &mut Skill, _| {
+                                        // todo: we can't actually delete this item here.
+                                        // need to use like below
+                                })
+                                // .on_click(|_ctx, (shared, item): &mut (Arc<Vec<Skill>>, Skill), _env| {
+                                // })
+                            )
+                        }))
+                        .lens(LoadedCharacter::skills),
+                        // todo: lens this for shared access to the vec
+                    )
+                    .with_flex_spacer(1.0),
+            ),
+    )
 }
 
 fn build_inventory_tab() -> impl Widget<LoadedCharacter> {
