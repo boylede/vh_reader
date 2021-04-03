@@ -1,5 +1,5 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Color {

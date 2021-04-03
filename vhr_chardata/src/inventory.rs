@@ -143,9 +143,9 @@ impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
             .for_each(|(x, y)| {
                 let pos: (u32, u32) = (x as u32, y as u32);
-                map.entry(pos).or_insert(Item::default());
+                map.entry(pos).or_insert_with(Item::default);
             });
-        let view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
+        let view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
         f(&Arc::new(view))
     }
     fn with_mut<V, F: FnOnce(&mut Arc<Vec<ItemView>>) -> V>(
@@ -161,9 +161,9 @@ impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
             .for_each(|(x, y)| {
                 let pos: (u32, u32) = (x as u32, y as u32);
-                map.entry(pos).or_insert(Item::default());
+                map.entry(pos).or_insert_with(Item::default);
             });
-        let view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
+        let view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
         let mut view_arc = Arc::new(view);
         let value = f(&mut view_arc);
 
@@ -171,8 +171,7 @@ impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
         let data = if let Some(d) = Arc::get_mut(&mut data) {
             d
         } else {
-            let d = Arc::make_mut(&mut data);
-            d
+            Arc::make_mut(&mut data)
         };
         let view = Arc::try_unwrap(view_arc).unwrap();
         *data = view.into_iter().map(|iv| iv.inner).collect();

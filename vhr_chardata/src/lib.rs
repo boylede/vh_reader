@@ -1,5 +1,5 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 use std::sync::Arc;
@@ -267,7 +267,7 @@ impl Map {
             .map(|p| p.pre_serialize())
             .sum::<usize>()
             + 4;
-        if let Some(_) = self.extra {
+        if self.extra.is_some() {
             size += 1;
         }
         self.map_size = size as u32;

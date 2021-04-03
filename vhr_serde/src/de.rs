@@ -2,16 +2,10 @@ use crate::error::{Error, Result};
 use serde::{de, Deserialize};
 
 pub struct VHDeserializer<'de> {
-    // This string starts with the input data and characters are truncated off
-    // the beginning as data is parsed.
     input: &'de [u8],
 }
 
 impl<'de> VHDeserializer<'de> {
-    // By convention, `Deserializer` constructors are named like `from_xyz`.
-    // That way basic use cases are satisfied by something like
-    // `serde_json::from_str(...)` while advanced use cases that require a
-    // deserializer can make one with `serde_json::Deserializer::from_str(...)`.
     pub fn from_bytes(input: &'de [u8]) -> Self {
         VHDeserializer { input }
     }

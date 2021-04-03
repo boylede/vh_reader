@@ -1,10 +1,9 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize, Serializer};
 use std::rc::Rc;
 
 const MAP_WIDTH: usize = 2048;
-const FOG_LENGTH: usize = MAP_WIDTH * MAP_WIDTH;
+// const FOG_LENGTH: usize = MAP_WIDTH * MAP_WIDTH;
 
 #[derive(PartialEq, Eq, Data, Clone, Lens, Debug, Deserialize, Serialize)]
 pub struct VisibilityData {
@@ -50,7 +49,7 @@ impl Serialize for VisibilityRow {
         use serde::ser::SerializeTuple;
         let mut tup = serializer.serialize_tuple(self.inner.len())?;
         for byte in self.inner.iter() {
-            tup.serialize_element(byte);
+            tup.serialize_element(byte)?;
         }
         tup.end()
     }

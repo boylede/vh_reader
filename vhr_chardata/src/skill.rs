@@ -1,6 +1,5 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
 #[repr(u32)]
@@ -106,7 +105,7 @@ impl Skill {
         level: 100.0,
         progress: 25.0,
     };
-    pub const None: Skill = Skill {
+    pub const NONE: Skill = Skill {
         id: SkillName::None,
         level: 0.0,
         progress: 0.0,
@@ -116,9 +115,9 @@ impl Skill {
     }
 }
 
-pub struct f32Lens;
+pub struct Lensf32;
 
-impl Lens<f32, f64> for f32Lens {
+impl Lens<f32, f64> for Lensf32 {
     fn with<V, F: FnOnce(&f64) -> V>(&self, data: &f32, f: F) -> V {
         let num = *data as f64;
         f(&num)
@@ -131,9 +130,9 @@ impl Lens<f32, f64> for f32Lens {
     }
 }
 
-pub struct f64Lens;
+pub struct Lensf64;
 
-impl Lens<f64, f32> for f64Lens {
+impl Lens<f64, f32> for Lensf64 {
     fn with<V, F: FnOnce(&f32) -> V>(&self, data: &f64, f: F) -> V {
         let num = *data as f32;
         f(&num)

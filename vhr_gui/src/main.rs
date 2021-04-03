@@ -1,21 +1,16 @@
-use druid::im::Vector;
-use druid::lens::{Map, Then};
 use druid::text::format::ParseFormatter;
 use druid::widget::{
-    Align, Axis, Button, CrossAxisAlignment, Flex, Label, LabelText, LineBreaking, List,
-    MainAxisAlignment, Radio, RadioGroup, Scroll, Slider, Split, TabInfo, Tabs, TabsEdge,
-    TabsPolicy, TabsTransition, TextBox, ValueTextBox, ViewSwitcher,
+    Align, Axis, Button, Flex, Label, LineBreaking, List,
+     Radio, Scroll, Slider, Tabs, TabsEdge,
+     TabsTransition, TextBox,
 };
 use druid::{
-    theme, AppLauncher, Color as DruidColor, Data, Env, Lens, Widget, WidgetExt, WindowDesc,
+    AppLauncher, Widget, WidgetExt, WindowDesc,
 };
-
-use instant::Duration;
 
 use std::io::Write;
 use std::sync::Arc;
-
-use vhr_chardata::{Color, Gender, Item, ItemView, LoadedCharacter, Skill};
+use vhr_chardata::{Gender, ItemView, LoadedCharacter, Skill};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -88,22 +83,6 @@ fn build_root_widget() -> impl Widget<LoadedCharacter> {
         .padding(5.0)
     // .fix_width(700.0),
     // )
-}
-
-fn labeled_with_box<T: Data, W: Widget<T> + 'static>(
-    text: impl Into<LabelText<T>>,
-    w: W,
-) -> impl Widget<T> {
-    Flex::row()
-        .cross_axis_alignment(CrossAxisAlignment::Start)
-        .with_child(
-            Label::new(text).background(theme::PLACEHOLDER_COLOR), // .expand_width(),
-        )
-        .with_default_spacer()
-        .with_child(w)
-        .with_default_spacer()
-        .border(DruidColor::WHITE, 0.5)
-    // .fix_width(200.0)
 }
 
 fn build_warning_tab() -> impl Widget<LoadedCharacter> {
@@ -230,9 +209,9 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
                     .with_child(Align::left(Button::new("Add Skill").on_click(
                         |_, data: &mut LoadedCharacter, _| {
                             if let Some(s) = Arc::get_mut(&mut data.skills) {
-                                s.push(Skill::None);
+                                s.push(Skill::NONE);
                             } else {
-                                Arc::make_mut(&mut data.skills).push(Skill::None)
+                                Arc::make_mut(&mut data.skills).push(Skill::NONE)
                             }
                         },
                     )))
@@ -259,11 +238,11 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
                                 .with_child(
                                     Slider::new()
                                         .with_range(0.0, 100.0)
-                                        .lens(vhr_chardata::skill::f32Lens)
+                                        .lens(vhr_chardata::skill::Lensf32)
                                         .lens(Skill::progress),
                                 )
                                 .with_child(
-                                    Button::new("Delete").on_click(|_, data: &mut Skill, _| {
+                                    Button::new("Delete").on_click(|_, _data: &mut Skill, _| {
                                         // todo: we can't actually delete this item here.
                                         // need to use like below
                                     }), // .on_click(|_ctx, (shared, item): &mut (Arc<Vec<Skill>>, Skill), _env| {
