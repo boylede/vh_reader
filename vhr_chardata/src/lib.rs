@@ -104,7 +104,7 @@ impl Default for LoadedCharacter {
             alive_timer: 1000.0,
             selected_power: "GP_Eikthyr".into(),
             cooldown: 0.0,
-            inventory: Arc::new(vec![]),
+            inventory: Arc::new(Item::default_items()),
             compendium: Rc::new(Compendium {
                 recipes: vec![],
                 craftbenches: vec![],

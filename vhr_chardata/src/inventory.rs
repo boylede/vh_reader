@@ -20,6 +20,83 @@ pub struct Item {
 }
 
 impl Item {
+    pub fn default_items() -> Vec<Item> {
+        let mut v = vec![];
+
+        v.push( Item {
+            name: String::from("Bow"),
+            quantity: 1,
+            durability: 100.0,
+            column: 0,
+            row: 0,
+            equipped: 1,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v.push( Item {
+            name: String::from("Armor"),
+            quantity: 1,
+            durability: 100.0,
+            column: 1,
+            row: 0,
+            equipped: 1,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v.push( Item {
+            name: String::from("Axe"),
+            quantity: 1,
+            durability: 100.0,
+            column: 2,
+            row: 0,
+            equipped: 0,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v.push( Item {
+            name: String::from("Food"),
+            quantity: 1,
+            durability: 100.0,
+            column: 0,
+            row: 1,
+            equipped: 0,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v.push( Item {
+            name: String::from("Food2"),
+            quantity: 1,
+            durability: 100.0,
+            column: 1,
+            row: 1,
+            equipped: 0,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v.push( Item {
+            name: String::from("Food3"),
+            quantity: 1,
+            durability: 100.0,
+            column: 2,
+            row: 1,
+            equipped: 0,
+            quality: 1,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        });
+        v
+    }
     pub fn pre_serialize(&mut self) -> usize {
         let mut size = 33; //hand-counted size of struct
         size += self.name.len() + 1;
