@@ -3,7 +3,6 @@ use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
-use std::sync::Arc;
 
 pub mod color;
 pub mod hair;
@@ -41,7 +40,7 @@ pub struct LoadedCharacter {
     pub skin: Color,
     pub hair: Color,
     pub gender: Gender,
-    pub stomach: Rc<Vec<Food>>,
+    pub stomach: Vector<Food>,
     pub skills: Vector<Skill>,
 }
 
@@ -80,9 +79,9 @@ impl LoadedCharacter {
             skin: self.skin.clone(),
             hair: self.hair.clone(),
             gender: self.gender.clone(),
-            stomach: (*self.stomach).clone(),
+            stomach: self.stomach.iter().cloned().collect(),
             always_two: 2,
-            skills: self.skills.iter().cloned().collect::<Vec<_>>(),
+            skills: self.skills.iter().cloned().collect(),
             hash: vec![],
         }
     }
@@ -121,7 +120,7 @@ impl Default for LoadedCharacter {
             skin: Color::BROWN,
             hair: Color::WHITE,
             gender: Gender::Female,
-            stomach: Rc::new(vec![]),
+            stomach: vec![].into(),
             skills: vec![Skill::AXES, Skill::RUN, Skill::SNEAK].into(),
         }
     }

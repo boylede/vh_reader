@@ -2,8 +2,6 @@ use druid::im::Vector;
 use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Arc;
-use std::rc::Rc;
 
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Item {
