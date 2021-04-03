@@ -3,15 +3,17 @@ use druid::lens::{Map, Then};
 use druid::text::format::ParseFormatter;
 use druid::widget::{
     Align, Axis, Button, CrossAxisAlignment, Flex, Label, LabelText, LineBreaking, List,
-    MainAxisAlignment, RadioGroup, Scroll, Slider, Split, TabInfo, Tabs, TabsEdge, TabsPolicy,
-    TabsTransition, TextBox, ValueTextBox, ViewSwitcher,
+    MainAxisAlignment, Radio, RadioGroup, Scroll, Slider, Split, TabInfo, Tabs, TabsEdge,
+    TabsPolicy, TabsTransition, TextBox, ValueTextBox, ViewSwitcher,
 };
-use druid::{theme, AppLauncher, Color, Data, Env, Lens, Widget, WidgetExt, WindowDesc};
+use druid::{
+    theme, AppLauncher, Color as DruidColor, Data, Env, Lens, Widget, WidgetExt, WindowDesc,
+};
 use instant::Duration;
 
 use std::io::Write;
 
-use vhr_chardata::LoadedCharacter;
+use vhr_chardata::{Color, Gender, LoadedCharacter};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -46,11 +48,13 @@ fn build_root_widget() -> impl Widget<LoadedCharacter> {
         Flex::row()
             .with_child(Label::new("Character Name"))
             .with_child(TextBox::new().lens(LoadedCharacter::name).fix_width(200.0))
+            // todo: when validating names, change to title case.
+            // allow only alphabetic and spaces
             .with_child(
                 Label::new(|data: &LoadedCharacter, _env: &_| {
-                    if data.name.len() > 16 {
-                        format!("name too long by {} characters", data.name.len() - 16)
-                    } else if data.name.len() < 1 {
+                    if data.name.len() > 15 {
+                        format!("name too long by {} characters", data.name.len() - 15)
+                    } else if data.name.len() < 3 {
                         "name too short".into()
                     } else {
                         "".into()
@@ -96,20 +100,87 @@ fn labeled_with_box<T: Data, W: Widget<T> + 'static>(
         .with_default_spacer()
         .with_child(w)
         .with_default_spacer()
-        .border(Color::WHITE, 0.5)
+        .border(DruidColor::WHITE, 0.5)
     // .fix_width(200.0)
 }
 
 fn build_warning_tab() -> impl Widget<LoadedCharacter> {
     Align::centered(
-        Label::new("Please be careful to backup your files before using this utility. Choose from the tabs to edit your character.")
-        .with_line_break_mode(LineBreaking::WordWrap)
-        .fix_width(600.0)
+        Flex::column()
+            .with_default_spacer()
+            .with_child(
+                Label::new("Please be careful to backup your files before using this utility. Choose from the tabs to edit your character.")
+                .with_line_break_mode(LineBreaking::WordWrap)
+                .fix_width(600.0))
+            .with_flex_spacer(1.0),
     )
 }
 
 fn build_appearance_tab() -> impl Widget<LoadedCharacter> {
-    Label::new("Appearance")
+    let gender_picker = Flex::row()
+        .with_child(Label::new("Gender"))
+        .with_default_spacer()
+        .with_child(Radio::new("Male", Gender::Male))
+        .with_default_spacer()
+        .with_child(Radio::new("Female", Gender::Female))
+        .lens(LoadedCharacter::gender)
+        .fix_width(200.0);
+
+    let hair_picker = Flex::row()
+        .with_child(Label::new("Hair Style"))
+        .with_default_spacer()
+        .with_child(
+            TextBox::new(), // todo: attempt to nudge input towards known-correct values
+        )
+        .lens(LoadedCharacter::hair_type)
+        .fix_width(200.0);
+    let beard_picker = Flex::row()
+        .with_child(Label::new("Beard Style"))
+        .with_default_spacer()
+        .with_child(
+            TextBox::new(), // todo: attempt to nudge input towards known-correct values
+        )
+        .lens(LoadedCharacter::beard_type)
+        .fix_width(200.0);
+
+    let hair_color = Flex::row()
+        .with_child(Label::new("Hair Color"))
+        .with_default_spacer()
+        .with_child(
+            Flex::column()
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Red))
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Green))
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Blue)),
+        )
+        .lens(LoadedCharacter::hair)
+        .fix_width(200.0);
+
+    let skin_color = Flex::row()
+        .with_child(Label::new("Skin Color"))
+        .with_default_spacer()
+        .with_child(
+            Flex::column()
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Red))
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Green))
+                .with_child(Slider::new().lens(vhr_chardata::color::ColorLens::Blue)),
+        )
+        .lens(LoadedCharacter::skin)
+        .fix_width(200.0);
+
+    Align::left(
+        Flex::column()
+            .with_default_spacer()
+            .with_child(gender_picker)
+            .with_default_spacer()
+            .with_child(hair_picker)
+            .with_default_spacer()
+            .with_child(beard_picker)
+            .with_default_spacer()
+            .with_child(hair_color)
+            .with_default_spacer()
+            .with_child(skin_color)
+            .with_flex_spacer(1.0),
+    )
 }
 
 fn build_stats_tab() -> impl Widget<LoadedCharacter> {

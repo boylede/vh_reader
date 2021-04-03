@@ -3,7 +3,11 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
+pub mod color;
+pub mod hair;
 mod vis_data;
+
+pub use color::Color;
 
 pub use vis_data::VisibilityData;
 
@@ -322,26 +326,6 @@ pub struct Point {
     pub z: f32,
 }
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
-pub struct Color {
-    pub r: f32,
-    pub g: f32,
-    pub b: f32,
-}
-
-impl Color {
-    pub const WHITE: Color = Color {
-        r: 1.0,
-        g: 1.0,
-        b: 1.0,
-    };
-    pub const BROWN: Color = Color {
-        r: 0.4,
-        g: 0.2,
-        b: 0.2,
-    };
-}
-
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
 #[repr(u32)]
 #[non_exhaustive]
@@ -463,11 +447,4 @@ impl Default for Gender {
 pub enum BeardType {
     Beard1,
     Beard2,
-}
-
-#[derive(PartialEq, Eq, Data, Clone)]
-#[non_exhaustive]
-pub enum HairType {
-    Hair1,
-    Hair2,
 }
