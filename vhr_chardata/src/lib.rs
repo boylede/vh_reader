@@ -6,10 +6,13 @@ use std::sync::Arc;
 
 pub mod color;
 pub mod hair;
+pub mod inventory;
 pub mod skill;
 mod vis_data;
 
 pub use color::Color;
+pub use inventory::Item;
+pub use inventory::ItemView;
 pub use skill::Skill;
 
 pub use vis_data::VisibilityData;
@@ -30,7 +33,7 @@ pub struct LoadedCharacter {
     pub alive_timer: f32,
     pub selected_power: String,
     pub cooldown: f32,
-    pub inventory: Rc<Vec<Item>>,
+    pub inventory: Arc<Vec<Item>>,
     pub compendium: Rc<Compendium>,
     pub beard_type: String,
     pub hair_type: String,
@@ -101,7 +104,7 @@ impl Default for LoadedCharacter {
             alive_timer: 1000.0,
             selected_power: "GP_Eikthyr".into(),
             cooldown: 0.0,
-            inventory: Rc::new(vec![]),
+            inventory: Arc::new(vec![]),
             compendium: Rc::new(Compendium {
                 recipes: vec![],
                 craftbenches: vec![],
@@ -196,29 +199,6 @@ impl CharacterOnDisk {
         // todo: actually hash this
         self.hash = vec![0xDE; 64];
         size += self.hash.len() + 4 + 4;
-        size
-    }
-}
-
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
-pub struct Item {
-    name: String,
-    quantity: u32,
-    durability: f32,
-    column: u32,
-    row: u32,
-    equipped: u8,
-    quality: u32,
-    variant: u32,
-    creator_id: u64,
-    creator_name: String,
-}
-
-impl Item {
-    fn pre_serialize(&mut self) -> usize {
-        let mut size = 33; //hand-counted size of struct
-        size += self.name.len() + 1;
-        size += self.creator_name.len() + 1;
         size
     }
 }

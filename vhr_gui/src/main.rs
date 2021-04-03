@@ -15,7 +15,7 @@ use instant::Duration;
 use std::io::Write;
 use std::sync::Arc;
 
-use vhr_chardata::{Color, Gender, LoadedCharacter, Skill};
+use vhr_chardata::{Color, Gender, Item, ItemView, LoadedCharacter, Skill};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -262,14 +262,13 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
                                         .lens(vhr_chardata::skill::f32Lens)
                                         .lens(Skill::progress),
                                 )
-                                .with_child(Button::new("Delete")
-                                .on_click(|_, data: &mut Skill, _| {
+                                .with_child(
+                                    Button::new("Delete").on_click(|_, data: &mut Skill, _| {
                                         // todo: we can't actually delete this item here.
                                         // need to use like below
-                                })
-                                // .on_click(|_ctx, (shared, item): &mut (Arc<Vec<Skill>>, Skill), _env| {
-                                // })
-                            )
+                                    }), // .on_click(|_ctx, (shared, item): &mut (Arc<Vec<Skill>>, Skill), _env| {
+                                        // })
+                                )
                         }))
                         .lens(LoadedCharacter::skills),
                         // todo: lens this for shared access to the vec
@@ -280,7 +279,15 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
 }
 
 fn build_inventory_tab() -> impl Widget<LoadedCharacter> {
-    Label::new("Inventory")
+    Scroll::new(
+        List::new(|| {
+            Flex::row().with_child(Label::new(|item: &ItemView, _env: &_| {
+                format!("Item: {:?}", item.inner.name)
+            }))
+        })
+        .lens(vhr_chardata::inventory::InventoryGridLens::default()),
+    )
+    .lens(LoadedCharacter::inventory)
 }
 
 fn build_maps_tab() -> impl Widget<LoadedCharacter> {
