@@ -50,7 +50,6 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_u8(self, v: u8) -> Result<()> {
-        println!("ser u8: {}", v);
         self.output.push(v);
         Ok(())
     }
@@ -60,19 +59,16 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_u32(self, v: u32) -> Result<()> {
-        println!("ser u32: {}", v);
         self.output.extend_from_slice(&v.to_le_bytes());
         Ok(())
     }
 
     fn serialize_u64(self, v: u64) -> Result<()> {
-        println!("ser u64: {}", v);
         self.output.extend_from_slice(&v.to_le_bytes());
         Ok(())
     }
 
     fn serialize_f32(self, v: f32) -> Result<()> {
-        println!("ser f32: {}", v);
         self.output.extend_from_slice(&v.to_le_bytes());
         Ok(())
     }
@@ -87,7 +83,6 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
 
     fn serialize_str(self, v: &str) -> Result<()> {
         // todo, error on string too long
-        println!("ser str {}, len {}", v, v.len());
         self.serialize_u8(v.len() as u8)?;
         self.output.append(
             &mut v
@@ -131,7 +126,6 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
         variant_index: u32,
         variant: &'static str,
     ) -> Result<()> {
-        println!("ser unit var {}, {}, {}", name, variant_index, variant);
         Err(Error::NotYetImplemented)
     }
 
@@ -158,7 +152,6 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if let Some(len) = len {
             // todo: error on too large
-            println!("ser seq len: {}", len);
             self.serialize_u32(len as u32)?;
             Ok(self)
         } else {
@@ -193,7 +186,6 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
-        println!("ser struct name {}, len {}", name, len);
         Ok(self)
         // Err(Error::NotYetImplemented)
     }
