@@ -1,5 +1,5 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Serialize, Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
@@ -157,16 +157,32 @@ impl CharacterOnDisk {
     pub fn pre_serialize(&mut self) -> usize {
         let mut size: usize = 37;
         size += self.selected_power.len() + 1;
-        size += self.inventory.iter_mut().map(|i|i.pre_serialize()).sum::<usize>();
+        size += self
+            .inventory
+            .iter_mut()
+            .map(|i| i.pre_serialize())
+            .sum::<usize>();
         size += self.compendium.pre_serialize();
         size += self.beard_type.len() + 1;
         size += self.hair_type.len() + 1;
-        size += self.stomach.iter_mut().map(|f|f.pre_serialize()).sum::<usize>();
-        size += self.skills.iter_mut().map(|s|s.pre_serialize()).sum::<usize>();
+        size += self
+            .stomach
+            .iter_mut()
+            .map(|f| f.pre_serialize())
+            .sum::<usize>();
+        size += self
+            .skills
+            .iter_mut()
+            .map(|s| s.pre_serialize())
+            .sum::<usize>();
         self.character_data_length = size as u32;
         // everything above this is part of the character_data_length
         size += 30;
-        size += self.maps.iter_mut().map(|m|m.pre_serialize()).sum::<usize>();
+        size += self
+            .maps
+            .iter_mut()
+            .map(|m| m.pre_serialize())
+            .sum::<usize>();
         size += self.name.len() + 1;
         self.data_size = size as u32;
         // everything above here is part of the hashed data packet
@@ -214,14 +230,27 @@ pub struct Compendium {
 
 impl Compendium {
     fn pre_serialize(&mut self) -> usize {
-        self.recipes.len() + 4 + 
-        self.craftbenches.iter().map(|c|c.0.len()+1+4).sum::<usize>() + 
-        self.materials_list.iter().map(|m|m.len()+1).sum::<usize>() + 
-        self.places.iter().map(|m|m.len()+1).sum::<usize>() + 
-        self.unknown_list.iter().map(|m|m.len()+1).sum::<usize>() + 
-        self.trophies.iter().map(|m|m.len()+1).sum::<usize>() + 
-        (self.biomes.len() * 4) + 
-        self.tutorials.iter().map(|(a,b)|a.len()+b.len()+2).sum::<usize>()
+        self.recipes.len()
+            + 4
+            + self
+                .craftbenches
+                .iter()
+                .map(|c| c.0.len() + 1 + 4)
+                .sum::<usize>()
+            + self
+                .materials_list
+                .iter()
+                .map(|m| m.len() + 1)
+                .sum::<usize>()
+            + self.places.iter().map(|m| m.len() + 1).sum::<usize>()
+            + self.unknown_list.iter().map(|m| m.len() + 1).sum::<usize>()
+            + self.trophies.iter().map(|m| m.len() + 1).sum::<usize>()
+            + (self.biomes.len() * 4)
+            + self
+                .tutorials
+                .iter()
+                .map(|(a, b)| a.len() + b.len() + 2)
+                .sum::<usize>()
     }
 }
 
@@ -245,7 +274,12 @@ pub struct Map {
 impl Map {
     pub fn pre_serialize(&mut self) -> usize {
         let mut size: usize = self.fog_of_war.pre_serialize();
-        size += self.pois.iter_mut().map(|p| p.pre_serialize()).sum::<usize>() + 4;
+        size += self
+            .pois
+            .iter_mut()
+            .map(|p| p.pre_serialize())
+            .sum::<usize>()
+            + 4;
         if let Some(_) = self.extra {
             size += 1;
         }
@@ -253,8 +287,6 @@ impl Map {
         size + 24
     }
 }
-
-
 
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food {
@@ -396,7 +428,6 @@ impl Skill {
         12
     }
 }
-
 
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
 #[repr(u32)]

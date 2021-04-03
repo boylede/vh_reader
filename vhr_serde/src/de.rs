@@ -1,5 +1,5 @@
-use serde::{de, Deserialize};
 use crate::error::{Error, Result};
+use serde::{de, Deserialize};
 
 pub struct VHDeserializer<'de> {
     // This string starts with the input data and characters are truncated off

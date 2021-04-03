@@ -1,5 +1,5 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Serialize, Serializer, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
@@ -28,7 +28,7 @@ pub struct VisibilityRow {
 impl Default for VisibilityRow {
     fn default() -> Self {
         VisibilityRow {
-            inner: vec![0;MAP_WIDTH],
+            inner: vec![0; MAP_WIDTH],
         }
     }
 }
@@ -37,7 +37,7 @@ impl Default for VisibilityData {
     fn default() -> Self {
         VisibilityData {
             four: 4,
-            fog: Rc::new(vec![VisibilityRow::default();MAP_WIDTH]),
+            fog: Rc::new(vec![VisibilityRow::default(); MAP_WIDTH]),
         }
     }
 }
@@ -45,12 +45,13 @@ impl Default for VisibilityData {
 impl Serialize for VisibilityRow {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer {
-            use serde::ser::SerializeTuple;
-            let mut tup = serializer.serialize_tuple(self.inner.len())?;
-            for byte in self.inner.iter() {
-                tup.serialize_element(byte);
-            }
-            tup.end()
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(self.inner.len())?;
+        for byte in self.inner.iter() {
+            tup.serialize_element(byte);
         }
+        tup.end()
+    }
 }
