@@ -1,7 +1,11 @@
 use druid::{Data, Lens};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
+
+mod vis_data;
+
+pub use vis_data::VisibilityData;
 
 #[derive(Data, Clone, Lens, Debug)]
 pub struct LoadedCharacter {
@@ -28,6 +32,49 @@ pub struct LoadedCharacter {
     pub gender: Gender,
     pub stomach: Rc<Vec<Food>>,
     pub skills: Rc<Vec<Skill>>,
+}
+
+// fn map_compare(a: &Vec<Map>, b: &Vec<Map>) -> bool {
+//     a.eq(b)
+// }
+
+impl LoadedCharacter {
+    pub fn to_disk(&self) -> CharacterOnDisk {
+        CharacterOnDisk {
+            data_size: 8192,
+            thirty_tree: 33,
+            unknown: 0,
+            death_count: self.death_count,
+            crafting_count: self.crafting_count,
+            building_count: self.building_count,
+            maps: (*self.maps).clone(),
+            name: self.name.clone(),
+            player_id: self.player_id,
+            unknown_a: 0,
+            unknown_b: 0,
+            character_data_length: 8192,
+            always_twenty_four: 24,
+            max_hp: self.max_hp,
+            current_hp: self.current_hp,
+            stamina: self.stamina,
+            play_into: self.play_into,
+            alive_timer: self.alive_timer,
+            selected_power: self.selected_power.clone(),
+            cooldown: self.cooldown,
+            always_one_o_three: 103,
+            inventory: vec![],
+            compendium: (*self.compendium).clone(),
+            beard_type: self.beard_type.clone(),
+            hair_type: self.hair_type.clone(),
+            skin: self.skin.clone(),
+            hair: self.hair.clone(),
+            gender: self.gender.clone(),
+            stomach: (*self.stomach).clone(),
+            always_two: 2,
+            skills: (*self.skills).clone(),
+            hash: vec![],
+        }
+    }
 }
 
 impl Default for LoadedCharacter {
@@ -82,6 +129,7 @@ pub struct CharacterOnDisk {
     pub player_id: u64,
     pub unknown_a: u8,
     pub unknown_b: u8,
+
     pub character_data_length: u32,
     pub always_twenty_four: u32,
     pub max_hp: f32,
@@ -105,6 +153,30 @@ pub struct CharacterOnDisk {
     pub hash: Vec<u8>,
 }
 
+impl CharacterOnDisk {
+    pub fn pre_serialize(&mut self) -> usize {
+        let mut size: usize = 37;
+        size += self.selected_power.len() + 1;
+        size += self.inventory.iter_mut().map(|i|i.pre_serialize()).sum::<usize>();
+        size += self.compendium.pre_serialize();
+        size += self.beard_type.len() + 1;
+        size += self.hair_type.len() + 1;
+        size += self.stomach.iter_mut().map(|f|f.pre_serialize()).sum::<usize>();
+        size += self.skills.iter_mut().map(|s|s.pre_serialize()).sum::<usize>();
+        self.character_data_length = size as u32;
+        // everything above this is part of the character_data_length
+        size += 30;
+        size += self.maps.iter_mut().map(|m|m.pre_serialize()).sum::<usize>();
+        size += self.name.len() + 1;
+        self.data_size = size as u32;
+        // everything above here is part of the hashed data packet
+        // todo: actually hash this
+        self.hash = vec![0xDE; 64];
+        size += self.hash.len() + 4 + 4;
+        size
+    }
+}
+
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Item {
     name: String,
@@ -119,6 +191,15 @@ pub struct Item {
     creator_name: String,
 }
 
+impl Item {
+    fn pre_serialize(&mut self) -> usize {
+        let mut size = 33; //hand-counted size of struct
+        size += self.name.len() + 1;
+        size += self.creator_name.len() + 1;
+        size
+    }
+}
+
 #[derive(Default, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Compendium {
     pub recipes: Vec<String>,
@@ -129,6 +210,19 @@ pub struct Compendium {
     pub trophies: Vec<String>,
     pub biomes: Vec<Biomes>,
     pub tutorials: Vec<(String, String)>,
+}
+
+impl Compendium {
+    fn pre_serialize(&mut self) -> usize {
+        self.recipes.len() + 4 + 
+        self.craftbenches.iter().map(|c|c.0.len()+1+4).sum::<usize>() + 
+        self.materials_list.iter().map(|m|m.len()+1).sum::<usize>() + 
+        self.places.iter().map(|m|m.len()+1).sum::<usize>() + 
+        self.unknown_list.iter().map(|m|m.len()+1).sum::<usize>() + 
+        self.trophies.iter().map(|m|m.len()+1).sum::<usize>() + 
+        (self.biomes.len() * 4) + 
+        self.tutorials.iter().map(|(a,b)|a.len()+b.len()+2).sum::<usize>()
+    }
 }
 
 #[derive(Default, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
@@ -148,11 +242,31 @@ pub struct Map {
     extra: Option<u8>,
 }
 
+impl Map {
+    pub fn pre_serialize(&mut self) -> usize {
+        let mut size: usize = self.fog_of_war.pre_serialize();
+        size += self.pois.iter_mut().map(|p| p.pre_serialize()).sum::<usize>() + 4;
+        if let Some(_) = self.extra {
+            size += 1;
+        }
+        self.map_size = size as u32;
+        size + 24
+    }
+}
+
+
+
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food {
     name: String,
     health: f32,
     stamina: f32,
+}
+
+impl Food {
+    fn pre_serialize(&mut self) -> usize {
+        self.name.len() + 1 + 8
+    }
 }
 
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
@@ -161,6 +275,12 @@ pub struct Poi {
     pos: Point,
     kind: u8,
     flags: u32,
+}
+impl Poi {
+    pub fn pre_serialize(&mut self) -> usize {
+        let size = self.name.len() + 1;
+        size + 8
+    }
 }
 
 #[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
@@ -222,12 +342,61 @@ impl Default for SkillName {
     }
 }
 
+#[derive(Debug)]
+pub struct ParseErr;
+impl std::fmt::Display for ParseErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ParseError")?;
+        Ok(())
+    }
+}
+
+impl std::error::Error for ParseErr {}
+
+impl std::str::FromStr for SkillName {
+    type Err = ParseErr;
+
+    fn from_str(s: &str) -> Result<Self, ParseErr> {
+        use SkillName::*;
+        let name = match s {
+            "None" => None,
+            "Swords" => Swords,
+            "Knives" => Knives,
+            "Clubs" => Clubs,
+            "Polearms" => Polearms,
+            "Spears" => Spears,
+            "Blocking" => Blocking,
+            "Axes" => Axes,
+            "Bows" => Bows,
+            // 9
+            // 10
+            "Unarmed" => Unarmed,
+            "Pickaxes" => Pickaxes,
+            "Woodcutting" => Woodcutting,
+            // Skip A Few..?
+            "Jump" => Jump,
+            "Sneak" => Sneak,
+            "Run" => Run,
+            "Swim" => Swim,
+            _ => None,
+        };
+        Ok(name)
+    }
+}
+
 #[derive(Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Skill {
     id: SkillName,
     level: f32,
     progress: f32,
 }
+
+impl Skill {
+    pub fn pre_serialize(&mut self) -> usize {
+        12
+    }
+}
+
 
 #[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
 #[repr(u32)]
