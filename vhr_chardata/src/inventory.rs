@@ -3,7 +3,7 @@ use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize, PartialOrd)]
 pub struct Item {
     pub name: String,
     pub quantity: u32,
@@ -103,7 +103,7 @@ impl Item {
     }
 }
 
-#[derive(Default, Clone, Data, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Data, Lens, PartialEq, Debug, Serialize, Deserialize, PartialOrd)]
 pub struct ItemView {
     pub inner: Item,
 }
@@ -143,12 +143,13 @@ impl Lens<Vector<Item>, Vector<ItemView>> for InventoryGridLens {
                 let pos: (u32, u32) = (x as u32, y as u32);
                 map.entry(pos).or_insert_with(Item::default);
             });
-        let view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
+        let mut view: Vector<ItemView> = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
+        view.sort_by(|a,b|a.partial_cmp(b).unwrap());
         f(&view)
     }
     fn with_mut<V, F: FnOnce(&mut Vector<ItemView>) -> V>(
         &self,
-        mut data: &mut Vector<Item>,
+        data: &mut Vector<Item>,
         f: F,
     ) -> V {
         let mut map: HashMap<(u32, u32), Item> = data
@@ -161,7 +162,8 @@ impl Lens<Vector<Item>, Vector<ItemView>> for InventoryGridLens {
                 let pos: (u32, u32) = (x as u32, y as u32);
                 map.entry(pos).or_insert_with(Item::default);
             });
-        let mut view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
+        let mut view: Vector<ItemView>  = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
+        view.sort_by(|a,b|a.partial_cmp(b).unwrap());
         let value = f(&mut view);
 
         *data = view.into_iter().map(|iv| iv.inner).filter(|i|i.quantity != 0 && i.name.len() > 0).collect();
