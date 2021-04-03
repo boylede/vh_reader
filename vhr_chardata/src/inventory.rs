@@ -1,6 +1,6 @@
+use druid::im::Vector;
 use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
-
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::rc::Rc;
@@ -133,8 +133,8 @@ impl Default for InventoryGridLens {
 // Lens<appstate's type, widget's type>
 // F: fn(& widget's type) -> V
 // data: appstate's type:
-impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
-    fn with<V, F: FnOnce(&Arc<Vec<ItemView>>) -> V>(&self, data: &Arc<Vec<Item>>, f: F) -> V {
+impl Lens<Vector<Item>, Vector<ItemView>> for InventoryGridLens {
+    fn with<V, F: FnOnce(&Vector<ItemView>) -> V>(&self, data: &Vector<Item>, f: F) -> V {
         let mut map: HashMap<(u32, u32), Item> = data
             .iter()
             .map(|item| ((item.row, item.column), item.clone()))
@@ -146,11 +146,11 @@ impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
                 map.entry(pos).or_insert_with(Item::default);
             });
         let view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
-        f(&Arc::new(view))
+        f(&view)
     }
-    fn with_mut<V, F: FnOnce(&mut Arc<Vec<ItemView>>) -> V>(
+    fn with_mut<V, F: FnOnce(&mut Vector<ItemView>) -> V>(
         &self,
-        mut data: &mut Arc<Vec<Item>>,
+        mut data: &mut Vector<Item>,
         f: F,
     ) -> V {
         let mut map: HashMap<(u32, u32), Item> = data
@@ -163,127 +163,10 @@ impl Lens<Arc<Vec<Item>>, Arc<Vec<ItemView>>> for InventoryGridLens {
                 let pos: (u32, u32) = (x as u32, y as u32);
                 map.entry(pos).or_insert_with(Item::default);
             });
-        let view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
-        let mut view_arc = Arc::new(view);
-        let value = f(&mut view_arc);
+        let mut view = map.drain().map(|(_k, v)| ItemView::new(v)).collect();
+        let value = f(&mut view);
 
-        //todo: is this correct?
-        let data = if let Some(d) = Arc::get_mut(&mut data) {
-            d
-        } else {
-            Arc::make_mut(&mut data)
-        };
-        let view = Arc::try_unwrap(view_arc).unwrap();
-        *data = view.into_iter().map(|iv| iv.inner).collect();
-        // .inner
-        // .drain()
-        // .filter(|(k, v)| v.quantity != 0 && v.name.len() != 0)
-        // .map(|(k, v)| v)
-        // .collect();
+        *data = view.into_iter().map(|iv| iv.inner).filter(|i|i.quantity != 0 && i.name.len() > 0).collect();
         value
     }
 }
-
-// impl Lens<Arc<Vec<Item>>, Rc<Vec<ItemView>>> for InventoryGridLens {
-//     fn with<V, F: FnOnce(&Rc<Vec<ItemView>>) -> V>(&self, data: &Arc<Vec<Item>>, f: F) -> V {
-//         let mut map: HashMap<(u32, u32), Item> = data
-//             .iter()
-//             .map(|item| ((item.row, item.column), item.clone()))
-//             .collect();
-//         (0..self.width)
-//             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
-//             .for_each(|(x, y)| {
-//                 let pos: (u32, u32) = (x as u32, y as u32);
-//                 map.entry(pos).or_insert(Item::default());
-//             });
-//         let view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
-//         f(&Rc::new(view))
-//     }
-//     fn with_mut<V, F: FnOnce(&mut Rc<Vec<ItemView>>) -> V>(
-//         &self,
-//         mut data: &mut Arc<Vec<Item>>,
-//         f: F,
-//     ) -> V {
-//         let mut map: HashMap<(u32, u32), Item> = data
-//             .iter()
-//             .map(|item| ((item.row, item.column), item.clone()))
-//             .collect();
-//         (0..self.width)
-//             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
-//             .for_each(|(x, y)| {
-//                 let pos: (u32, u32) = (x as u32, y as u32);
-//                 map.entry(pos).or_insert(Item::default());
-//             });
-//         let view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
-//         let mut view_rc = Rc::new(view);
-//         let value = f(&mut view_rc);
-
-//         //todo: is this correct?
-//         let data = if let Some(d) = Arc::get_mut(&mut data) {
-//             d
-//         } else {
-//             let d = Arc::make_mut(&mut data);
-//             d
-//         };
-//         let view = Rc::try_unwrap(view_rc).unwrap();
-//         *data = view.into_iter().map(|iv| iv.inner).collect();
-//         // .inner
-//         // .drain()
-//         // .filter(|(k, v)| v.quantity != 0 && v.name.len() != 0)
-//         // .map(|(k, v)| v)
-//         // .collect();
-//         value
-//     }
-// }
-
-
-// impl Lens<Arc<Vec<Item>>, Vec<ItemView>> for InventoryGridLens {
-//     fn with<V, F: FnOnce(&Vec<ItemView>) -> V>(&self, data: &Arc<Vec<Item>>, f: F) -> V {
-//         let mut map: HashMap<(u32, u32), Item> = data
-//             .iter()
-//             .map(|item| ((item.row, item.column), item.clone()))
-//             .collect();
-//         (0..self.width)
-//             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
-//             .for_each(|(x, y)| {
-//                 let pos: (u32, u32) = (x as u32, y as u32);
-//                 map.entry(pos).or_insert(Item::default());
-//             });
-//         let view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
-//         f(&view)
-//     }
-//     fn with_mut<V, F: FnOnce(&mut Vec<ItemView>) -> V>(
-//         &self,
-//         mut data: &mut Arc<Vec<Item>>,
-//         f: F,
-//     ) -> V {
-//         let mut map: HashMap<(u32, u32), Item> = data
-//             .iter()
-//             .map(|item| ((item.row, item.column), item.clone()))
-//             .collect();
-//         (0..self.width)
-//             .flat_map(|x| (0..self.height).map(move |y| (x, y)))
-//             .for_each(|(x, y)| {
-//                 let pos: (u32, u32) = (x as u32, y as u32);
-//                 map.entry(pos).or_insert(Item::default());
-//             });
-//         let mut view = map.drain().map(|(k, v)| ItemView::new(v)).collect();
-//         let value = f(&mut view);
-
-//         //todo: is this correct?
-//         let data = if let Some(d) = Arc::get_mut(&mut data) {
-//             d
-//         } else {
-//             let d = Arc::make_mut(&mut data);
-//             d
-//         };
-
-//         *data = view.into_iter().map(|iv| iv.inner).collect();
-//         // .inner
-//         // .drain()
-//         // .filter(|(k, v)| v.quantity != 0 && v.name.len() != 0)
-//         // .map(|(k, v)| v)
-//         // .collect();
-//         value
-//     }
-// }

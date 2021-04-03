@@ -1,3 +1,4 @@
+use druid::im::Vector;
 use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -33,7 +34,7 @@ pub struct LoadedCharacter {
     pub alive_timer: f32,
     pub selected_power: String,
     pub cooldown: f32,
-    pub inventory: Arc<Vec<Item>>,
+    pub inventory: Vector<Item>,
     pub compendium: Rc<Compendium>,
     pub beard_type: String,
     pub hair_type: String,
@@ -41,7 +42,7 @@ pub struct LoadedCharacter {
     pub hair: Color,
     pub gender: Gender,
     pub stomach: Rc<Vec<Food>>,
-    pub skills: Arc<Vec<Skill>>,
+    pub skills: Vector<Skill>,
 }
 
 // fn map_compare(a: &Vec<Map>, b: &Vec<Map>) -> bool {
@@ -81,7 +82,7 @@ impl LoadedCharacter {
             gender: self.gender.clone(),
             stomach: (*self.stomach).clone(),
             always_two: 2,
-            skills: (*self.skills).clone(),
+            skills: self.skills.iter().cloned().collect::<Vec<_>>(),
             hash: vec![],
         }
     }
@@ -104,7 +105,7 @@ impl Default for LoadedCharacter {
             alive_timer: 1000.0,
             selected_power: "GP_Eikthyr".into(),
             cooldown: 0.0,
-            inventory: Arc::new(Item::default_items()),
+            inventory: Item::default_items().into(),
             compendium: Rc::new(Compendium {
                 recipes: vec![],
                 craftbenches: vec![],
@@ -121,7 +122,7 @@ impl Default for LoadedCharacter {
             hair: Color::WHITE,
             gender: Gender::Female,
             stomach: Rc::new(vec![]),
-            skills: Arc::new(vec![Skill::AXES, Skill::RUN, Skill::SNEAK]),
+            skills: vec![Skill::AXES, Skill::RUN, Skill::SNEAK].into(),
         }
     }
 }

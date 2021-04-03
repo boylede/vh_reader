@@ -9,7 +9,6 @@ use druid::{
 };
 
 use std::io::Write;
-use std::sync::Arc;
 use vhr_chardata::{Gender, ItemView, LoadedCharacter, Skill};
 use vhr_serde::ser::to_bytes;
 
@@ -208,11 +207,7 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
                 Flex::column()
                     .with_child(Align::left(Button::new("Add Skill").on_click(
                         |_, data: &mut LoadedCharacter, _| {
-                            if let Some(s) = Arc::get_mut(&mut data.skills) {
-                                s.push(Skill::NONE);
-                            } else {
-                                Arc::make_mut(&mut data.skills).push(Skill::NONE)
-                            }
+                            data.skills.push_back(Skill::NONE)
                         },
                     )))
                     .with_child(
