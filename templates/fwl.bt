@@ -36,4 +36,9 @@ PString name;
 
 PString seed;
 
-char unknown_c[16];
+int seed_related;
+
+int name_related;
+
+int zero;
+int one;
