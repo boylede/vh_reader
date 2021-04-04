@@ -1,15 +1,12 @@
 use druid::text::format::ParseFormatter;
 use druid::widget::{
-    Align, Axis, Button, Flex, Label, LineBreaking, List,
-     Radio, Scroll, Slider, Tabs, TabsEdge,
-     TabsTransition, TextBox,
+    Align, Axis, Button, Container, Flex, Label, LineBreaking, List, Radio, Scroll, Slider, Tabs, Checkbox,
+    TabsEdge, TabsTransition, TextBox,
 };
-use druid::{
-    AppLauncher, Widget, WidgetExt, WindowDesc,
-};
+use druid::{AppLauncher, Widget, WidgetExt, WindowDesc};
 
 use std::io::Write;
-use vhr_chardata::{Gender, ItemView, LoadedCharacter, Skill};
+use vhr_chardata::{Gender, Inventory, Item, LoadedCharacter, Skill, SelectedItemLens, inventory::{ItemEquippedLens}};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -206,9 +203,7 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
             .with_child(
                 Flex::column()
                     .with_child(Align::left(Button::new("Add Skill").on_click(
-                        |_, data: &mut LoadedCharacter, _| {
-                            data.skills.push_back(Skill::NONE)
-                        },
+                        |_, data: &mut LoadedCharacter, _| data.skills.push_back(Skill::NONE),
                     )))
                     .with_child(
                         Scroll::new(List::new(|| {
@@ -252,17 +247,57 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
     )
 }
 
+fn inventory_item_row(row: u32) -> impl Widget<Inventory> {
+    List::new(|| {
+        Flex::row().with_child(
+            Button::new(|item: &Item, _env: &_| format!("{}", item.name))
+                .on_click(|_ctx, data: &mut Item, _env| {
+                    // todo: pass in shared inventory data to manipulate selected item
+                })
+                .fix_width(64.0)
+                .fix_height(64.0)
+                .padding(2.0),
+        )
+    })
+    .horizontal()
+    .lens(vhr_chardata::inventory::InventoryLens::Row(row))
+}
+
 fn build_inventory_tab() -> impl Widget<LoadedCharacter> {
-    Scroll::new(
-        List::new(|| {
-            Flex::row().with_child(Label::new(|item: &ItemView, _env: &_| {
-                format!("Item: {:?}", item.inner.name)
-            }))
-        })
-        .lens(vhr_chardata::inventory::InventoryGridLens::default()),
+    Container::new(
+        Flex::column()
+            .with_child(inventory_item_row(0))
+            .with_child(inventory_item_row(1))
+            .with_child(inventory_item_row(2))
+            .with_child(inventory_item_row(3))
+            .with_child(
+                Flex::row()
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::name))
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::quantity))
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::durability))
+                .with_child(Checkbox::new("Equipped").lens(ItemEquippedLens::new()))
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::variant))
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::creator_id))
+                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::creator_name))
+                .lens(SelectedItemLens::new())
+            )
     )
     .lens(LoadedCharacter::inventory)
 }
+
+/*
+    pub name: String,
+    pub quantity: u32,
+    pub durability: f32,
+    pub column: u32,
+    pub row: u32,
+    pub equipped: u8,
+    pub quality: u32,
+    pub variant: u32,
+    pub creator_id: u64,
+    pub creator_name: String,
+
+*/
 
 fn build_maps_tab() -> impl Widget<LoadedCharacter> {
     Label::new("Maps")

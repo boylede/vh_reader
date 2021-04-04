@@ -11,8 +11,7 @@ pub mod skill;
 mod vis_data;
 
 pub use color::Color;
-pub use inventory::Item;
-pub use inventory::ItemView;
+pub use inventory::{Inventory, Item, SelectedItemLens};
 pub use skill::Skill;
 
 pub use vis_data::VisibilityData;
@@ -33,7 +32,7 @@ pub struct LoadedCharacter {
     pub alive_timer: f32,
     pub selected_power: String,
     pub cooldown: f32,
-    pub inventory: Vector<Item>,
+    pub inventory: Inventory,
     pub compendium: Rc<Compendium>,
     pub beard_type: String,
     pub hair_type: String,
@@ -104,7 +103,7 @@ impl Default for LoadedCharacter {
             alive_timer: 1000.0,
             selected_power: "GP_Eikthyr".into(),
             cooldown: 0.0,
-            inventory: Item::default_items().into(),
+            inventory: Inventory::default_items(),
             compendium: Rc::new(Compendium {
                 recipes: vec![],
                 craftbenches: vec![],
