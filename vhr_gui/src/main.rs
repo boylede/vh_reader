@@ -1,12 +1,14 @@
 use druid::text::format::ParseFormatter;
 use druid::widget::{
-    Align, Axis, Button, Container, Flex, Label, LineBreaking, List, Radio, Scroll, Slider, Tabs, Checkbox,
-    TabsEdge, TabsTransition, TextBox,
+    Align, Axis, Button, Checkbox, Container, Flex, Label, LabelText, LineBreaking, List, Radio,
+    Scroll, Slider, Tabs, TabsEdge, TabsTransition, TextBox,
 };
-use druid::{AppLauncher, Widget, WidgetExt, WindowDesc};
+use druid::{AppLauncher, Data, Lens, Widget, WidgetExt, WindowDesc};
 
 use std::io::Write;
-use vhr_chardata::{Gender, Inventory, Item, LoadedCharacter, Skill, SelectedItemLens, inventory::{ItemEquippedLens}};
+use vhr_chardata::{
+    inventory::ItemEquippedLens, Gender, Inventory, Item, LoadedCharacter, SelectedItemLens, Skill,
+};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -263,6 +265,57 @@ fn inventory_item_row(row: u32) -> impl Widget<Inventory> {
     .lens(vhr_chardata::inventory::InventoryLens::Row(row))
 }
 
+fn item_property<T: Data, S: Data, L: Lens<T, S> + 'static, W: Widget<S> + 'static>(
+    text: impl Into<LabelText<T>>,
+    child: W,
+    lens: L,
+) -> impl Widget<T> {
+    Flex::row()
+        .with_child(Label::new(text))
+        .with_default_spacer()
+        .with_child(child.lens(lens))
+        .with_flex_spacer(1.0)
+}
+
+fn inventory_item_properties() -> impl Widget<Inventory> {
+    Flex::column()
+        .with_child(item_property(
+            "Name",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::name,
+        ))
+        .with_child(item_property(
+            "Quantity",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::quantity,
+        ))
+        .with_child(item_property(
+            "Durability",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::durability,
+        ))
+        .with_child(
+            Flex::row()
+                .with_child(Checkbox::new("Equipped").lens(ItemEquippedLens::new()))
+                .with_flex_spacer(1.0),
+        )
+        .with_child(item_property(
+            "Variant",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::variant,
+        ))
+        .with_child(item_property(
+            "Creator ID",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::creator_id,
+        ))
+        .with_child(item_property(
+            "Creator Name",
+            TextBox::new().with_formatter(ParseFormatter::default()),
+            Item::creator_name,
+        ))
+        .lens(SelectedItemLens::new())
+}
 fn build_inventory_tab() -> impl Widget<LoadedCharacter> {
     Container::new(
         Flex::column()
@@ -270,17 +323,7 @@ fn build_inventory_tab() -> impl Widget<LoadedCharacter> {
             .with_child(inventory_item_row(1))
             .with_child(inventory_item_row(2))
             .with_child(inventory_item_row(3))
-            .with_child(
-                Flex::row()
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::name))
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::quantity))
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::durability))
-                .with_child(Checkbox::new("Equipped").lens(ItemEquippedLens::new()))
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::variant))
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::creator_id))
-                .with_child(TextBox::new().with_formatter(ParseFormatter::default()).lens(Item::creator_name))
-                .lens(SelectedItemLens::new())
-            )
+            .with_child(inventory_item_properties()),
     )
     .lens(LoadedCharacter::inventory)
 }

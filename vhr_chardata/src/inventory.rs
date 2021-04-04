@@ -6,7 +6,7 @@ use std::collections::HashMap;
 /// the inventory when loaded into memory for display in the gui
 #[derive(Data, Clone, Lens, Debug)]
 pub struct Inventory {
-    pub selected_item: Option<(u32,u32)>,
+    pub selected_item: Option<(u32, u32)>,
     pub items: Vector<Item>,
 }
 
@@ -125,10 +125,12 @@ impl Item {
     }
 }
 
-pub struct ItemEquippedLens{}
+pub struct ItemEquippedLens {}
 
 impl ItemEquippedLens {
-    pub fn new() -> Self { Self {  } }
+    pub fn new() -> Self {
+        Self {}
+    }
 }
 
 impl Lens<Item, bool> for ItemEquippedLens {
@@ -140,11 +142,7 @@ impl Lens<Item, bool> for ItemEquippedLens {
         }
     }
     fn with_mut<V, F: FnOnce(&mut bool) -> V>(&self, data: &mut Item, f: F) -> V {
-        let mut flag = if data.equipped == 0 {
-            false
-        } else {
-            true
-        };
+        let mut flag = if data.equipped == 0 { false } else { true };
         let v = f(&mut flag);
         if flag {
             data.equipped = 1;
@@ -158,13 +156,18 @@ impl Lens<Item, bool> for ItemEquippedLens {
 pub struct SelectedItemLens {}
 
 impl SelectedItemLens {
-    pub fn new() -> Self { Self {  } }
+    pub fn new() -> Self {
+        Self {}
+    }
 }
 
 impl Lens<Inventory, Item> for SelectedItemLens {
     fn with<V, F: FnOnce(&Item) -> V>(&self, data: &Inventory, f: F) -> V {
-        if let Some((r,c)) = data.selected_item {
-            let selected = data.items.iter().find(|item| item.row == r && item.column == c);
+        if let Some((r, c)) = data.selected_item {
+            let selected = data
+                .items
+                .iter()
+                .find(|item| item.row == r && item.column == c);
             if let Some(item) = selected {
                 f(&item)
             } else {
@@ -178,8 +181,11 @@ impl Lens<Inventory, Item> for SelectedItemLens {
         }
     }
     fn with_mut<V, F: FnOnce(&mut Item) -> V>(&self, data: &mut Inventory, f: F) -> V {
-        if let Some((r,c)) = data.selected_item {
-            let selected = data.items.iter_mut().find(|item| item.row == r && item.column == c);
+        if let Some((r, c)) = data.selected_item {
+            let selected = data
+                .items
+                .iter_mut()
+                .find(|item| item.row == r && item.column == c);
             if let Some(mut item) = selected {
                 f(&mut item)
             } else {
@@ -194,7 +200,6 @@ impl Lens<Inventory, Item> for SelectedItemLens {
     }
 }
 
-
 pub enum InventoryLens {
     Row(u32),
     Column(u32),
@@ -205,8 +210,7 @@ impl Lens<Inventory, Vector<Item>> for InventoryLens {
         // println!("looking at items");
         let items = match self {
             InventoryLens::Row(r) => {
-                let mut items: Vector<Item> = 
-                    data
+                let mut items: Vector<Item> = data
                     .items
                     .iter()
                     .filter(|item| item.row == *r)
@@ -214,37 +218,36 @@ impl Lens<Inventory, Vector<Item>> for InventoryLens {
                     .collect();
                 // println!("number of items: {}", items.len());
                 for col in 0..8 {
-                    if !items.iter().any(|item|item.column == col) {
+                    if !items.iter().any(|item| item.column == col) {
                         // println!("no items in {},{}", r, col);
                         items.push_back(Item::empty(*r, col))
                     }
                 }
                 items.sort_by(|a, b| a.column.cmp(&b.column));
                 items
-            },
-            InventoryLens::Column(c) => unimplemented!()
+            }
+            InventoryLens::Column(c) => unimplemented!(),
         };
-        f(&items)   
+        f(&items)
     }
     fn with_mut<V, F: FnOnce(&mut Vector<Item>) -> V>(&self, data: &mut Inventory, f: F) -> V {
         let mut items = match self {
             InventoryLens::Row(r) => {
-                let mut items: Vector<Item> = 
-                    data
+                let mut items: Vector<Item> = data
                     .items
                     .iter()
                     .filter(|item| item.row == *r)
                     .cloned()
                     .collect();
                 for col in 0..8 {
-                    if !items.iter().any(|item|item.column == col) {
+                    if !items.iter().any(|item| item.column == col) {
                         items.push_back(Item::empty(*r, col))
                     }
                 }
                 items.sort_by(|a, b| b.column.cmp(&a.column));
                 items
-            },
-            InventoryLens::Column(c) => unimplemented!()
+            }
+            InventoryLens::Column(c) => unimplemented!(),
         };
         let v = f(&mut items);
         // println!("items.len = {}", items.len());
