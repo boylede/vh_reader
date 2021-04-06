@@ -39,8 +39,11 @@ typedef struct {
     char content[len];
 } Entity_COPY <optimize=false>;
 
+
+// maybe these are actually like packets of data that
+// need to be collected together according to group_id?
 typedef struct {
-    uquad stale_pointer; // wild guess
+    uquad group_id; // wild guess
     int entity_id;    // wild guess
     int len;
     char something[9];
@@ -70,7 +73,7 @@ string readBlock(Block &b) {
 }
 
 typedef struct {
-    uquad a;
+    uquad group_id; // seems to reference back to entities?
     //int a;
     //int b;
     int c;
