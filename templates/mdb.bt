@@ -39,12 +39,16 @@ typedef struct Block {
 
 // small repetitive structures start at 65 38 60 and continue until bitmap
 // aprox size a8c0
+
 /// bitmap starts at 65 e1 20
 // ends at 65 ed 60
 // size approx c40
 // could be 56x56?
 
-
+typedef struct  {
+    int num_a;
+    int num_b;
+} Pair;
 
 // structures
 typedef struct {
@@ -72,15 +76,172 @@ typedef struct Structures {
 
 
 
+typedef struct {
+    char what[3];
+    int length;
+//    char things[length];
+//    char unknowable[72];
+    char before[9];
+    int was_ever_loaded;
+    int four_a;
+    char one;
+    int zero_if_loaded;
+    int zero_a;
+    float number_a;
+    int four_b;
+    int ninety_nine;
+    char unknown[14];
+    float float_integer;
+    float something;
+    float another_float_evidently;
+    int zero_c;
+    float less_than_one;
+    int zero_d;
+    float another;
+    char zeros[6];
+    int identifier;
+    char unknown_b[12];
+    
+} Chunk;
 
+typedef struct {
+    int record_start <bgcolor=cGreen>;
+    int zeros;
+    int thou_a;
+    int thou_b;
+} Record;
 
+typedef struct {
+    Record tick;
+    int a;
+    int number_four;
+    char c;
+    Record tock;
+    int aa;
+    int bb;
+    char cc;
+    char d;
+    int five;
+    char between_b[38];
+    int numbers[4];
+} TickTock;
 
 typedef struct FileEnd {
     char unknown[21];
 } FileEnd;
 
 
-//char header[24];
+
+void analyze_records() {
+    local int marker_value = ReadInt();
+    local int64 cursor = FTell() + 4;
+    local int64 end = FileSize() - 4;
+    local int distance = 0;
+    local int test = 0;
+    while (cursor < end) {
+        test = ReadInt(cursor);
+        
+        if (test == marker_value) {
+            Printf("Record Size: %d == 0x%x\n", distance, distance);
+            distance = 0;
+            cursor += 4;
+        }
+        cursor += 1;
+        distance += 1;
+    }
+}
+
+typedef struct {
+    PString name <name="name">;
+    int quantity;
+    float durability;
+    int column;
+    int row;
+    char equipped;
+    int quality;
+    int unknown_a <bgcolor=cLtYellow>;
+    uquad creator_id <name="creator id">;
+    PString creator_name <name="creator name">;
+} Item;
+
+// found some base64 encoded info in some files
+// appears to be contents of chests
+// after decoding looks like: 
+typedef struct {
+    int version; // 103, also appears adjacent to character inventory, either a version tag or a type tag (ie inventory could be component type 103)
+    int quantity; // number of items in the chest.
+    Item items[quantity] <optimize=false>;
+} Chest;
+
+
+
+int version;
+int unknown_a;
+float low_number; // could be the time
+//char header[12];
+//int chunk_count;
+//Chunk chunks[chunk_count] <optimize=false>;
+
+
+
+//Record a;
+
+//analyze_records();
+
+/*
+local int i = 0;
+for (i = 0; i<32; i++) {
+    TickTock two_records;
+}
+*/
+/*
+Record b;
+char interstitial_a[9];
+Record c;
+char interstitial_b[68];
+
+Record d;
+char interstitial_c[9];
+Record e;
+char interstitial_d[68];
+
+Record f;
+char interstitial_e[9];
+Record g;
+char interstitial_f[68];
+
+Record h;
+char interstitial_g[9];
+Record i;
+char interstitial_h[68];
+*/
+
+// oneone_000.db
+FSeek(0x1aabd);
+int last_record_separator;
+//int record_size;
+//float number;
+//int four;
+//int ninety_nine;
+//char last_interstitial[68];
+
+// second.db
+//FSeek(0x6d8bbb);
+//oneone_000.db
+FSeek(0x1ab05); // 05  ab  01 00
+int pair_count;
+int low_int;
+
+Pair pairs[pair_count];
+
+int twenty_two;
+int zero_1;
+char padding;
+
+Structures structures;
+float a;
+char last_zeros[17];
+//
 //int len;
 //Block unknown[len];
 
@@ -93,7 +254,7 @@ typedef struct FileEnd {
 //FileEnd header;
 
 
-FSeek(0x65ed60);
-Structures list;
+//FSeek(0x65ed60);
+//Structures list;
 
-FileEnd end;
+//FileEnd end;
