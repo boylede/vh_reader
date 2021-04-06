@@ -10,6 +10,8 @@
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
+
+
 LittleEndian();
 
 typedef struct {
@@ -32,6 +34,14 @@ typedef struct {
     float z;
 } Pos;
 
+
+typedef struct {
+    float w;
+    float x;
+    float y;
+    float z;
+} Quat;
+
 typedef struct {
     uquad stale_pointer; // wild guess
     int entity_id;    // wild guess
@@ -46,19 +56,36 @@ typedef struct {
     uquad group_id; // wild guess
     int entity_id;    // wild guess
     int len;
-    char something[9];
-    uquad other_pointer;
+    int two;
+    int four;
+    char one;
+    //char something[9];
+    uquad other_id;
     float a;
     int b;
     int c;
     int d;
-    char two[2];    
+    char unknown[2];    
     int e;
     //char two[2];
     int f;
     Pos position;
-    float g;
-    char content[len - 59];
+    Quat rotation; // well its four floats at any rate, maybe a quaternion
+    char has_health; // guess observed 0 = no hp values, 1 = hp values, 2 = is healed? after repairing items i found damaged.
+    if (has_health > 0) {
+        int unknown_b;
+        float hit_points;
+        Printf("Entity %x has hitpoints\n", entity_id);
+        char content[len - 80]; // - 71 + 8 = -80
+    } else {
+        char content[len - 72]; // - 71 + 8 = -80
+    }
+    //char content[len - 80]; // - 71 + 8 = -80
+// sometimes entities are chests
+// if so they have a base64-encoded payload
+// seems to be identifiable by the bytes c6 10 0a c8
+// preceeding a length byte, and that many bytes of b64 data.
+// the data is at the very end of the entity content
 } Entity <optimize=false>;
 
 typedef struct Blocky(int len) {
@@ -74,12 +101,8 @@ string readBlock(Block &b) {
 
 typedef struct {
     uquad group_id; // seems to reference back to entities?
-    //int a;
-    //int b;
     int c;
-    uquad d;
-    //int d;
-    //int e;
+    uquad shared_id; // is shared between some number of "Twenty"
 } Twenty;
 
 typedef struct {
