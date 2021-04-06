@@ -70,8 +70,19 @@ string readBlock(Block &b) {
 }
 
 typedef struct {
-    char bytes[20];
+    uquad a;
+    //int a;
+    //int b;
+    int c;
+    uquad d;
+    //int d;
+    //int e;
 } Twenty;
+
+typedef struct {
+    int count;
+    Twenty items[count];
+} Twenties <optimize = false>;
 
 typedef struct {
     int a;
@@ -149,32 +160,42 @@ typedef struct {
     Item items[quantity] <optimize=false>;
 } Chest;
 
+typedef struct {
+    int something;
+    int count;
+    Entity entries[count] <name = "entity">;
+} Entities;
 
+typedef struct {
+    char header[13]; // i guess this is part of the following array?
+    int count;
+    Structure entries[count] <name = "structure">;
+} Structures;
 
-int version;
+typedef struct {
+    int version;
+    int unknown;
+    float time;
+    char whatever[8];
+} Header;
 
-int unknown;
+typedef struct {
+    int count;
+    Pair pairs[count];
+} Pairs;
 
-float time;
+typedef struct {
+    float float_b;
+    char seventeen_zeros[17];
+} Footer;
 
-char whatever[12];
-int entity_count;
+typedef struct {
+    Header header <name = "header">;
+    Entities entities <name = "entities">;
+    Twenties twenties <name = "twenties">;
+    Pairs pairs <name = "pairs">;
+    Structures structures <name = "structures">;
+    Footer footer <name = "footer">;
+} MapFile;
 
-Entity some[entity_count];
-
-int twenty_count;
-
-Twenty things[twenty_count];
-
-int pair_count;
-
-Pair pairs[pair_count];
-
-char header[13];
-int structure_count;
-
-Structure strs[structure_count];
-
-float float_b;
-
-char seventeen_zeros[17];
+MapFile map;
