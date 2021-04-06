@@ -1,29 +1,23 @@
 //------------------------------------------------
 //--- 010 Editor v11.0.1 Binary Template
 //
-//      File: 
+//      File: mdb.bt
 //   Authors: 
-//   Version: 
-//   Purpose: read .db files from Valheim maps
+//   Version: 0.0.1
+//   Purpose: read Valheim map files
 //  Category: 
 // File Mask: 
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
-
-// PString
 LittleEndian();
-
-
-// assumptions based on second.db
-
 
 typedef struct {
     char len;
     if (len > 0) {
         char value[len];
     }
-} PString <read=ReadPString>;
+} PString <read=ReadPString, optimize=false>;
 
 string ReadPString( PString &str ) {
     if( exists( str.value ) )
@@ -32,32 +26,65 @@ string ReadPString( PString &str ) {
         return "";
 }
 
-// blocks
-typedef struct Block {
-    char unknown[109];
-} Block;
+typedef struct {
+    float x;
+    float y;
+    float z;
+} Pos;
 
-// small repetitive structures start at 65 38 60 and continue until bitmap
-// aprox size a8c0
+typedef struct {
+    uquad stale_pointer; // wild guess
+    int entity_id;    // wild guess
+    int len;
+    char content[len];
+} Entity_COPY <optimize=false>;
 
-/// bitmap starts at 65 e1 20
-// ends at 65 ed 60
-// size approx c40
-// could be 56x56?
+typedef struct {
+    uquad stale_pointer; // wild guess
+    int entity_id;    // wild guess
+    int len;
+    char something[9];
+    uquad other_pointer;
+    float a;
+    int b;
+    int c;
+    int d;
+    char two[2];    
+    int e;
+    //char two[2];
+    int f;
+    Pos position;
+    float g;
+    char content[len - 59];
+} Entity <optimize=false>;
 
-typedef struct  {
-    int num_a;
-    int num_b;
+typedef struct Blocky(int len) {
+    local int length = len;
+    char block[len];
+} Block <read=readBlock, optimize=false>;
+
+string readBlock(Block &b) {
+    string s;
+    SPrintf( s, "%x", b.length );
+    return s;
+}
+
+typedef struct {
+    char bytes[20];
+} Twenty;
+
+typedef struct {
+    int a;
+    int b;
 } Pair;
 
-// structures
 typedef struct {
     PString name;
     float x;
     float y;
     float z;
     char unknown;
-} Structure <read=ReadStructure>;
+} Structure <read=ReadStructure, optimize=false>;
 
 string ReadStructure( Structure &it ) {
     if( exists( it.name.value ) )
@@ -66,73 +93,11 @@ string ReadStructure( Structure &it ) {
         return "";
 }
 
-
-// generated structures list
-// at 65 ed 60
-typedef struct Structures {
-    int len;
-    Structure structures[len] <optimize=false>;
-} Structures;
-
-
-
-typedef struct {
-    char what[3];
-    int length;
-//    char things[length];
-//    char unknowable[72];
-    char before[9];
-    int was_ever_loaded;
-    int four_a;
-    char one;
-    int zero_if_loaded;
-    int zero_a;
-    float number_a;
-    int four_b;
-    int ninety_nine;
-    char unknown[14];
-    float float_integer;
-    float something;
-    float another_float_evidently;
-    int zero_c;
-    float less_than_one;
-    int zero_d;
-    float another;
-    char zeros[6];
-    int identifier;
-    char unknown_b[12];
-    
-} Chunk;
-
-typedef struct {
-    int record_start <bgcolor=cGreen>;
-    int zeros;
-    int thou_a;
-    int thou_b;
-} Record;
-
-typedef struct {
-    Record tick;
-    int a;
-    int number_four;
-    char c;
-    Record tock;
-    int aa;
-    int bb;
-    char cc;
-    char d;
-    int five;
-    char between_b[38];
-    int numbers[4];
-} TickTock;
-
-typedef struct FileEnd {
-    char unknown[21];
-} FileEnd;
-
-
-
 void analyze_records() {
+    local int smallest_record = 100000;
+    local int largest_record = 0;
+    local int64 largest_record_address;
+    local int record_count = 0;
     local int marker_value = ReadInt();
     local int64 cursor = FTell() + 4;
     local int64 end = FileSize() - 4;
@@ -142,13 +107,24 @@ void analyze_records() {
         test = ReadInt(cursor);
         
         if (test == marker_value) {
+            Block record(distance+4);
             Printf("Record Size: %d == 0x%x\n", distance, distance);
+            if (distance < smallest_record) {
+                smallest_record = distance;
+            }
+            if (distance > largest_record) {
+                largest_record = distance;
+                largest_record_address = cursor - distance;
+            }
             distance = 0;
             cursor += 4;
+            record_count += 1;
         }
         cursor += 1;
         distance += 1;
     }
+    Block record(distance+4);
+    Printf("found %d records. smallest was %d bytes, largest was %d at 0x%x", record_count, smallest_record, largest_record, largest_record_address);
 }
 
 typedef struct {
@@ -176,85 +152,29 @@ typedef struct {
 
 
 int version;
-int unknown_a;
-float low_number; // could be the time
-//char header[12];
-//int chunk_count;
-//Chunk chunks[chunk_count] <optimize=false>;
 
+int unknown;
 
+float time;
 
-//Record a;
+char whatever[12];
+int entity_count;
 
-//analyze_records();
+Entity some[entity_count];
 
-/*
-local int i = 0;
-for (i = 0; i<32; i++) {
-    TickTock two_records;
-}
-*/
-/*
-Record b;
-char interstitial_a[9];
-Record c;
-char interstitial_b[68];
+int twenty_count;
 
-Record d;
-char interstitial_c[9];
-Record e;
-char interstitial_d[68];
+Twenty things[twenty_count];
 
-Record f;
-char interstitial_e[9];
-Record g;
-char interstitial_f[68];
-
-Record h;
-char interstitial_g[9];
-Record i;
-char interstitial_h[68];
-*/
-
-// oneone_000.db
-FSeek(0x1aabd);
-int last_record_separator;
-//int record_size;
-//float number;
-//int four;
-//int ninety_nine;
-//char last_interstitial[68];
-
-// second.db
-//FSeek(0x6d8bbb);
-//oneone_000.db
-FSeek(0x1ab05); // 05  ab  01 00
 int pair_count;
-int low_int;
 
 Pair pairs[pair_count];
 
-int twenty_two;
-int zero_1;
-char padding;
+char header[13];
+int structure_count;
 
-Structures structures;
-float a;
-char last_zeros[17];
-//
-//int len;
-//Block unknown[len];
+Structure strs[structure_count];
 
-//local int file_size = 6859762;
+float float_b;
 
-// second.db
-//FSeek(file_size-21);
-
-//FSeek(-21);
-//FileEnd header;
-
-
-//FSeek(0x65ed60);
-//Structures list;
-
-//FileEnd end;
+char seventeen_zeros[17];
