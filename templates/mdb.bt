@@ -49,6 +49,37 @@ typedef struct {
     char content[len];
 } Entity_COPY <optimize=false>;
 
+typedef struct {
+    int unknown_b;
+    float hit_points;
+} Hitpoints;
+
+typedef struct {
+    int tt;
+    float xx;
+    float yy;
+    float zz;
+} GroupThree;
+
+typedef struct {
+    int a;
+    int b;
+} Eightbytes;
+
+typedef struct {
+    int a;
+    int b;
+    int c;
+} Twelvebytes;
+
+typedef struct {
+    int pre;
+    uchar len;
+    if (len > 127) {
+        char sometimes;
+    }
+    char payload[len];
+} StringPayload <optimize=false>;
 
 // maybe these are actually like packets of data that
 // need to be collected together according to group_id?
@@ -56,29 +87,65 @@ typedef struct {
     uquad group_id; // wild guess
     int entity_id;    // wild guess
     int len;
-    int two;
-    int four;
-    char one;
-    //char something[9];
+    local uquad end = FTell() + len;
+    int two;  // might be linked to the "pairs" at the end?
+    int four; // ^^
+    char has_more_info; // this whole thing is built up of gueses right now.
     uquad other_id;
-    float a;
+    int a;
     int b;
     int c;
     int d;
-    char unknown[2];    
-    int e;
-    //char two[2];
-    int f;
+    char unknown[2];
+    int e; // might be linked to the "pairs" at the end?
+    int f; // ^^
     Pos position;
     Quat rotation; // well its four floats at any rate, maybe a quaternion
     char has_health; // guess observed 0 = no hp values, 1 = hp values, 2 = is healed? after repairing items i found damaged.
     if (has_health > 0) {
-        int unknown_b;
-        float hit_points;
-        Printf("Entity %x has hitpoints\n", entity_id);
-        char content[len - 80]; // - 71 + 8 = -80
+        Hitpoints hits[has_health];
+        //char content[len - 80]; // - 71 + 8 = -80
     } else {
-        char content[len - 72]; // - 71 + 8 = -80
+        //char content[len - 72]; // - 71 + 8 = -80
+    }
+    char has_third_group;
+    if (has_third_group > 0) {
+        GroupThree threes[has_third_group];
+    } 
+    char idk_1;
+    if (idk_1 != 0) {
+        Printf("Entity # %d had more info (1) to tell at %Lx.\n", entity_id, FTell());
+        //local uquad remaining = end - FTell() - 3;
+        //Printf("Entity # %d had more info (1) to tell at %Lx, choosing %Ld bytes (has %d health boxes)\n", entity_id, FTell(), remaining, has_health);
+        char idk_1_payload[20];
+        //sixteen bytes?? idk_1_payload[idk_1];
+    }
+    char idk_2;
+    if (idk_2 != 0) {
+        //Printf("Entity # %d had more info (2) to tell at %Lx.\n", entity_id, FTell());
+        Eightbytes idk_2_item[idk_2];
+        //int idk_2_a;
+        //int idk_2_b;
+    }
+    char idk_3;
+    if (idk_3 != 0) {
+        //Printf("Entity # %d had more info (3) to tell at %Lx.\n", entity_id, FTell());
+        Twelvebytes idk_3_payload[idk_3];
+    }
+    // base64 encoded payload
+    char has_payload;
+    if (has_payload != 0) {
+        Printf("Entity # %d had more info (4) to tell at %Lx.\n", entity_id, FTell());
+        //int pre_payload;
+        //uchar payload_length;
+        //if (payload_length > 127) {
+        //    char sometimes;
+        //    if (sometimes == 'Z') {
+        //        Printf("Entity # %d @ %Lx lacked expected padding that sometimes is there and sometimes not??\n", entity_id, FTell());
+        //    }
+        //}
+        //char payload[payload_length];
+        StringPayload payload[has_payload];
     }
     //char content[len - 80]; // - 71 + 8 = -80
 // sometimes entities are chests
@@ -86,6 +153,10 @@ typedef struct {
 // seems to be identifiable by the bytes c6 10 0a c8
 // preceeding a length byte, and that many bytes of b64 data.
 // the data is at the very end of the entity content
+    if (FTell() != end) {
+        Printf("Entity # %d ended at %Lx instead of %Lx\n", entity_id, FTell(), end);
+        return 0;
+    }
 } Entity <optimize=false>;
 
 typedef struct Blocky(int len) {
@@ -105,11 +176,15 @@ typedef struct {
     uquad shared_id; // is shared between some number of "Twenty"
 } Twenty;
 
+
+// current hypothosis: these are deleted entity ids.
 typedef struct {
     int count;
     Twenty items[count];
 } Twenties <optimize = false>;
 
+// usually one is positive and the other negative,
+// but it switches in different files which is which
 typedef struct {
     int a;
     int b;
@@ -120,7 +195,7 @@ typedef struct {
     float x;
     float y;
     float z;
-    char unknown;
+    char seen;
 } Structure <read=ReadStructure, optimize=false>;
 
 string ReadStructure( Structure &it ) {
@@ -193,7 +268,10 @@ typedef struct {
 } Entities;
 
 typedef struct {
-    char header[13]; // i guess this is part of the following array?
+    int ninety_nine; // one of these maya be the version/Type
+    int twenty_two;
+    int zero;
+    char one; // probably a bool?
     int count;
     Structure entries[count] <name = "structure">;
 } Structures;
