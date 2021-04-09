@@ -66,6 +66,8 @@ typedef struct {
     int b;
 } Eightbytes;
 
+// may be related to "int a" in entity struct; same values observed in gravestone. otherwise value appears unique in file.
+// in other cases, the same value will appear in e.g. 1021 different entity "twelvebytes" values. maybe it links them together?
 typedef struct {
     int a;
     int b;
@@ -73,12 +75,14 @@ typedef struct {
 } Twelvebytes;
 
 typedef struct {
-    int pre;
+    int pre; // test files have c6 10 0a c8 here when followed by base64 encoded string. grave marker has 96 fc 29 49 on its name string
     uchar len;
-    if (len > 127) {
+    local int length = len;
+    if (len > 127) { // ie if high bit is set
         char sometimes;
+        length += (sometimes - 1) * 128; // only one attestation of this length so may be wildly off
     }
-    char payload[len];
+    char payload[length];
 } StringPayload <optimize=false>;
 
 // maybe these are actually like packets of data that
@@ -113,12 +117,16 @@ typedef struct {
         GroupThree threes[has_third_group];
     } 
     char idk_1;
-    if (idk_1 != 0) {
+    if (idk_1 == 1) {
         Printf("Entity # %d had more info (1) to tell at %Lx.\n", entity_id, FTell());
         //local uquad remaining = end - FTell() - 3;
         //Printf("Entity # %d had more info (1) to tell at %Lx, choosing %Ld bytes (has %d health boxes)\n", entity_id, FTell(), remaining, has_health);
         char idk_1_payload[20];
         //sixteen bytes?? idk_1_payload[idk_1];
+    } else if (idk_1 != 0) {
+        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, has_third_group, FTell());
+        char content[end - FTell()];
+        return;
     }
     char idk_2;
     if (idk_2 != 0) {
