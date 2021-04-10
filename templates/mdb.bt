@@ -52,27 +52,55 @@ typedef struct {
 typedef struct {
     int unknown_b;
     float hit_points;
-} Hitpoints;
+} PropertyFloat;
+
+// these are pure speculation right now, mostly writing down here so i can try to prove them wrong with test files
+typedef enum PropertyType {
+    PROP_CREATOR = -1486757002, // 12
+    PROP_OTHER_PORTAL_ID = 824179215, // 12
+    PROP_SCALE = -528916476, // 16
+    PROP_A = -1273338593, // 16, unknown, zeros on dropped item
+    PROP_B = 1286941116, // 12
+    PROP_C = 197492418, // cloudberries? set to 1 when plucked
+    PROP_D = 759487170, // 8 // Cloudberries - maybe sets a timer to reset?
+} PropertyType;
+
+// ok so these are three dimensional properties, obviously
+// looks like we are basically storing properties on each entity
+// according to the data size, but with an identifying property int
+// so the one i've observed is object scale
+// but i assume this would also be used for other 3-float properties
+// if any exist.
+typedef struct {
+    // int property_name; // i'm keeping note of found values in the PropertyType enum
+    PropertyType name;
+    float x;
+    float y;
+    float z;
+} PropertyVector;
 
 typedef struct {
-    int tt;
-    float xx;
-    float yy;
-    float zz;
-} GroupThree;
-
-typedef struct {
+    PropertyType name;
     int a;
-    int b;
-} Eightbytes;
+} PropertyInt;
+
+
+
 
 // may be related to "int a" in entity struct; same values observed in gravestone. otherwise value appears unique in file.
 // in other cases, the same value will appear in e.g. 1021 different entity "twelvebytes" values. maybe it links them together?
+// ok so second theory - this can defintely be used to link items togetehr somehow. looks like the first int could be a link type enum
+// and the rest is dependant on that
+// but int b seems to be the other item
+
 typedef struct {
-    int a;
+    //int property_name; // i'm keeping note of found values in the PropertyType enum
+    PropertyType name;
     int b;
     int c;
-} Twelvebytes;
+} PropertyIntPair;
+
+
 
 typedef struct {
     int pre; // test files have c6 10 0a c8 here when followed by base64 encoded string. grave marker has 96 fc 29 49 on its name string
@@ -85,16 +113,14 @@ typedef struct {
     char payload[length];
 } StringPayload <optimize=false>;
 
-// maybe these are actually like packets of data that
-// need to be collected together according to group_id?
 typedef struct {
     uquad group_id; // wild guess
-    int entity_id;    // wild guess
+    int entity_id;
     int len;
     local uquad end = FTell() + len;
     int two;  // might be linked to the "pairs" at the end?
     int four; // ^^
-    char has_more_info; // this whole thing is built up of gueses right now.
+    char has_more_info; // i've only seen this set to 1
     uquad other_id;
     int a;
     int b;
@@ -105,16 +131,13 @@ typedef struct {
     int f; // ^^
     Pos position;
     Quat rotation; // well its four floats at any rate, maybe a quaternion
-    char has_health; // guess observed 0 = no hp values, 1 = hp values, 2 = is healed? after repairing items i found damaged.
-    if (has_health > 0) {
-        Hitpoints hits[has_health];
-        //char content[len - 80]; // - 71 + 8 = -80
-    } else {
-        //char content[len - 72]; // - 71 + 8 = -80
+    char hitpoint_len;
+    if (hitpoint_len > 0) {
+        PropertyFloat hits[hitpoint_len];
     }
-    char has_third_group;
-    if (has_third_group > 0) {
-        GroupThree threes[has_third_group];
+    char third_group_len;
+    if (third_group_len > 0) {
+        PropertyVector threes[third_group_len];
     } 
     char idk_1;
     if (idk_1 == 1) {
@@ -124,21 +147,21 @@ typedef struct {
         char idk_1_payload[20];
         //sixteen bytes?? idk_1_payload[idk_1];
     } else if (idk_1 != 0) {
-        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, has_third_group, FTell());
+        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, third_group_len, FTell());
         char content[end - FTell()];
         return;
     }
     char idk_2;
     if (idk_2 != 0) {
         //Printf("Entity # %d had more info (2) to tell at %Lx.\n", entity_id, FTell());
-        Eightbytes idk_2_item[idk_2];
+        PropertyInt idk_2_item[idk_2];
         //int idk_2_a;
         //int idk_2_b;
     }
     char idk_3;
     if (idk_3 != 0) {
         //Printf("Entity # %d had more info (3) to tell at %Lx.\n", entity_id, FTell());
-        Twelvebytes idk_3_payload[idk_3];
+        PropertyIntPair idk_3_payload[idk_3];
     }
     // base64 encoded payload
     char has_payload;
@@ -179,17 +202,17 @@ string readBlock(Block &b) {
 }
 
 typedef struct {
-    uquad group_id; // seems to reference back to entities?
+    uquad group_id;
     int c;
-    uquad shared_id; // is shared between some number of "Twenty"
-} Twenty;
+    uquad shared_id; // is shared between some number of deleted items
+} Deleted;
 
 
 // current hypothosis: these are deleted entity ids.
 typedef struct {
     int count;
-    Twenty items[count];
-} Twenties <optimize = false>;
+    Deleted items[count];
+} Deleted_Group <optimize = false>;
 
 // usually one is positive and the other negative,
 // but it switches in different files which is which
@@ -270,15 +293,19 @@ typedef struct {
 } Chest;
 
 typedef struct {
-    int something;
+    int next_id; // appears to be 1 higher than highest id in file, so this follows
     int count;
     Entity entries[count] <name = "entity">;
 } Entities;
 
 typedef struct {
-    int ninety_nine; // one of these maya be the version/Type
+    int ninety_nine;
     int twenty_two;
-    int zero;
+    int some_count;
+    PString something[some_count];
+} Keys;
+
+typedef struct {
     char one; // probably a bool?
     int count;
     Structure entries[count] <name = "structure">;
@@ -304,8 +331,9 @@ typedef struct {
 typedef struct {
     Header header <name = "header">;
     Entities entities <name = "entities">;
-    Twenties twenties <name = "twenties">;
+    Deleted_Group deleted <name = "deleted">;
     Pairs pairs <name = "pairs">;
+    Keys keys<name = "keys">;
     Structures structures <name = "structures">;
     Footer footer <name = "footer">;
 } MapFile;
