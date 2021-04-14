@@ -49,10 +49,6 @@ typedef struct {
     char content[len];
 } Entity_COPY <optimize=false>;
 
-typedef struct {
-    int unknown_b;
-    float hit_points;
-} PropertyFloat;
 
 // these are pure speculation right now, mostly writing down here so i can try to prove them wrong with test files
 typedef enum PropertyType {
@@ -63,47 +59,45 @@ typedef enum PropertyType {
     PROP_B = 1286941116, // 12
     PROP_C = 197492418, // cloudberries? set to 1 when plucked
     PROP_D = 759487170, // 8 // Cloudberries - maybe sets a timer to reset?
+    PROP_E = -35297356,
+    PROP_F = -1563863159,
+    PROP_G = 1981281673, // found on gravestones, 1
+    PROP_H = -58355724, // found on gravestones, 0
+    PROP_BASE64 = -938864442,
+    PROP_NAME = 1227488406,
+    PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones
 } PropertyType;
 
-// ok so these are three dimensional properties, obviously
-// looks like we are basically storing properties on each entity
-// according to the data size, but with an identifying property int
-// so the one i've observed is object scale
-// but i assume this would also be used for other 3-float properties
-// if any exist.
 typedef struct {
-    // int property_name; // i'm keeping note of found values in the PropertyType enum
+    PropertyType name;
+    float hit_points;
+} PropertyFloat <name = "float">;
+
+typedef struct {
     PropertyType name;
     float x;
     float y;
     float z;
-} PropertyVector;
+} PropertyVector <name = "vector">;
 
 typedef struct {
     PropertyType name;
     int a;
-} PropertyInt;
-
-
-
+} PropertyInt <name = "int">;
 
 // may be related to "int a" in entity struct; same values observed in gravestone. otherwise value appears unique in file.
 // in other cases, the same value will appear in e.g. 1021 different entity "twelvebytes" values. maybe it links them together?
 // ok so second theory - this can defintely be used to link items togetehr somehow. looks like the first int could be a link type enum
 // and the rest is dependant on that
 // but int b seems to be the other item
-
 typedef struct {
-    //int property_name; // i'm keeping note of found values in the PropertyType enum
     PropertyType name;
     int b;
     int c;
-} PropertyIntPair;
-
-
+} PropertyIntPair <name = "int pair">;
 
 typedef struct {
-    int pre; // test files have c6 10 0a c8 here when followed by base64 encoded string. grave marker has 96 fc 29 49 on its name string
+    PropertyType namel;
     uchar len;
     local int length = len;
     if (len > 127) { // ie if high bit is set
@@ -134,59 +128,37 @@ typedef struct {
     ChunkCoord ef;
     Pos position;
     Quat rotation; // well its four floats at any rate, maybe a quaternion
-    char hitpoint_len;
-    if (hitpoint_len > 0) {
-        PropertyFloat hits[hitpoint_len];
+    char float_count;
+    if (float_count > 0) {
+        PropertyFloat hits[float_count];
     }
-    char third_group_len;
-    if (third_group_len > 0) {
-        PropertyVector threes[third_group_len];
+    char vector_count;
+    if (vector_count > 0) {
+        PropertyVector property_vector[vector_count];
     } 
     char idk_1;
     if (idk_1 == 1) {
         Printf("Entity # %d had more info (1) to tell at %Lx.\n", entity_id, FTell());
-        //local uquad remaining = end - FTell() - 3;
         //Printf("Entity # %d had more info (1) to tell at %Lx, choosing %Ld bytes (has %d health boxes)\n", entity_id, FTell(), remaining, has_health);
         char idk_1_payload[20];
-        //sixteen bytes?? idk_1_payload[idk_1];
     } else if (idk_1 != 0) {
-        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, third_group_len, FTell());
+        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, vector_count, FTell());
         char content[end - FTell()];
         return;
     }
-    char idk_2;
-    if (idk_2 != 0) {
-        //Printf("Entity # %d had more info (2) to tell at %Lx.\n", entity_id, FTell());
-        PropertyInt idk_2_item[idk_2];
-        //int idk_2_a;
-        //int idk_2_b;
+    char int_count;
+    if (int_count != 0) {
+        PropertyInt property_int[int_count];
     }
-    char idk_3;
-    if (idk_3 != 0) {
-        //Printf("Entity # %d had more info (3) to tell at %Lx.\n", entity_id, FTell());
-        PropertyIntPair idk_3_payload[idk_3];
+    char pair_count;
+    if (pair_count != 0) {
+        PropertyIntPair property_pairs[pair_count];
     }
-    // base64 encoded payload
-    char has_payload;
-    if (has_payload != 0) {
-        Printf("Entity # %d had more info (4) to tell at %Lx.\n", entity_id, FTell());
-        //int pre_payload;
-        //uchar payload_length;
-        //if (payload_length > 127) {
-        //    char sometimes;
-        //    if (sometimes == 'Z') {
-        //        Printf("Entity # %d @ %Lx lacked expected padding that sometimes is there and sometimes not??\n", entity_id, FTell());
-        //    }
-        //}
-        //char payload[payload_length];
-        StringPayload payload[has_payload];
+    char string_count;
+    if (string_count != 0) {
+        StringPayload payload[string_count];
     }
-    //char content[len - 80]; // - 71 + 8 = -80
-// sometimes entities are chests
-// if so they have a base64-encoded payload
-// seems to be identifiable by the bytes c6 10 0a c8
-// preceeding a length byte, and that many bytes of b64 data.
-// the data is at the very end of the entity content
+
     if (FTell() != end) {
         Printf("Entity # %d ended at %Lx instead of %Lx\n", entity_id, FTell(), end);
         return 0;
