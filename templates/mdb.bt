@@ -114,12 +114,16 @@ typedef struct {
 } StringPayload <optimize=false>;
 
 typedef struct {
+    int a;
+    int b;
+} ChunkCoord;
+
+typedef struct {
     uquad group_id; // wild guess
     int entity_id;
     int len;
     local uquad end = FTell() + len;
-    int two;  // might be linked to the "pairs" at the end?
-    int four; // ^^
+    ChunkCoord two_four;
     char has_more_info; // i've only seen this set to 1
     uquad other_id;
     int a;
@@ -127,8 +131,7 @@ typedef struct {
     int c;
     int d;
     char unknown[2];
-    int e; // might be linked to the "pairs" at the end?
-    int f; // ^^
+    ChunkCoord ef;
     Pos position;
     Quat rotation; // well its four floats at any rate, maybe a quaternion
     char hitpoint_len;
@@ -214,12 +217,7 @@ typedef struct {
     Deleted items[count];
 } Deleted_Group <optimize = false>;
 
-// usually one is positive and the other negative,
-// but it switches in different files which is which
-typedef struct {
-    int a;
-    int b;
-} Pair;
+
 
 typedef struct {
     PString name;
@@ -320,8 +318,8 @@ typedef struct {
 
 typedef struct {
     int count;
-    Pair pairs[count];
-} Pairs;
+    ChunkCoord chunks[count];
+} Chunks;
 
 typedef struct {
     float float_b;
@@ -332,7 +330,7 @@ typedef struct {
     Header header <name = "header">;
     Entities entities <name = "entities">;
     Deleted_Group deleted <name = "deleted">;
-    Pairs pairs <name = "pairs">;
+    Chunks loaded_chunks <name = "loaded chunks">;
     Keys keys<name = "keys">;
     Structures structures <name = "structures">;
     Footer footer <name = "footer">;
