@@ -107,6 +107,8 @@ typedef struct {
     char payload[length];
 } StringPayload <optimize=false>;
 
+// chunks appear to cover 64x64 units of space.
+// chunk 0,0 covers approx -32 to + 32.
 typedef struct {
     int a;
     int b;
@@ -117,7 +119,8 @@ typedef struct {
     int entity_id;
     int len;
     local uquad end = FTell() + len;
-    ChunkCoord two_four;
+    int two; // these don't really look like chunk coords
+    int four; // maybe simular though.
     char has_more_info; // i've only seen this set to 1
     uquad other_id;
     int a;
