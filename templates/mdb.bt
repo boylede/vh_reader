@@ -50,6 +50,10 @@ typedef struct {
 } Entity_COPY <optimize=false>;
 
 
+typedef enum {
+    STATICMESH_ROCK = 1539083309,
+} EntityType;
+
 // these are pure speculation right now, mostly writing down here so i can try to prove them wrong with test files
 typedef enum PropertyType {
     PROP_CREATOR = -1486757002, // 12
@@ -65,12 +69,20 @@ typedef enum PropertyType {
     PROP_H = -58355724, // found on gravestones, 0
     PROP_BASE64 = -938864442,
     PROP_NAME = 1227488406,
-    PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones
+    PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones    
 } PropertyType;
+/*
+big poppa ids: 
+-1876303199
+-1876295774
+-1876296929
+
+*/
+
 
 typedef struct {
     PropertyType name;
-    float hit_points;
+    float value;
 } PropertyFloat <name = "float">;
 
 typedef struct {
@@ -82,7 +94,7 @@ typedef struct {
 
 typedef struct {
     PropertyType name;
-    int a;
+    int value;
 } PropertyInt <name = "int">;
 
 // may be related to "int a" in entity struct; same values observed in gravestone. otherwise value appears unique in file.
@@ -92,20 +104,22 @@ typedef struct {
 // but int b seems to be the other item
 typedef struct {
     PropertyType name;
+    int a;
     int b;
-    int c;
 } PropertyIntPair <name = "int pair">;
 
 typedef struct {
-    PropertyType namel;
+    PropertyType name;
     uchar len;
     local int length = len;
     if (len > 127) { // ie if high bit is set
         char sometimes;
         length += (sometimes - 1) * 128; // only one attestation of this length so may be wildly off
     }
-    char payload[length];
-} StringPayload <optimize=false>;
+    if (length > 0) { // eliminate warnings
+        char payload[length];
+    }
+} PropertyString <optimize=false>;
 
 // chunks appear to cover 64x64 units of space.
 // chunk 0,0 covers approx -32 to + 32.
@@ -113,6 +127,14 @@ typedef struct {
     int a;
     int b;
 } ChunkCoord;
+
+typedef struct {
+    int name;
+    float a;
+    float b;
+    float c;
+    float d;
+} PropertyQuad;
 
 typedef struct {
     uquad group_id; // wild guess
@@ -128,7 +150,7 @@ typedef struct {
     int c;
     int d;
     char unknown[2];
-    ChunkCoord ef;
+    ChunkCoord chunk;
     Pos position;
     Quat rotation; // well its four floats at any rate, maybe a quaternion
     char float_count;
@@ -139,15 +161,11 @@ typedef struct {
     if (vector_count > 0) {
         PropertyVector property_vector[vector_count];
     } 
-    char idk_1;
-    if (idk_1 == 1) {
-        Printf("Entity # %d had more info (1) to tell at %Lx.\n", entity_id, FTell());
-        //Printf("Entity # %d had more info (1) to tell at %Lx, choosing %Ld bytes (has %d health boxes)\n", entity_id, FTell(), remaining, has_health);
-        char idk_1_payload[20];
-    } else if (idk_1 != 0) {
-        Printf("Entity # %d had more info (1x%x == %x) to tell at %Lx. -> Giving up\n", entity_id, idk_1, vector_count, FTell());
-        char content[end - FTell()];
-        return;
+    char quad_count;
+    if (quad_count > 0) {
+        PropertyQuad unk[quad_count];
+        //local uquad size = end - FTell();
+        Printf("Entity # %d had quads @ %Lx.\n", entity_id, FTell());
     }
     char int_count;
     if (int_count != 0) {
@@ -159,7 +177,7 @@ typedef struct {
     }
     char string_count;
     if (string_count != 0) {
-        StringPayload payload[string_count];
+        PropertyString payload[string_count];
     }
 
     if (FTell() != end) {
@@ -274,8 +292,10 @@ typedef struct {
 typedef struct {
     int ninety_nine;
     int twenty_two;
-    int some_count;
-    PString something[some_count];
+    int count;
+    if (count > 0) {
+        PString keys[count];
+    }
 } Keys;
 
 typedef struct {
