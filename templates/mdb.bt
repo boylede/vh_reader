@@ -69,7 +69,10 @@ typedef enum PropertyType {
     PROP_H = -58355724, // found on gravestones, 0
     PROP_BASE64 = -938864442,
     PROP_NAME = 1227488406,
-    PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones    
+    PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones
+    PROP_AI_DESTINATION = 739771651,
+    PROP_PART_HP = -883022132, // encountered packed 130x in a string and separately under a single float property. seems to store hitpoints on sub-parts, e.g. in rocks.
+    PROP_DURABILITY = 73672881, // a wild guess, but is value 100 on entities that also have durability 100?
 } PropertyType;
 /*
 big poppa ids: 
@@ -83,19 +86,19 @@ big poppa ids:
 typedef struct {
     PropertyType name;
     float value;
-} PropertyFloat <name = "float">;
+} PropertyFloat <name = "float property">;
 
 typedef struct {
     PropertyType name;
     float x;
     float y;
     float z;
-} PropertyVector <name = "vector">;
+} PropertyVector <name = "vector property">;
 
 typedef struct {
     PropertyType name;
     int value;
-} PropertyInt <name = "int">;
+} PropertyInt <name = "int property">;
 
 // may be related to "int a" in entity struct; same values observed in gravestone. otherwise value appears unique in file.
 // in other cases, the same value will appear in e.g. 1021 different entity "twelvebytes" values. maybe it links them together?
@@ -106,7 +109,7 @@ typedef struct {
     PropertyType name;
     int a;
     int b;
-} PropertyIntPair <name = "int pair">;
+} PropertyIntPair <name = "2 int property">;
 
 typedef struct {
     PropertyType name;
@@ -117,9 +120,20 @@ typedef struct {
         length += (sometimes - 1) * 128; // only one attestation of this length so may be wildly off
     }
     if (length > 0) { // eliminate warnings
+        // peek at the first 4 bytes of the base64-encoded string, use this to single out ones we haven't seen before
+        // some strings aren't base64-encoded, i.e. player names in grave markers, portal names, signs
+        local int peek = ReadUInt(FTell());
+        if (peek == 1094809434) {
+            // this is a chest
+        } else if (peek == 1094805351 || peek == 1094799682) {
+            // this is a "floatbag" - not sure the exact purpose yet but its a list of floats, length-prepended
+        } else {
+            // we dont know what this is!
+            Printf("found new string prop at %Lx\n", FTell());
+        }
         char payload[length];
     }
-} PropertyString <optimize=false>;
+} PropertyString <optimize=false, name="string property">;
 
 // chunks appear to cover 64x64 units of space.
 // chunk 0,0 covers approx -32 to + 32.
@@ -141,8 +155,8 @@ typedef struct {
     int entity_id;
     int len;
     local uquad end = FTell() + len;
-    int two; // these don't really look like chunk coords
-    int four; // maybe simular though.
+    int generation_id; // seems to increment whenever touched, so lets call it a generation
+    int four;
     char has_more_info; // i've only seen this set to 1
     uquad other_id;
     int a;
@@ -155,7 +169,7 @@ typedef struct {
     Quat rotation; // well its four floats at any rate, maybe a quaternion
     char float_count;
     if (float_count > 0) {
-        PropertyFloat hits[float_count];
+        PropertyFloat property_float[float_count];
     }
     char vector_count;
     if (vector_count > 0) {
@@ -163,9 +177,9 @@ typedef struct {
     } 
     char quad_count;
     if (quad_count > 0) {
-        PropertyQuad unk[quad_count];
+        PropertyQuad property_quad[quad_count];
         //local uquad size = end - FTell();
-        Printf("Entity # %d had quads @ %Lx.\n", entity_id, FTell());
+        //Printf("Entity # %d had quads @ %Lx.\n", entity_id, FTell());
     }
     char int_count;
     if (int_count != 0) {
@@ -173,18 +187,23 @@ typedef struct {
     }
     char pair_count;
     if (pair_count != 0) {
-        PropertyIntPair property_pairs[pair_count];
+        PropertyIntPair property_pair[pair_count];
     }
     char string_count;
     if (string_count != 0) {
-        PropertyString payload[string_count];
+        PropertyString property_string[string_count];
     }
 
     if (FTell() != end) {
         Printf("Entity # %d ended at %Lx instead of %Lx\n", entity_id, FTell(), end);
         return 0;
     }
-} Entity <optimize=false>;
+} Entity <optimize=false>; //  size=entity_size
+
+int entity_size( Entity &e ) {
+    return 16 + ReadUInt(startof(e)+12);
+}
+
 
 typedef struct Blocky(int len) {
     local int length = len;
