@@ -67,6 +67,7 @@ typedef enum PropertyType {
     PROP_F = -1563863159,
     PROP_G = 1981281673, // found on gravestones, 1
     PROP_H = -58355724, // found on gravestones, 0
+    PROP_STRUCT_SUPPORT = 642166391, // built component's structural support amount. low numbers = closer to the point of support
     PROP_BASE64 = -938864442,
     PROP_NAME = 1227488406,
     PROP_FLOATING_NAME = -1778352765, // an extra position value on gravestones
@@ -120,17 +121,20 @@ typedef struct {
         length += (sometimes - 1) * 128; // only one attestation of this length so may be wildly off
     }
     if (length > 0) { // eliminate warnings
-        // peek at the first 4 bytes of the base64-encoded string, use this to single out ones we haven't seen before
-        // some strings aren't base64-encoded, i.e. player names in grave markers, portal names, signs
-        local int peek = ReadUInt(FTell());
-        if (peek == 1094809434) {
-            // this is a chest
-        } else if (peek == 1094805351 || peek == 1094799682) {
-            // this is a "floatbag" - not sure the exact purpose yet but its a list of floats, length-prepended
-        } else {
-            // we dont know what this is!
-            Printf("found new string prop at %Lx\n", FTell());
+        if (name == PROP_BASE64) {
+            // peek at the first 4 bytes of the base64-encoded string, use this to single out ones we haven't seen before
+            // some strings aren't base64-encoded, i.e. player names in grave markers, portal names, signs
+            local int peek = ReadUInt(FTell());
+            if (peek == 1094809434) {
+                // this is a chest
+            } else if (peek == 1094805351 || peek == 1094799682) {
+                // this is a "floatbag" - not sure the exact purpose yet but its a list of floats, length-prepended
+            } else {
+                // we dont know what this is!
+                Printf("found new string prop at %Lx\n", FTell());
+            }
         }
+        
         char payload[length];
     }
 } PropertyString <optimize=false, name="string property">;
