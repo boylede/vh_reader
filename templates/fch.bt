@@ -94,11 +94,14 @@ typedef struct Map {
     Triple unknown_triple_c <bgcolor=cYellow>;
     char always_one;
     int map_size;
-    local int map_end = FTell() + map_size;
+    local int map_start = FTell();
+    local int map_end = map_start + map_size;
     
     VisibilityData fog_of_war <name="fog of war">;
     mapPOIs pois;
-    if (FTell() != map_end) {
+    local int map_end_actual = FTell();
+    if (map_end_actual != map_end) {
+        Printf("expected 0x%x, found 0x%x",map_size,map_end_actual-map_start);
         char padding;
     }
 } Map;

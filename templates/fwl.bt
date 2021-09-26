@@ -30,7 +30,7 @@ string ReadPString( PString &str ) {
 
 int file_size;  // offset to byte after end of file
                 // counting from after this int
-int unknown_b;
+int map_version; // i guess
 
 PString name;
 

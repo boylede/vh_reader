@@ -75,13 +75,6 @@ typedef enum PropertyType {
     PROP_PART_HP = -883022132, // encountered packed 130x in a string and separately under a single float property. seems to store hitpoints on sub-parts, e.g. in rocks.
     PROP_DURABILITY = 73672881, // a wild guess, but is value 100 on entities that also have durability 100?
 } PropertyType;
-/*
-big poppa ids: 
--1876303199
--1876295774
--1876296929
-
-*/
 
 
 typedef struct {
