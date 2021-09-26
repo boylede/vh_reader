@@ -11,3 +11,8 @@ Characters are stored in .fch files, currently the file format is completely map
 
 ## Map Data Files
 Map data is stored mostly within .db files with some information in lightweight .fwl files. I have the structure of this file mapped out pretty well, but I am still relying on some big assumptions. There are many properties I have not discerned yet. 
+
+
+# GUI app
+Last April I started making a [little GUI app](/vhr_gui/) in rust using what I learned about the files from making the 010 templates. 
+![preview of GUI](/screenshots/wip_inventory.png?raw=true "preview of GUI")
