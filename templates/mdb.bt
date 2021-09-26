@@ -150,10 +150,12 @@ typedef struct {
     float d;
 } PropertyQuad;
 
+
 typedef struct {
     uquad group_id; // wild guess
     int entity_id;
     int len;
+
     local uquad end = FTell() + len;
     int generation_id; // seems to increment whenever touched, so lets call it a generation
     int four;
@@ -194,10 +196,15 @@ typedef struct {
         PropertyString property_string[string_count];
     }
 
+    char hearth_home_counter;
+    if (hearth_home_counter != 0) {
+        Printf("Entity # %d had hearth_home_counter %x.\n", entity_id, hearth_home_counter);
+    }
     if (FTell() != end) {
         Printf("Entity # %d ended at %Lx instead of %Lx\n", entity_id, FTell(), end);
         return 0;
     }
+
 } Entity <optimize=false>; //  size=entity_size
 
 int entity_size( Entity &e ) {
