@@ -3,8 +3,11 @@ Work on reading character and map files from the game Valheim. Current progress 
 
 ![gif of the template in action](/screenshots/vh_reader.gif?raw=true "gif of the template in action")
 
-# Character Files
+# Templates
+[link to folder](/templates/)
+## Character Files
 Characters are stored in .fch files, currently the file format is completely mapped out with most of the important property names/relationships worked out, I am still lacking some property names though. I also haven't yet made any list of "valid" input values for most of the inputs, e.g. item names, beard names, etc.
 
-# Map Data Files
+
+## Map Data Files
 Map data is stored mostly within .db files with some information in lightweight .fwl files. I have the structure of this file mapped out pretty well, but I am still relying on some big assumptions. There are many properties I have not discerned yet. 
