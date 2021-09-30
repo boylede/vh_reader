@@ -30,15 +30,15 @@ string ReadPString( PString &str ) {
 
 int file_size;  // offset to byte after end of file
                 // counting from after this int
-int map_version; // i guess
+int map_version;
 
 PString name;
 
-PString seed;
+PString seed_name;
 
-int seed_related;
+int seed;
 
-int name_related;
+quad uid;
 
-int zero;
-int one;
+int world_gen_version;
+// int one;
