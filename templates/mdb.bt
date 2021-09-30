@@ -132,6 +132,20 @@ typedef struct {
     }
 } PropertyString <optimize=false, name="string property">;
 
+typedef struct {
+    PropertyType name;
+    uchar len;
+    local int length = len;
+    // it is untested if this structure works the same as the string properties
+    if (len > 127) { // ie if high bit is set
+        char sometimes;
+        length += (sometimes - 1) * 128;
+    }
+    if (length > 0) { // eliminate warnings
+        char payload[length];
+    }
+} PropertyBytes <optimize=false, name="string property">;
+
 // chunks appear to cover 64x64 units of space.
 // chunk 0,0 covers approx -32 to + 32.
 typedef struct {
@@ -154,54 +168,47 @@ typedef struct {
     int len;
 
     local uquad end = FTell() + len;
-    int generation_id; // seems to increment whenever touched, so lets call it a generation
-    int four;
-    char has_more_info; // i've only seen this set to 1
-    uquad other_id;
-    int a;
-    int b;
-    int c;
-    int d;
-    char unknown[2];
+    int owner_generation; // seems to increment whenever touched, so lets call it a generation
+    int data_generation;
+    char persistent;
+    uquad owner_id;
+    uquad timestamp;
+    int package_version;
+    char object_type;
+    char is_distant;
+    int prefab_id;
     ChunkCoord chunk;
     Pos position;
-    Quat rotation; // well its four floats at any rate, maybe a quaternion
+    Quat rotation;
     char float_count;
     if (float_count > 0) {
-        PropertyFloat property_float[float_count];
+        PropertyFloat floats[float_count];
     }
     char vector_count;
     if (vector_count > 0) {
-        PropertyVector property_vector[vector_count];
+        PropertyVector vectors[vector_count];
     } 
     char quad_count;
     if (quad_count > 0) {
-        PropertyQuad property_quad[quad_count];
-        //local uquad size = end - FTell();
-        //Printf("Entity # %d had quads @ %Lx.\n", entity_id, FTell());
+        PropertyQuad quaternions[quad_count];
     }
     char int_count;
     if (int_count != 0) {
-        PropertyInt property_int[int_count];
+        PropertyInt ints[int_count];
     }
     char pair_count;
     if (pair_count != 0) {
-        PropertyIntPair property_pair[pair_count];
+        PropertyIntPair longs[pair_count];
     }
     char string_count;
     if (string_count != 0) {
-        PropertyString property_string[string_count];
+        PropertyString strings[string_count];
     }
 
-    char hearth_home_counter;
-    if (hearth_home_counter != 0) {
-        Printf("Entity # %d had hearth_home_counter %x.\n", entity_id, hearth_home_counter);
+    char bytes_count;
+    if (bytes_count != 0) {
+        PropertyBytes bytes[bytes_count];
     }
-    if (FTell() != end) {
-        Printf("Entity # %d ended at %Lx instead of %Lx\n", entity_id, FTell(), end);
-        return 0;
-    }
-
 } Entity <optimize=false>; //  size=entity_size
 
 int entity_size( Entity &e ) {
@@ -313,8 +320,8 @@ typedef struct {
 } Entities;
 
 typedef struct {
-    int ninety_nine;
-    int twenty_two;
+    int package_version;
+    int keys_version;
     int count;
     if (count > 0) {
         PString keys[count];
@@ -331,7 +338,7 @@ typedef struct {
     int version;
     int unknown;
     float time;
-    char whatever[8];
+    uquad ignored;
 } Header;
 
 typedef struct {
