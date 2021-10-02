@@ -64,25 +64,38 @@ typedef struct mapPOIs {
 } mapPOIs;
 
 
-typedef struct {
-    int four;
-    int chunk_size; // assumption based on empirical analysis
-    FSkip(400000h);
-    //analyze_map_chunks(chunk_size, 400000h);
-} VisibilityData;
+// typedef struct {
+//     int map_version;
+//     if (map_version == 4) {
+//         int chunk_size;
+//         FSkip(400000h);
+//         //analyze_map_chunks(chunk_size, 400000h);
+//     } else  {
+//         // current map version 7
+//         int compressed_size;
+//         FSkip(compressed_size);
+//     }
 
-string ReadVisibilty( VisibilityData &vis ) {
-    float max = 4194296.0;
-    string s;   
-    SPrintf( s, "%f percent seen", (vis.seen * 100) / max);
-    return s;
-}
+// } VisibilityData;
+
+// string ReadVisibilty( VisibilityData &vis ) {
+//     float max = 4194296.0;
+//     string s;   
+//     SPrintf( s, "%f percent seen", (vis.seen * 100) / max);
+//     return s;
+// }
 
 typedef struct {
     float x;
     float y;
     float z;
 } Triple;
+
+typedef struct {
+    int mini_map_version;
+    int compressed_size;
+    FSkip(compressed_size);
+} MiniMap <optimize=false>;
 
 typedef struct Map {
     char unknown_a[9] <bgcolor=cLtYellow>;
@@ -97,13 +110,14 @@ typedef struct Map {
     local int map_start = FTell();
     local int map_end = map_start + map_size;
     
-    VisibilityData fog_of_war <name="fog of war">;
-    mapPOIs pois;
-    local int map_end_actual = FTell();
-    if (map_end_actual != map_end) {
-        Printf("expected 0x%x, found 0x%x",map_size,map_end_actual-map_start);
-        char padding;
-    }
+    // VisibilityData fog_of_war <name="fog of war">;
+    // mapPOIs pois;
+    // local int map_end_actual = FTell();
+    // if (map_end_actual != map_end) {
+    //     Printf("expected 0x%x, found 0x%x",map_size,map_end_actual-map_start);
+    //     char padding;
+    // }
+    MiniMap mini_map;
 } Map;
 
 void skip_maps(void) {
@@ -211,7 +225,7 @@ typedef struct {
     int row;
     char equipped;
     int quality;
-    int unknown_a <bgcolor=cLtYellow>;
+    int variant <bgcolor=cLtYellow>;
     uquad creator_id <name="creator id">;
     PString creator_name <name="creator name">;
 } Item;
@@ -224,6 +238,7 @@ string ReadItem( Item &it ) {
 }
 
 typedef struct Inventory {
+    int version;
     int len;
     Item items[len] <name="item",optimize=false, read=ReadItem>;
 } Inventory;
@@ -271,10 +286,16 @@ typedef struct {
     PStringPair tutorials[len8] <optimize=false>;
 } Compendium <name="Compendium">;
 
+// pre-hh food structure
 typedef struct {
     PString name;
     float health;
     float stamina;
+} OldFood <read=ReadFood>;
+
+typedef struct {
+    PString name;
+    float value;
 } Food <read=ReadFood>;
 
 string ReadFood( Food &it ) {
@@ -337,7 +358,7 @@ typedef struct {
     char unknown_d <bgcolor=cYellow>;
     float unknown_counter <bgcolor=cYellow>;
     PString selected_gp <name="selected god power">;
-    char unknown_e[8] <bgcolor=cYellow>;
+    char unknown_e[4] <bgcolor=cYellow>;
     Inventory inventory <name="inventory">;
     Compendium compendium;
 
