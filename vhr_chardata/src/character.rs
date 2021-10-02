@@ -40,8 +40,8 @@ pub struct LoadedCharacter {
 // }
 
 impl LoadedCharacter {
-    pub fn to_disk(&self) -> CharacterOnDisk {
-        CharacterOnDisk {
+    pub fn to_disk(&self) -> CharacterFile {
+        CharacterFile {
             data_size: 8192,
             thirty_tree: 33,
             unknown: 0,
@@ -118,7 +118,7 @@ impl Default for LoadedCharacter {
 }
 
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
-pub struct CharacterOnDisk {
+pub struct CharacterFile {
     pub data_size: u32,
     pub thirty_tree: u32,
     pub unknown: u32,
@@ -154,7 +154,7 @@ pub struct CharacterOnDisk {
     pub hash: Vec<u8>,
 }
 
-impl CharacterOnDisk {
+impl CharacterFile {
     pub fn pre_serialize(&mut self) -> usize {
         let mut size: usize = 37;
         size += self.selected_power.len() + 1;

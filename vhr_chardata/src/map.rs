@@ -4,8 +4,19 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
+pub struct WorldMetadataFile {
+    file_size: i32,
+    map_version: i32,
+    name: String,
+    seed_name: String,
+    seed: i32,
+    uid: u64,
+    world_gen_version: i32,
+}
+
+
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
-pub struct MapOnDisk {
+pub struct MapDatabaseFile {
     pub header: MapHeader,
     pub entities: MapEntities,
     pub deleted: DeletedEntities,

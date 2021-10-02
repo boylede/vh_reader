@@ -8,3 +8,7 @@ pub mod character;
 pub mod data;
 pub mod map;
 pub mod prelude;
+
+pub use character::CharacterFile as FchFile;
+pub use map::MapDatabaseFile as DbFile;
+pub use map::WorldMetadataFile as FwlFile;
