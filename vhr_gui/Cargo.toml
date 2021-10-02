@@ -10,5 +10,5 @@ instant = { version = "0.1.6", features = ["wasm-bindgen"] }
 log = "0.4.11"
 serde = "1.0.125"
 
-vhr_chardata = {path = "../vhr_chardata"}
+vhr_datatypes = {path = "../vhr_datatypes"}
 vhr_serde = {path = "../vhr_serde"}

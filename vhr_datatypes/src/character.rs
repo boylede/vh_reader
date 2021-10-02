@@ -35,10 +35,6 @@ pub struct LoadedCharacter {
     pub skills: Vector<Skill>,
 }
 
-// fn map_compare(a: &Vec<Map>, b: &Vec<Map>) -> bool {
-//     a.eq(b)
-// }
-
 impl LoadedCharacter {
     pub fn to_disk(&self) -> CharacterFile {
         CharacterFile {
@@ -117,6 +113,7 @@ impl Default for LoadedCharacter {
     }
 }
 
+
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct CharacterFile {
     pub data_size: u32,
@@ -130,7 +127,6 @@ pub struct CharacterFile {
     pub player_id: u64,
     pub unknown_a: u8,
     pub unknown_b: u8,
-
     pub character_data_length: u32,
     pub always_twenty_four: u32,
     pub max_hp: f32,
