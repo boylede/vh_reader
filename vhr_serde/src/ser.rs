@@ -1,9 +1,26 @@
 use crate::error::{Error, Result};
-use serde::{ser, Serialize};
+use serde::{
+    ser::{self, Serializer},
+    Serialize,
+};
 
 #[derive(Default)]
 pub struct VHSerializer {
     output: Vec<u8>,
+}
+
+impl VHSerializer {
+    // todo: check implementation
+    fn push_varint(&mut self, v: usize) -> Result<()> {
+        if v > 255 {
+            self.output.push(255 as u8);
+            self.output.push((v - 255) as u8);
+            Ok(())
+        } else {
+            self.output.push(v as u8);
+            Ok(())
+        }
+    }
 }
 
 pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
@@ -15,7 +32,7 @@ where
     Ok(serializer.output)
 }
 
-impl<'a> ser::Serializer for &'a mut VHSerializer {
+impl<'a> Serializer for &'a mut VHSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -80,22 +97,27 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     fn serialize_char(self, v: char) -> Result<()> {
         Err(Error::WontImplement)
     }
-
     fn serialize_str(self, v: &str) -> Result<()> {
-        // todo, error on string too long
-        self.serialize_u8(v.len() as u8)?;
-        self.output.append(
-            &mut v
+        let original_len = v.len();
+        if original_len > 255 {
+            return Err(Error::OverlargeData);
+        } else {
+            self.serialize_u8(original_len as u8)?;
+            let mut new_string: Vec<u8> = v
                 .chars()
                 .filter(|c| c.is_ascii())
                 .map(|c| c as u8)
-                .collect(),
-        );
-        // todo: validate we didn't filter out anything, otherwise len is wrong;
-        Ok(())
+                .collect();
+            if new_string.len() < original_len {
+                return Err(Error::NonAsciiString);
+            } else {
+                self.output.append(&mut new_string);
+                Ok(())
+            }
+        }
     }
 
-    // do we need this?
+    // use short form here
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
         Err(Error::NotYetImplemented)
     }
@@ -148,7 +170,7 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     {
         Err(Error::NotYetImplemented)
     }
-
+    // use long form length here
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if let Some(len) = len {
             // todo: error on too large
@@ -180,9 +202,15 @@ impl<'a> ser::Serializer for &'a mut VHSerializer {
     ) -> Result<Self::SerializeTupleVariant> {
         Err(Error::NotYetImplemented)
     }
-
-    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        Err(Error::NotYetImplemented)
+    // use short form length here
+    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
+        if let Some(len) = len {
+            // todo: error on too large
+            self.push_varint(len)?;
+            Ok(self)
+        } else {
+            Err(Error::Other)
+        }
     }
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
