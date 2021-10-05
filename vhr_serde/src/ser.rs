@@ -10,15 +10,49 @@ pub struct VHSerializer {
 }
 
 impl VHSerializer {
+    fn push_bool(&mut self, v: bool) -> Result<()> {
+        self.output.push(if v { 1 } else { 0 });
+        Ok(())
+    }
     // todo: check implementation
     fn push_varint(&mut self, v: usize) -> Result<()> {
-        if v > 255 {
-            self.output.push(255 as u8);
-            self.output.push((v - 255) as u8);
+        // todo: we're assuming two-bytes max because thats all we've seen
+        // let first = self.take_byte()? as usize;
+        // let mut len = first;
+        // if first > 127 { // ie if high bit is set
+        //     let second = self.take_byte()? as usize;
+        //     len += (second - 1) * 128;
+        // }
+        // println!("got varint: {}", len);
+        // Ok(len)
+
+        if v > 127 {
+            let first = v - 127;
+            // we're assuming that "first" is now a value between 128 and 255
+            // i.e. the high bit is set in an 8-bit integer
+            self.output.push(first as u8);
+            // now we need to push the remainder
+            let second = ((v - first) / 128) - 1;
+            self.output.push(second as u8);
             Ok(())
         } else {
             self.output.push(v as u8);
             Ok(())
+        }
+    }
+    fn push_i32(&mut self, v: i32) -> Result<()> {
+        for b in v.to_le_bytes() {
+            self.output.push(b);
+        }
+        Ok(())
+    }
+    fn push_char(&mut self, v: char) -> Result<()> {
+        if v.is_ascii() {
+            self.output.push(v as u8);
+            Ok(())
+
+        } else {
+            Err(Error::NonAsciiString)
         }
     }
 }
@@ -45,8 +79,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
     type SerializeStructVariant = Self;
 
     fn serialize_bool(self, v: bool) -> Result<()> {
-        self.output.push(if v { 0 } else { 1 });
-        Ok(())
+        self.push_bool(v)
     }
 
     fn serialize_i8(self, v: i8) -> Result<()> {
@@ -55,15 +88,16 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_i16(self, v: i16) -> Result<()> {
-        Err(Error::WontImplement)
+        // Err(Error::WontImplement)
+        unimplemented!()
     }
 
     fn serialize_i32(self, v: i32) -> Result<()> {
-        Err(Error::NotYetImplemented)
+        self.push_i32(v)
     }
 
     fn serialize_i64(self, v: i64) -> Result<()> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 
     fn serialize_u8(self, v: u8) -> Result<()> {
@@ -72,10 +106,12 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_u16(self, v: u16) -> Result<()> {
-        Err(Error::WontImplement)
+        // Err(Error::WontImplement)
+        unimplemented!()
     }
 
     fn serialize_u32(self, v: u32) -> Result<()> {
+        // println!("serializing {}", v);
         self.output.extend_from_slice(&v.to_le_bytes());
         Ok(())
     }
@@ -91,11 +127,12 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
 
     fn serialize_f64(self, v: f64) -> Result<()> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 
     fn serialize_char(self, v: char) -> Result<()> {
-        Err(Error::WontImplement)
+        // Err(Error::WontImplement)
+        self.push_char(v)
     }
     fn serialize_str(self, v: &str) -> Result<()> {
         let original_len = v.len();
@@ -119,17 +156,19 @@ impl<'a> Serializer for &'a mut VHSerializer {
 
     // use short form here
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 
     fn serialize_none(self) -> Result<()> {
-        Ok(())
+        self.push_bool(false)
+
     }
 
     fn serialize_some<T>(self, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
-    {
+    {   
+        self.push_bool(true);
         value.serialize(self)
     }
 
@@ -148,7 +187,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
         variant_index: u32,
         variant: &'static str,
     ) -> Result<()> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 
     fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<()>
@@ -168,7 +207,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
     // use long form length here
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -190,7 +229,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
         _name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 
     fn serialize_tuple_variant(
@@ -200,7 +239,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
     // use short form length here
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
@@ -215,7 +254,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
         Ok(self)
-        // Err(Error::NotYetImplemented)
+        // unimplemented!()
     }
 
     fn serialize_struct_variant(
@@ -225,7 +264,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        Err(Error::NotYetImplemented)
+        unimplemented!()
     }
 }
 
@@ -297,11 +336,11 @@ impl<'a> ser::SerializeMap for &'a mut VHSerializer {
     type Ok = ();
     type Error = Error;
 
-    fn serialize_key<T>(&mut self, _key: &T) -> Result<()>
+    fn serialize_key<T>(&mut self, key: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        Ok(())
+        key.serialize(&mut **self)
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<()>

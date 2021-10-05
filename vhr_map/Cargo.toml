@@ -4,3 +4,5 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+vhr_datatypes = {path = "../vhr_datatypes"}
+vhr_serde = {path = "../vhr_serde"}

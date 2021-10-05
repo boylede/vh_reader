@@ -3,12 +3,28 @@ use druid::{Data, Lens};
 use serde::ser::SerializeSeq;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::rc::Rc;
 use std::collections::HashMap;
+use std::rc::Rc;
+
+const MAP_DATABASE_FILE_VERSION: i32 = 26;
+const UNKNOWN_HEADER: i32 = 0;
 
 pub struct World {
     pub root_id: u64,
     pub entities: MapEntities,
+}
+
+impl World {
+    pub fn store(self) -> MapDatabaseFile {
+        let mut header = MapHeader {
+            version: MAP_DATABASE_FILE_VERSION,
+            unknown: UNKNOWN_HEADER,
+            start_time: 0.0,
+            root_id: self.root_id,
+        };
+
+        unimplemented!()
+    }
 }
 
 pub struct WorldMetadataFile {
@@ -84,36 +100,36 @@ pub struct MapFooter {
     padding: [u8; 17],
 }
 
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Entity {
-    group_id: u64,
-    entity_id: i32,
+    pub group_id: u64,
+    pub entity_id: i32,
     // stuff: Vec<u8>,
-    len: i32,
-    owner_generation: i32,
-    data_generation: i32,
-    persistant: bool,
-    owner_id: u64,
-    timestamp: u64,
-    package_version: i32,
-    object_type: u8,
-    is_distant: u8,
-    prefab_id: i32,
-    sector_x: i32,
-    sector_y: i32,
-    pos: Position,
-    rotation: Quaternion,
-    floats: HashMap<PropertyName, f32>,
-    points: HashMap<PropertyName, Position>,
-    rots: HashMap<PropertyName, Quaternion>,
-    ints: HashMap<PropertyName, i32>,
-    pairs: HashMap<PropertyName, (i32, i32)>,
-    strings: HashMap<PropertyName, String>,
-    // bytes: HashMap<PropertyName, Vec<u8>>,
+    pub len: i32,
+    pub owner_generation: i32,
+    pub data_generation: i32,
+    pub persistant: bool,
+    pub owner_id: u64,
+    pub timestamp: u64,
+    pub package_version: i32,
+    pub object_type: u8,
+    pub is_distant: u8,
+    pub prefab_id: i32,
+    pub sector_x: i32,
+    pub sector_y: i32,
+    pub pos: Position,
+    pub rotation: Quaternion,
+    pub floats: HashMap<PropertyName, f32>,
+    pub points: HashMap<PropertyName, Position>,
+    pub rots: HashMap<PropertyName, Quaternion>,
+    pub ints: HashMap<PropertyName, i32>,
+    pub pairs: HashMap<PropertyName, (i32, i32)>,
+    pub strings: HashMap<PropertyName, String>,
+    // pub bytes: HashMap<PropertyName, Vec<u8>>,
 }
 
-#[derive(Hash, Default, PartialEq, Eq, Debug, Serialize, Deserialize)]
-pub struct PropertyName (u32);
+#[derive(Hash, Default, PartialEq, Eq, Debug, Serialize, Deserialize, Clone, Copy)]
+pub struct PropertyName(u32);
 
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct EntityDeletionRecord {
@@ -121,32 +137,16 @@ pub struct EntityDeletionRecord {
     b: i32,
     c: u64,
 }
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Position {
     x: f32,
     y: f32,
     z: f32,
 }
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Quaternion {
     x: f32,
     y: f32,
     z: f32,
     b: f32,
-}
-
-pub fn compact_vec_serialize<S, T>(vector: &Vec<T>, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-    T: Serialize,
-{
-    // serializer.serialize_u8(vector.len() as u8)?;
-    let mut seq = serializer.serialize_seq(None)?;
-    seq.serialize_element(&(vector.len() as u8))?;
-    for e in vector {
-        //     // serializer.serialize_any(e);
-        seq.serialize_element(e)?;
-        //     <T as Serialize>::serialize(e, serializer);
-    }
-    seq.end()
 }

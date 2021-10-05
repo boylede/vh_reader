@@ -36,25 +36,24 @@ impl<'de> VHDeserializer<'de> {
             .get(self.index)
             .ok_or(Error::ReachedUnexpectedEnd)?;
         self.increment()?;
-        println!("got u8: {}", value);
+        // println!("got u8: {}", value);
         Ok(*value)
     }
     fn take_varint(&mut self) -> Result<usize> {
-        let mut first = self.take_byte()? as usize;
-        let r = if first > 127 {
-            first -= 127;
+        let first = self.take_byte()? as usize;
+        let mut len = first;
+        if first > 127 {
+            // ie if high bit is set
             let second = self.take_byte()? as usize;
-            first + second
-        } else {
-            first
-        };
-        println!("got varint: {}", r);
-        Ok(r)
+            len += (second - 1) * 128;
+        }
+        // println!("got varint: {}", len);
+        Ok(len)
     }
     fn take_bool(&mut self) -> Result<bool> {
         let value = self.take_byte()?;
         let b = if value == 0 { false } else { true };
-        println!("got bool: {}", b);
+        // println!("got bool: {}", b);
         Ok(b)
     }
     /// takes an ascii character from the buffer. clears high bit.
@@ -81,7 +80,10 @@ impl<'de> VHDeserializer<'de> {
             self.take_byte()?,
         ];
         let num = i32::from_le_bytes(bytes);
-        println!("got i32: {} {} {} {} = {}", bytes[0], bytes[1], bytes[2], bytes[3], num);
+        // println!(
+        //     "got i32: {} {} {} {} = {}",
+        //     bytes[0], bytes[1], bytes[2], bytes[3], num
+        // );
         Ok(num)
     }
     fn take_u32(&mut self) -> Result<u32> {
@@ -92,7 +94,10 @@ impl<'de> VHDeserializer<'de> {
             self.take_byte()?,
         ];
         let num = u32::from_le_bytes(bytes);
-        println!("got u32: {} {} {} {} = {}", bytes[0], bytes[1], bytes[2], bytes[3], num);
+        // println!(
+        //     "got u32: {} {} {} {} = {}",
+        //     bytes[0], bytes[1], bytes[2], bytes[3], num
+        // );
         Ok(num)
     }
     fn take_f32(&mut self) -> Result<f32> {
@@ -103,7 +108,7 @@ impl<'de> VHDeserializer<'de> {
             self.take_byte()?,
         ];
         let num = f32::from_le_bytes(bytes);
-        println!("got f32: {}", num);
+        // println!("got f32: {}", num);
         Ok(num)
     }
     fn take_u64(&mut self) -> Result<u64> {
@@ -118,7 +123,7 @@ impl<'de> VHDeserializer<'de> {
             self.take_byte()?,
         ];
         let num = u64::from_le_bytes(bytes);
-        println!("got u64: {}", num);
+        // println!("got u64: {}", num);
         Ok(num)
     }
 }
@@ -133,7 +138,7 @@ where
     if remaining == 0 {
         Ok(t)
     } else {
-        // println!("{} bytes remaining.", remaining);
+        // // println!("{} bytes remaining.", remaining);
         Err(Error::UnconsumedData)
     }
 }
@@ -367,7 +372,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         //     Err(Error::ExpectedArray)
         // }
         let len = self.take_i32()? as usize;
-        println!("Sequence: ({})", len);
+        // println!("Sequence: ({})", len);
         self.deserialize_tuple(len, visitor)
     }
 
@@ -391,7 +396,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        println!("{} ({})", name, len);
+        // println!("{} ({})", name, len);
         self.deserialize_seq(visitor)
     }
 
@@ -432,7 +437,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        println!("{} ({})", name, fields.len());
+        // println!("{} ({})", name, fields.len());
         self.deserialize_tuple(fields.len(), visitor)
     }
 
@@ -513,7 +518,7 @@ impl<'de, 'a> MapAccess<'de> for ShortMapAccess<'a, 'de> {
         } else {
             self.len -= 1;
             seed.deserialize(&mut *self.deserializer).map(Some)
-        }        
+        }
     }
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value>
