@@ -14,31 +14,26 @@ impl VHSerializer {
         self.output.push(if v { 1 } else { 0 });
         Ok(())
     }
-    // todo: check implementation
+    fn push_u8(&mut self, v: u8) -> Result<()> {
+        self.output.push(v);
+        Ok(())
+    }
     fn push_varint(&mut self, v: usize) -> Result<()> {
-        // todo: we're assuming two-bytes max because thats all we've seen
-        // let first = self.take_byte()? as usize;
-        // let mut len = first;
-        // if first > 127 { // ie if high bit is set
-        //     let second = self.take_byte()? as usize;
-        //     len += (second - 1) * 128;
-        // }
-        // println!("got varint: {}", len);
-        // Ok(len)
-
-        if v > 127 {
-            let first = v - 127;
-            // we're assuming that "first" is now a value between 128 and 255
-            // i.e. the high bit is set in an 8-bit integer
-            self.output.push(first as u8);
-            // now we need to push the remainder
-            let second = ((v - first) / 128) - 1;
-            self.output.push(second as u8);
-            Ok(())
-        } else {
-            self.output.push(v as u8);
-            Ok(())
+        // 32 bit max int width, 7 bits per loop = 5 loops
+        // before we;ve gotten all possible bytes
+        let mut integer: u32 = v as u32;
+        for i in 0..5u32 {
+            let byte = (integer & 0xff) as u8;
+            // if high bit not set
+            self.push_u8(byte)?;
+            if byte <= 127 {
+                break;
+            } else {
+                integer >>= i * 7;
+                // if high bit set
+            }            
         }
+        Ok(())
     }
     fn push_i32(&mut self, v: i32) -> Result<()> {
         for b in v.to_le_bytes() {
@@ -50,7 +45,6 @@ impl VHSerializer {
         if v.is_ascii() {
             self.output.push(v as u8);
             Ok(())
-
         } else {
             Err(Error::NonAsciiString)
         }
@@ -139,7 +133,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
         if original_len > 255 {
             return Err(Error::OverlargeData);
         } else {
-            self.serialize_u8(original_len as u8)?;
+            self.push_varint(original_len)?;
             let mut new_string: Vec<u8> = v
                 .chars()
                 .filter(|c| c.is_ascii())
@@ -245,8 +239,12 @@ impl<'a> Serializer for &'a mut VHSerializer {
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
         if let Some(len) = len {
             // todo: error on too large
-            self.push_varint(len)?;
-            Ok(self)
+            if len > 255 {
+                Err(Error::OverlargeData)
+            } else {
+                self.push_u8(len as u8)?;
+                Ok(self)
+            }
         } else {
             Err(Error::Other)
         }

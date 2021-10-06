@@ -39,16 +39,21 @@ impl<'de> VHDeserializer<'de> {
         // println!("got u8: {}", value);
         Ok(*value)
     }
+    // a variable length integer
+    // used to prefix strings
     fn take_varint(&mut self) -> Result<usize> {
-        let first = self.take_byte()? as usize;
-        let mut len = first;
-        if first > 127 {
-            // ie if high bit is set
-            let second = self.take_byte()? as usize;
-            len += (second - 1) * 128;
+        // 32 bit max int width, 7 bits per loop = 5 loops
+        // before we;ve gotten all possible bytes
+        let mut integer: u32 = 0;
+        for i in 0..5u32 {
+            let byte = self.take_byte()?;
+            integer |= (byte as u32) << i * 7;
+            // if high bit set
+            if byte <= 127 {
+                break;
+            }
         }
-        // println!("got varint: {}", len);
-        Ok(len)
+        Ok(integer as usize)
     }
     fn take_bool(&mut self) -> Result<bool> {
         let value = self.take_byte()?;
@@ -64,8 +69,8 @@ impl<'de> VHDeserializer<'de> {
         Ok(c)
     }
     fn take_string(&mut self) -> Result<String> {
-        let len = self.take_byte()?;
-        let mut s = String::with_capacity(len as usize);
+        let len = self.take_varint()?;
+        let mut s = String::with_capacity(len);
         for _ in 0..len {
             s.push(self.take_char()?);
         }
@@ -407,7 +412,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let len = self.take_varint()?;
+        let len = self.take_u8()? as usize;
         let v = visitor.visit_map(ShortMapAccess {
             deserializer: self,
             len,
