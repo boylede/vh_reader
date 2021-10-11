@@ -107,12 +107,19 @@ typedef struct {
 
 typedef struct {
     PropertyType name;
-    uchar len;
-    local int length = len;
-    if (len > 127) { // ie if high bit is set
-        char sometimes;
-        length += (sometimes - 1) * 128; // only one attestation of this length so may be wildly off
+
+    local int length = 0;
+    local int i;
+    for (i = 0; i < 5; i++) {
+        uchar b;
+        // let byte = self.take_byte()?;
+        length |= ((int)b & 0x7f) << (i * 7);
+        // if high bit not set
+        if (b <= 127) {
+            break;
+        }
     }
+
     if (length > 0) { // eliminate warnings
         if (name == PROP_BASE64) {
             // peek at the first 4 bytes of the base64-encoded string, use this to single out ones we haven't seen before
