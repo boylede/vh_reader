@@ -23,21 +23,16 @@ impl<'de> VHDeserializer<'de> {
         Ok(())
     }
     fn take_byte(&mut self) -> Result<u8> {
-        let value = self
-            .input
-            .get(self.index)
-            .ok_or(Error::ReachedUnexpectedEnd)?;
+        let value = self.input.get(self.index).ok_or_else(|| {
+            Error::ReachedUnexpectedEnd
+        })?;
         self.increment()?;
         Ok(*value)
     }
     fn take_u8(&mut self) -> Result<u8> {
-        let value = self
-            .input
-            .get(self.index)
-            .ok_or(Error::ReachedUnexpectedEnd)?;
-        self.increment()?;
+        let value = self.take_byte()?;
         // println!("got u8: {}", value);
-        Ok(*value)
+        Ok(value)
     }
     // a variable length integer
     // used to prefix strings
@@ -47,7 +42,7 @@ impl<'de> VHDeserializer<'de> {
         let mut integer: u32 = 0;
         for i in 0..5u32 {
             let byte = self.take_byte()?;
-            integer |= (byte as u32) << i * 7;
+            integer |= (byte as u32 & 0x7f) << i * 7;
             // if high bit set
             if byte <= 127 {
                 break;
@@ -55,6 +50,7 @@ impl<'de> VHDeserializer<'de> {
         }
         Ok(integer as usize)
     }
+
     fn take_bool(&mut self) -> Result<bool> {
         let value = self.take_byte()?;
         let b = if value == 0 { false } else { true };
@@ -289,9 +285,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         visitor.visit_str(&s)
     }
 
-    // The `Serializer` implementation on the previous page serialized byte
-    // arrays as JSON arrays of bytes. Handle that representation here.
-    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {

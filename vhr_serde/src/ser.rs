@@ -23,15 +23,17 @@ impl VHSerializer {
         // before we;ve gotten all possible bytes
         let mut integer: u32 = v as u32;
         for i in 0..5u32 {
-            let byte = (integer & 0xff) as u8;
+            let byte = (integer & 0x7f) as u8;
             // if high bit not set
-            self.push_u8(byte)?;
+            
             if byte <= 127 {
+                self.push_u8(byte)?;
                 break;
             } else {
+                self.push_u8(byte | 0x80)?;
                 integer >>= i * 7;
                 // if high bit set
-            }            
+            }
         }
         Ok(())
     }
@@ -155,13 +157,12 @@ impl<'a> Serializer for &'a mut VHSerializer {
 
     fn serialize_none(self) -> Result<()> {
         self.push_bool(false)
-
     }
 
     fn serialize_some<T>(self, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
-    {   
+    {
         self.push_bool(true);
         value.serialize(self)
     }
