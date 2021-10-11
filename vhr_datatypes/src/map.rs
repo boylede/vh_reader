@@ -6,6 +6,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use properties::PropertyName;
+mod properties;
 const MAP_DATABASE_FILE_VERSION: i32 = 26;
 const UNKNOWN_HEADER: i32 = 0;
 
@@ -127,9 +129,6 @@ pub struct Entity {
     pub strings: HashMap<PropertyName, String>,
     // pub bytes: HashMap<PropertyName, Vec<u8>>,
 }
-
-#[derive(Hash, Default, PartialEq, Eq, Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct PropertyName(u32);
 
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct EntityDeletionRecord {

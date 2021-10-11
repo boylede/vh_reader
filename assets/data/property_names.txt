@@ -1,0 +1,150 @@
+[
+// dropped items
+"durability",
+"stack",
+"quality",
+"variant",
+"crafterID",
+"crafterName",
+// tombstone
+"ownerName",
+"timeOfDeath",
+"SpawnPoint",
+"owner",
+// attachments
+"ModelIndex",
+"SkinColor",
+"HairColor",
+"LeftItem",
+"LeftItemVariant",
+"RightItem",
+"LeftBackItem",
+"LeftBackItemVariant",
+"RightBackItem",
+"ChestItem",
+"LegItem",
+"HelmetItem",
+"ShoulderItem",
+"ShoulderItemVariant",
+"BeardItem",
+"HairItem",
+"UtilityItem",
+// from pickable
+"picked",
+"SetPicked",
+"Pick",
+"picked_time",
+// ??
+"itemPrefab",
+"itemStack",
+// bees
+"lastTime",
+"level",
+"product",
+// container
+"addedDefaultItems",
+"InUse",
+"items",
+// cooking station
+"StartTime",
+"slot0", // plus any number of variants
+"slotstatus0", // plus any number of variants
+"slot1",
+"slotstatus1",
+"slot2",
+"slotstatus2",
+"slot3",
+"slotstatus3",
+"slot4",
+"slotstatus4",
+"fuel",
+// from base ai
+"lastWorldTime",
+"spawntime",
+"haveTarget",
+"huntplayer",
+"spawnpoint",
+"patrolPoint",
+"patrol",
+"alert",
+// character
+"tamed",
+"level",
+"tiltrot",
+"health",
+"max_health",
+"noise",
+"BodyVelocity",
+// characteranim
+"LookTarget",
+// creature spawner
+"spawn_id",
+"alive_time",
+// door
+"state",
+// fermenter
+"Content",
+// fishingfloat
+"RodOwner",
+"CatchID",
+// humanoid
+"IsBlocking",
+// item stand
+"item",
+// lineconnect
+"line_slack",
+// liquid volume
+"LiquidData",
+// location proxy
+"location",
+"seed",
+// loot spawner
+"spawn_time",
+// map table
+"data",
+// mine rock
+"Health0",
+"Health1",
+"Health2",
+"Health3",
+"Health4",
+"Health5",
+"Health6",
+"Health7",
+"Health8",
+"Health9",
+"Health10",
+"Health11",
+"Health12",
+"Health13",
+"Health14",
+"Health15",
+"Health16",
+"Health17",
+"Health18",
+"Health19",
+"Health20", // i'm not doing more but i think this goes up to like 60
+"Health",
+// monster ai
+"DespawnInDay",
+"EventCreature",
+"sleeping",
+// piece
+"creator",
+// plant
+"plantTime",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]
