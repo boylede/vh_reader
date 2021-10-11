@@ -6,8 +6,12 @@ use druid::widget::{
 use druid::{AppLauncher, Data, Lens, Widget, WidgetExt, WindowDesc};
 
 use std::io::Write;
-use vhr_chardata::prelude::*;
-use vhr_chardata::data::inventory::ItemEquippedLens;
+use vhr_datatypes::data::color::ColorLens;
+use vhr_datatypes::prelude::*;
+use vhr_datatypes::{
+    character::LoadedCharacter, data::inventory::InventoryLens, data::inventory::ItemEquippedLens,
+    data::skill,
+};
 use vhr_serde::ser::to_bytes;
 
 fn main() {
@@ -126,9 +130,9 @@ fn build_appearance_tab() -> impl Widget<LoadedCharacter> {
         .with_default_spacer()
         .with_child(
             Flex::column()
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Red))
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Green))
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Blue)),
+                .with_child(Slider::new().lens(ColorLens::Red))
+                .with_child(Slider::new().lens(ColorLens::Green))
+                .with_child(Slider::new().lens(ColorLens::Blue)),
         )
         .lens(LoadedCharacter::hair)
         .fix_width(200.0);
@@ -138,9 +142,9 @@ fn build_appearance_tab() -> impl Widget<LoadedCharacter> {
         .with_default_spacer()
         .with_child(
             Flex::column()
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Red))
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Green))
-                .with_child(Slider::new().lens(vhr_chardata::data::color::ColorLens::Blue)),
+                .with_child(Slider::new().lens(ColorLens::Red))
+                .with_child(Slider::new().lens(ColorLens::Green))
+                .with_child(Slider::new().lens(ColorLens::Blue)),
         )
         .lens(LoadedCharacter::skin)
         .fix_width(200.0);
@@ -229,7 +233,7 @@ fn build_stats_tab() -> impl Widget<LoadedCharacter> {
                                 .with_child(
                                     Slider::new()
                                         .with_range(0.0, 100.0)
-                                        .lens(vhr_chardata::data::skill::Lensf32)
+                                        .lens(skill::Lensf32)
                                         .lens(Skill::progress),
                                 )
                                 .with_child(
@@ -252,7 +256,7 @@ fn inventory_item_row(row: u32) -> impl Widget<Inventory> {
     List::new(|| {
         Flex::row().with_child(
             Button::new(|item: &Item, _env: &_| format!("{}", item.name))
-                .on_click(|_ctx, data: &mut Item, _env| {
+                .on_click(|_ctx, _data: &mut Item, _env| {
                     // todo: pass in shared inventory data to manipulate selected item
                 })
                 .fix_width(64.0)
@@ -261,7 +265,7 @@ fn inventory_item_row(row: u32) -> impl Widget<Inventory> {
         )
     })
     .horizontal()
-    .lens(vhr_chardata::data::inventory::InventoryLens::Row(row))
+    .lens(InventoryLens::Row(row))
 }
 
 fn item_property<T: Data, S: Data, L: Lens<T, S> + 'static, W: Widget<S> + 'static>(
