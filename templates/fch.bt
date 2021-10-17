@@ -49,19 +49,16 @@ typedef struct {
     float z;
     char type; // an enum for the icon.
     int flags; // bit 24 should be if the icon is crossed out.
-} POI <read=ReadPOI>;
+    quad owner_id;
+} Pin <read=ReadPin>;
 
-string ReadPOI( POI &it ) {
+string ReadPin( Pin &it ) {
     if( exists( it.name.value ) )
         return it.name.value;
     else
         return "";
 }
 
-typedef struct mapPOIs {
-    int count;
-    POI entries[count] <optimize=false, name="poi">;
-} mapPOIs;
 
 
 // typedef struct {
@@ -91,11 +88,29 @@ typedef struct {
     float z;
 } Triple;
 
+// assumed map data inside gzip stream
+typedef struct {
+    int texture_size;
+    // vec of bools but no size?
+    // vec of others bools but no size?
+    int pin_count;
+    Pin pins[pin_count];
+    char announce_my_position;
+} MiniMapInnerData;
+
 typedef struct {
     int mini_map_version;
-    int compressed_size;
-    FSkip(compressed_size);
+    if (mini_map_version > 7) {
+        int compressed_size;
+        char compressed[compressed_size];
+    } else {
+        MiniMapInnerData data;
+    }
+    
+    //FSkip(compressed_size);
 } MiniMap <optimize=false>;
+
+
 
 typedef struct Map {
     char unknown_a[9] <bgcolor=cLtYellow>;
