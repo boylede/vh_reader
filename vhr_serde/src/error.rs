@@ -26,6 +26,7 @@ impl Display for Error {
                 UnconsumedData => "There was unexpected data at the end of the input",
                 OverlargeData => "The data was larger than the format allowed",
                 NonAsciiString => "An input string contained non-ascii characters",
+
                 Other => {
                     "This error message has not been written yet"
                 }

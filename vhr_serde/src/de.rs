@@ -289,14 +289,34 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        let len = self.take_byte()?;
+        println!("des bb len: {}", len);
+        let mut buf = Vec::with_capacity(len as usize);
+        if len > 0 {
+            for _ in 0..len {
+                let b = self.take_byte()?;
+                buf.push(b);
+            }            
+        }
+        visitor.visit_bytes(&buf)
+        // unimplemented!()
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        let len = self.take_byte()?;
+        println!("des obb len: {}", len);
+        let mut buf = Vec::with_capacity(len as usize);
+        if len > 0 {
+            for _ in 0..len {
+                let b = self.take_byte()?;
+                buf.push(b);
+            }            
+        }
+        visitor.visit_byte_buf(buf)
+        // unimplemented!()
     }
 
     // An absent optional is represented as the JSON `null` and a present

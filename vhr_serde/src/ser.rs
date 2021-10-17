@@ -132,9 +132,6 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
     fn serialize_str(self, v: &str) -> Result<()> {
         let original_len = v.len();
-        if original_len > 255 {
-            return Err(Error::OverlargeData);
-        } else {
             self.push_varint(original_len)?;
             let mut new_string: Vec<u8> = v
                 .chars()
@@ -147,7 +144,6 @@ impl<'a> Serializer for &'a mut VHSerializer {
                 self.output.append(&mut new_string);
                 Ok(())
             }
-        }
     }
 
     // use short form here
