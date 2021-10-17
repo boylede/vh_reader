@@ -2,12 +2,14 @@ use druid::im::Vector;
 use druid::{Data, Lens};
 use serde::ser::SerializeSeq;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_bytes::ByteBuf;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use properties::PropertyName;
-mod properties;
+use hashed_string::HashedString;
+pub mod hashed_string;
+
 const MAP_DATABASE_FILE_VERSION: i32 = 26;
 const UNKNOWN_HEADER: i32 = 0;
 
@@ -116,18 +118,18 @@ pub struct Entity {
     pub package_version: i32,
     pub object_type: u8,
     pub is_distant: u8,
-    pub prefab_id: i32,
+    pub prefab_id: HashedString,
     pub sector_x: i32,
     pub sector_y: i32,
     pub pos: Position,
     pub rotation: Quaternion,
-    pub floats: HashMap<PropertyName, f32>,
-    pub points: HashMap<PropertyName, Position>,
-    pub rots: HashMap<PropertyName, Quaternion>,
-    pub ints: HashMap<PropertyName, i32>,
-    pub pairs: HashMap<PropertyName, (i32, i32)>,
-    pub strings: HashMap<PropertyName, String>,
-    // pub bytes: HashMap<PropertyName, Vec<u8>>,
+    pub floats: HashMap<HashedString, f32>,
+    pub points: HashMap<HashedString, Position>,
+    pub rots: HashMap<HashedString, Quaternion>,
+    pub ints: HashMap<HashedString, i32>,
+    pub pairs: HashMap<HashedString, (i32, i32)>,
+    pub strings: HashMap<HashedString, String>,
+    pub bytes: HashMap<HashedString, ByteBuf>,
 }
 
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
