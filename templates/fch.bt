@@ -27,15 +27,14 @@ string ReadPString( PString &str ) {
         return "";
 }
 
-typedef struct fileHeader {
+typedef struct {
     int data_length <format=hex, name = "data length">; 
-    int thirty_tree;
-    int unknown;
-    int deaths;
-    int crafts;
-    int builds;
-    int map_count <name = "Map count">;
-} fileHeader;
+    int version;
+    int kill_count;
+    int death_count;
+    int craft_count;
+    int build_count;
+} FileHeader;
 
 typedef struct {
     int length;
@@ -50,7 +49,7 @@ typedef struct {
     char type; // an enum for the icon.
     int flags; // bit 24 should be if the icon is crossed out.
     quad owner_id;
-} Pin <read=ReadPin>;
+} Pin <read=ReadPin, optimize=false>;
 
 string ReadPin( Pin &it ) {
     if( exists( it.name.value ) )
@@ -59,6 +58,10 @@ string ReadPin( Pin &it ) {
         return "";
 }
 
+//typedef struct mapPOIs {
+//    int count;
+//    POI entries[count] <optimize=false, name="poi">;
+//} mapPOIs;
 
 
 // typedef struct {
@@ -100,7 +103,7 @@ typedef struct {
 
 typedef struct {
     int mini_map_version;
-    if (mini_map_version > 7) {
+    if (mini_map_version >= 7) {
         int compressed_size;
         char compressed[compressed_size];
     } else {
@@ -110,28 +113,23 @@ typedef struct {
     //FSkip(compressed_size);
 } MiniMap <optimize=false>;
 
+typedef struct {
+    char valid;
+    Triple pos;
+} OptionalPosition <optimize=false>;
 
 
 typedef struct Map {
-    char unknown_a[9] <bgcolor=cLtYellow>;
-    Triple unknown_triple_a <bgcolor=cYellow>;
-    char unknown_byte_a <bgcolor=cYellow>;
-    Triple current_location;
-    char unknown_byte_b <bgcolor=cYellow>;
-    Triple unknown_triple_b <bgcolor=cYellow>;
-    Triple unknown_triple_c <bgcolor=cYellow>;
-    char always_one;
+    uquad map_id;
+    OptionalPosition spawn_position;
+    OptionalPosition current_position;
+    OptionalPosition death_position;
+    Triple home_position;
+    char has_minimap;
     int map_size;
     local int map_start = FTell();
     local int map_end = map_start + map_size;
     
-    // VisibilityData fog_of_war <name="fog of war">;
-    // mapPOIs pois;
-    // local int map_end_actual = FTell();
-    // if (map_end_actual != map_end) {
-    //     Printf("expected 0x%x, found 0x%x",map_size,map_end_actual-map_start);
-    //     char padding;
-    // }
     MiniMap mini_map;
 } Map;
 
@@ -277,28 +275,48 @@ typedef struct {
 } PStringList;
 
 typedef enum Biomes {
+    BIOME_NONE = 0,
     BIOME_MEADOWS = 1,
-    BIOME_BLACKFOREST = 8
+    BIOME_SWAMP = 2,
+    BIOME_MOUNTAIN = 4,
+    BIOME_BLACKFOREST = 8,
+    BIOME_PLAINS = 16,
+    BIOME_ASHLANDS = 32,
+    BIOME_DEEPNOTH = 64,
+    BIOME_OCEAN = 256,
+    BIOME_MISTLANDS = 512,
 } Biomes;
 
+
 typedef struct {
-    PStringList items_seen;
-    
+    int biomes_seen;
+    Biomes biomes[biomes_seen];
+} Biomelist;
+
+typedef struct {
     int len2;
-    UpgradableEntry craftbenches_seen[len2] <optimize=false>;
+    UpgradableEntry crafting_benches[len2] <optimize=false>;
+} Upgradables <optimize=false>;
 
-    PStringList recipe_list;
+typedef struct {
+    int len8;
+    PStringPair texts[len8] <optimize=false>;
+} TextList <optimize=false>;
 
-    PStringList places;
+typedef struct {
+    PStringList recipies;
+    
+    Upgradables benches;
+
+    PStringList items;
+
+    PStringList tutorials;
     PStringList unknown_list;
 
     PStringList trophies;
-
-    int biomes_seen;
-    Biomes biomes[biomes_seen];
-
-    int len8;
-    PStringPair tutorials[len8] <optimize=false>;
+    Biomelist biomes;
+    
+    TextList texts;
 } Compendium <name="Compendium">;
 
 // pre-hh food structure
@@ -366,14 +384,14 @@ typedef struct {
     char zero;
     char one;
     int char_data_length;
-    int twenty_four <bgcolor=cLtYellow>; // never changes
+    int data_version; // 25 for H&H
     float max_hp <name="max hp">;
     float current_hp <name="current hp">; // value appears to be recalculated at launch
     float stamina <name="stamina">;
-    char unknown_d <bgcolor=cYellow>;
-    float unknown_counter <bgcolor=cYellow>;
+    char first_spawn;
+    float alive_timer <bgcolor=cYellow>;
     PString selected_gp <name="selected god power">;
-    char unknown_e[4] <bgcolor=cYellow>;
+    float gp_cooldown;
     Inventory inventory <name="inventory">;
     Compendium compendium;
 
@@ -398,8 +416,9 @@ string ReadCharacter( Character &cha ) {
 }
 
 typedef struct ChacterFile {
-    fileHeader header <name="File Header">;
-    Map maps[header.map_count] <optimize=false, name="Maps">;
+    FileHeader header <name="File Header">;
+    int map_count;
+    Map maps[map_count] <optimize=false, name="Maps">;
     Character character <name="Character">;
     Hash hash <name="Hash">;
 } CharacterFile <name="Character File">;;
