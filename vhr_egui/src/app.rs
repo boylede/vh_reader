@@ -1,4 +1,6 @@
+use eframe::egui::Rgba;
 use eframe::{egui, epi};
+use egui::Color32;
 use epi::App;
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -364,26 +366,37 @@ impl Loader {
             in_file.read_to_end(&mut loaded_file).ok();
         }
 
-        let character =
-            vhr_serde::de::from_bytes::<CharacterFile>(&loaded_file);
-        return match character {
+        let character = vhr_serde::de::from_bytes::<CharacterFile>(&loaded_file);
+        match character {
             Ok(loaded_file) => {
-                let next_state = CharacterEditor::Loaded(CharacterDialog {
-                    loaded_file,
-                    current_tab: Tabs::Stats,
-                    name: None,
-                });
-                Some(EditorEvent::SwapState(next_state))
-            },
+                if let Some(profile) = loaded_file.inner.to_inner() {
+                    if let Some(data) = &profile.data {
+                        let player = data.inner.clone().to_latest();
+                        let next_state = CharacterEditor::Loaded(CharacterDialog {
+                            current_tab: Tabs::Stats,
+                            profile,
+                            player,
+                        });
+                        Some(EditorEvent::SwapState(next_state))
+                    } else {
+                        println!("todo: handle files with no character data");
+                        None
+                    }
+                    
+                } else {
+                    // todo: store this as a change in state instead of checking repeatedly
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui.label("I didn't understand this file. The profile was an unexpected version");
+                    });
+                    None
+                }
+                
+            }
             Err(e) => {
                 todo!("couldnt load file, try another and revert to file picker state?");
                 None
             }
-        };
-
-        
-
-        // return None;
+        }
     }
 }
 
@@ -398,14 +411,13 @@ enum Tabs {
 }
 
 pub struct CharacterDialog {
-    loaded_file: CharacterFile,
     current_tab: Tabs,
-    name: Option<String>,
+    profile: Profile,
+    player: LatestPlayer,
 }
 
 impl CharacterDialog {
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) -> Option<EditorEvent> {
-        
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
@@ -417,128 +429,146 @@ impl CharacterDialog {
             });
         });
 
-        let character = &mut self.loaded_file;
-        if let Some(profile) = match &mut character.inner {
-            PlayerProfile::ThirtyThree(profile) => Some(profile),
-            PlayerProfile::ThirtySix(profile) => Some(profile),
-            _ => None,
-        } {
-            // stats tab
-            // let mut stats: Vec<(String, String)> = Vec::new();
-            // stats.push(("Kill Count".to_string(), profile.kill_count.to_string()));
-            // stats.push(("Death Count".to_string(), profile.death_count.to_string()));
-            // stats.push(("Crafting Count".to_string(), profile.crafting_count.to_string()));
-            // stats.push(("Building Count".to_string(), profile.building_count.to_string()));
-            // stats.push(("Name".to_string(), profile.name.to_owned()));
-            // stats.push(("Id".to_string(), profile.player_id.to_string()));
-        
-        if let None = self.name {
-            if profile.name.len() > 0 {
-                self.name = Some(profile.name.to_owned())
-            }
-        }
-        let mut c_tab = self.current_tab;
-        egui::CentralPanel::default().show(ctx,  |ui| {
-            ui.horizontal(|ui| {
-                ui.selectable_value(&mut c_tab, Tabs::Stats, "Stats");
-                ui.selectable_value(
-                    &mut c_tab,
-                    Tabs::Appearance,
-                    "Appearance",
-                );
-                ui.selectable_value(
-                    &mut c_tab,
-                    Tabs::Inventory,
-                    "Inventory",
-                );
-                ui.selectable_value(
-                    &mut c_tab,
-                    Tabs::Maps,
-                    "Maps",
-                );
-                ui.selectable_value(
-                    &mut c_tab,
-                    Tabs::Compendium,
-                    "Compendium",
-                );
-                ui.selectable_value(&mut c_tab, Tabs::HexView, "Hex View");
-            });
+
+
             
-            ui.separator();
-            // match self.demo {
-            //     ScrollDemo::ScrollTo => {
-            //         self.scroll_to.ui(ui);
-            //     }
-            //     ScrollDemo::ManyLines => {
-            //         huge_content_lines(ui);
-            //     }
-            //     ScrollDemo::LargeCanvas => {
-            //         huge_content_painter(ui);
-            //     }
-            //     ScrollDemo::StickToEnd => {
-            //         self.scroll_stick_to.ui(ui);
-            //     }
-            // }
-
-            egui::Grid::new("my_grid_id")
-                .num_columns(2)
-                .spacing([40.0, 4.0])
-                .striped(true)
-                .show(ui, |ui| {
-                    ui.add( egui::Label::new("Name"));
-                    // todo: add validation, limit length, minimum length, etc
-                    ui.add(egui::TextEdit::singleline(&mut profile.name).hint_text("Character's Name"));
-                    ui.end_row();
-
-                    ui.add( egui::Label::new("Id"));
-                    // todo: add validation, must be integer, etc
-                    let mut id_string = profile.player_id.to_string();
-                    ui.add(egui::TextEdit::singleline(&mut id_string).hint_text("Character's ID"));
-                    if let Some(id) = id_string.parse::<u64>().ok() {
-                        profile.player_id = id;
-                    }
-                    ui.end_row();
-
-                    ui.add( egui::Label::new("Kill Count"));
-                    ui.add(egui::Slider::new(&mut profile.kill_count, 0..=100));
-                    ui.end_row();
-
-                    ui.add( egui::Label::new("Death Count"));
-                    ui.add(egui::Slider::new(&mut profile.death_count, 0..=1000));
-                    ui.end_row();
-
-                    ui.add( egui::Label::new("Craft Count"));
-                    ui.add(egui::Slider::new(&mut profile.crafting_count, 0..=5000));
-                    ui.end_row();
-                    ui.add( egui::Label::new("Build Count"));
-                    ui.add(egui::Slider::new(&mut profile.building_count, 0..=20000));
-                    ui.end_row();
-
-                    
+            // this copy is necessary to avoid multiple borrows
+            let mut c_tab: Tabs = self.current_tab;
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.selectable_value(&mut c_tab, Tabs::Stats, "Stats");
+                    ui.selectable_value(&mut c_tab, Tabs::Appearance, "Appearance");
+                    ui.selectable_value(&mut c_tab, Tabs::Inventory, "Inventory");
+                    ui.selectable_value(&mut c_tab, Tabs::Maps, "Maps");
+                    ui.selectable_value(&mut c_tab, Tabs::Compendium, "Compendium");
+                    ui.selectable_value(&mut c_tab, Tabs::HexView, "Hex View");
                 });
-        });
-        if c_tab != self.current_tab {
+
+                ui.separator();
+                match c_tab {
+                    Tabs::Stats => {
+                        egui::Grid::new("stats_grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                ui.add(egui::Label::new("Name"));
+                                // todo: add validation, limit length, minimum length, etc
+                                ui.add(
+                                    egui::TextEdit::singleline(&mut self.profile.name)
+                                        .hint_text("Character's Name"),
+                                );
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Id"));
+                                // todo: add validation, must be integer, etc
+                                let mut id_string = self.profile.player_id.to_string();
+                                ui.add(
+                                    egui::TextEdit::singleline(&mut id_string)
+                                        .hint_text("Character's ID"),
+                                );
+                                if let Some(id) = id_string.parse::<u64>().ok() {
+                                    self.profile.player_id = id;
+                                }
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Kill Count"));
+                                ui.add(egui::Slider::new(&mut self.profile.kill_count, 0..=100));
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Death Count"));
+                                ui.add(egui::Slider::new(&mut self.profile.death_count, 0..=1000));
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Craft Count"));
+                                ui.add(egui::Slider::new(&mut self.profile.crafting_count, 0..=5000));
+                                ui.end_row();
+                                ui.add(egui::Label::new("Build Count"));
+                                ui.add(egui::Slider::new(&mut self.profile.building_count, 0..=20000));
+                                ui.end_row();
+                            });
+                    }
+                    Tabs::Appearance => {
+                        let mut hair_style_string = self.player.hair_type.0.clone();
+                        let mut beard_style_string = self.player.beard_type.0.clone();
+                        let mut skin_color: Color32 = {
+                            let Color {r, g, b} = self.player.skin;
+                            Rgba::from_rgb(r, g, b).into()
+                        };
+                        let mut hair_color: Color32 = {
+                            let Color {r, g, b} = self.player.hair;
+                            Rgba::from_rgb(r, g, b).into()
+                        };
+
+                        
+                        egui::Grid::new("appearance_grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                ui.add(egui::Label::new("Gender"));
+                                ui.horizontal(|ui| {
+                                    ui.selectable_value(&mut self.player.gender, Gender::Male, "Male");
+                                    ui.selectable_value(&mut self.player.gender, Gender::Female, "Female");
+                                    // ui.selectable_value(&mut self.player.gender, Enum::Third, "Third");
+                                });
+                                ui.end_row();
+                                
+                                ui.add(egui::Label::new("Hair Style"));
+                                // todo: add validation, limit length, minimum length, etc
+                                ui.add(
+                                    egui::TextEdit::singleline(&mut hair_style_string)
+                                        .hint_text("Hair Style"),
+                                );
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Beard Style"));
+                                // todo: add validation, limit length, minimum length, etc
+                                ui.add(
+                                    egui::TextEdit::singleline(&mut beard_style_string)
+                                        .hint_text("Beard Style"),
+                                );
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Skin Color"));
+                                ui.color_edit_button_srgba(&mut skin_color);
+                                ui.end_row();
+
+                                ui.add(egui::Label::new("Hair Color"));
+                                ui.color_edit_button_srgba(&mut hair_color);
+                                ui.end_row();
+                            });
+                    }
+                    Tabs::Inventory => {}
+                    Tabs::Maps => {}
+                    Tabs::Compendium => {}
+                    Tabs::HexView => {}
+                }
+            });
+            if c_tab != self.current_tab {
                 self.current_tab = c_tab;
             }
         // maps tab
-            // let maps: &Vec<Map> = &profile.maps;
-            // for (i, map) in maps.iter().enumerate() {
-            //     println!("Map # {}", i);
-            //     println!("\tid: {}", map.id);
-            //     println!("\tspawn point: {:?}", map.spawn);
-            //     println!("\tcurrent pos: {:?}", map.position);
-            //     println!("\tdeath pos: {:?}", map.death);
-            //     println!("\thome: {:?}", map.home);
-            //     if let Some(mini) = &map.mini_map {
-            //         println!("\tmini map size: {}", mini.len());
-            //     }
-            // }
-        } else {
-            egui::CentralPanel::default().show(ctx, |ui| {
-                ui.label("I didn't understand this file? The profile was an unexpected version");
-            });
-        }
+        // let maps: &Vec<Map> = &profile.maps;
+        // for (i, map) in maps.iter().enumerate() {
+        //     println!("Map # {}", i);
+        //     println!("\tid: {}", map.id);
+        //     println!("\tspawn point: {:?}", map.spawn);
+        //     println!("\tcurrent pos: {:?}", map.position);
+        //     println!("\tdeath pos: {:?}", map.death);
+        //     println!("\thome: {:?}", map.home);
+        //     if let Some(mini) = &map.mini_map {
+        //         println!("\tmini map size: {}", mini.len());
+        //     }
+        // }
 
+        // if let Some(profile) = match &mut character.inner {
+        //     PlayerProfile::ThirtyThree(profile) => Some(profile),
+        //     PlayerProfile::ThirtySix(profile) => Some(profile),
+        //     _ => None,
+        // }  else {
+            
+        // }
 
         None
     }

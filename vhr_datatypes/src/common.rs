@@ -1,5 +1,6 @@
 pub mod biome;
 pub mod color;
+pub mod food;
 pub mod hair;
 pub mod inventory;
 pub mod position;

@@ -6,10 +6,10 @@ use crate::prelude::*;
 
 pub use mini_map::MiniMap;
 pub use version_enum::*;
+pub use profile::Profile;
+pub use character_data::CharacterData;
 
 pub mod character_data;
-mod food;
-mod inventory;
 mod mini_map;
 mod profile;
 mod version_enum;
@@ -29,43 +29,43 @@ trait CountSize {
     fn count_bytes(&self) -> usize;
 }
 
-#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
-pub struct Compendium {
-    pub recipes: Vec<String>,
-    pub craftbenches: Vec<(String, u32)>,
-    pub materials_list: Vec<String>,
-    pub places: Vec<String>,
-    pub unknown_list: Vec<String>,
-    pub trophies: Vec<String>,
-    pub biomes: Vec<BiomeId>,
-    pub tutorials: Vec<(String, String)>,
-}
+// #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+// pub struct Compendium {
+//     pub recipes: Vec<String>,
+//     pub craftbenches: Vec<(String, u32)>,
+//     pub materials_list: Vec<String>,
+//     pub places: Vec<String>,
+//     pub unknown_list: Vec<String>,
+//     pub trophies: Vec<String>,
+//     pub biomes: Vec<BiomeId>,
+//     pub tutorials: Vec<(String, String)>,
+// }
 
-impl Compendium {
-    fn pre_serialize(&mut self) -> usize {
-        self.recipes.len()
-            + 4
-            + self
-                .craftbenches
-                .iter()
-                .map(|c| c.0.len() + 1 + 4)
-                .sum::<usize>()
-            + self
-                .materials_list
-                .iter()
-                .map(|m| m.len() + 1)
-                .sum::<usize>()
-            + self.places.iter().map(|m| m.len() + 1).sum::<usize>()
-            + self.unknown_list.iter().map(|m| m.len() + 1).sum::<usize>()
-            + self.trophies.iter().map(|m| m.len() + 1).sum::<usize>()
-            + (self.biomes.len() * 4)
-            + self
-                .tutorials
-                .iter()
-                .map(|(a, b)| a.len() + b.len() + 2)
-                .sum::<usize>()
-    }
-}
+// impl Compendium {
+//     fn pre_serialize(&mut self) -> usize {
+//         self.recipes.len()
+//             + 4
+//             + self
+//                 .craftbenches
+//                 .iter()
+//                 .map(|c| c.0.len() + 1 + 4)
+//                 .sum::<usize>()
+//             + self
+//                 .materials_list
+//                 .iter()
+//                 .map(|m| m.len() + 1)
+//                 .sum::<usize>()
+//             + self.places.iter().map(|m| m.len() + 1).sum::<usize>()
+//             + self.unknown_list.iter().map(|m| m.len() + 1).sum::<usize>()
+//             + self.trophies.iter().map(|m| m.len() + 1).sum::<usize>()
+//             + (self.biomes.len() * 4)
+//             + self
+//                 .tutorials
+//                 .iter()
+//                 .map(|(a, b)| a.len() + b.len() + 2)
+//                 .sum::<usize>()
+//     }
+// }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Map {

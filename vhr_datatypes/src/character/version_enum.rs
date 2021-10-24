@@ -11,130 +11,147 @@ use crate::prelude::*;
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct UnknownVersion;
 
+/// a version of the data structure known to not exist
+/// e.g. 0 isnt used as a version as far as i can tell
+/// todo: remove this boilerplate with changes to serialization so
+/// these impossible versions don't need to be represented here
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
+pub struct NoSuchVersion;
+
+pub trait Versioned {
+    fn to_latest(self) -> Self;
+}
+
 /// an enum over all character inventory versions
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum CharacterInventory {
-    Zero(UnknownVersion),
+    Zero(NoSuchVersion),
 
-    One(UnknownVersion),
-    Two(UnknownVersion),
-    Three(UnknownVersion),
-    Four(UnknownVersion),
-    Five(UnknownVersion),
-    Six(UnknownVersion),
-    Seven(UnknownVersion),
-    Eight(UnknownVersion),
-    Nine(UnknownVersion),
-    Ten(UnknownVersion),
+    One(NoSuchVersion),
+    Two(NoSuchVersion),
+    Three(NoSuchVersion),
+    Four(NoSuchVersion),
+    Five(NoSuchVersion),
+    Six(NoSuchVersion),
+    Seven(NoSuchVersion),
+    Eight(NoSuchVersion),
+    Nine(NoSuchVersion),
+    Ten(NoSuchVersion),
 
-    Eleven(UnknownVersion),
-    Twelve(UnknownVersion),
-    Thirteen(UnknownVersion),
-    Fourteen(UnknownVersion),
-    Fifteen(UnknownVersion),
-    Sixteen(UnknownVersion),
-    Seventeen(UnknownVersion),
-    Eighteen(UnknownVersion),
-    NineTeen(UnknownVersion),
+    Eleven(NoSuchVersion),
+    Twelve(NoSuchVersion),
+    Thirteen(NoSuchVersion),
+    Fourteen(NoSuchVersion),
+    Fifteen(NoSuchVersion),
+    Sixteen(NoSuchVersion),
+    Seventeen(NoSuchVersion),
+    Eighteen(NoSuchVersion),
+    NineTeen(NoSuchVersion),
 
-    Twenty(UnknownVersion),
-    TwentyOne(UnknownVersion),
-    TwentyTwo(UnknownVersion),
-    TwentyThree(UnknownVersion),
-    TwentyFour(UnknownVersion),
-    TwentyFive(UnknownVersion),
-    TwentySix(UnknownVersion),
-    TwentySeven(UnknownVersion),
-    TwentyEight(UnknownVersion),
-    TwentyNine(UnknownVersion),
+    Twenty(NoSuchVersion),
+    TwentyOne(NoSuchVersion),
+    TwentyTwo(NoSuchVersion),
+    TwentyThree(NoSuchVersion),
+    TwentyFour(NoSuchVersion),
+    TwentyFive(NoSuchVersion),
+    TwentySix(NoSuchVersion),
+    TwentySeven(NoSuchVersion),
+    TwentyEight(NoSuchVersion),
+    TwentyNine(NoSuchVersion),
 
-    Thirty(UnknownVersion),
-    ThirtyOne(UnknownVersion),
-    ThirtyTwo(UnknownVersion),
-    ThirtyThree(UnknownVersion),
-    ThirtyFour(UnknownVersion),
-    ThirtyFive(UnknownVersion),
-    ThirtySix(UnknownVersion),
-    ThirtySeven(UnknownVersion),
-    ThirtyEight(UnknownVersion),
-    ThirtyNine(UnknownVersion),
+    Thirty(NoSuchVersion),
+    ThirtyOne(NoSuchVersion),
+    ThirtyTwo(NoSuchVersion),
+    ThirtyThree(NoSuchVersion),
+    ThirtyFour(NoSuchVersion),
+    ThirtyFive(NoSuchVersion),
+    ThirtySix(NoSuchVersion),
+    ThirtySeven(NoSuchVersion),
+    ThirtyEight(NoSuchVersion),
+    ThirtyNine(NoSuchVersion),
 
-    Forty(UnknownVersion),
-    FortyOne(UnknownVersion),
-    FortyTwo(UnknownVersion),
-    FortyThree(UnknownVersion),
-    FortyFour(UnknownVersion),
-    FortyFive(UnknownVersion),
-    FortySix(UnknownVersion),
-    FortySeven(UnknownVersion),
-    FortyEight(UnknownVersion),
-    FortyNine(UnknownVersion),
+    Forty(NoSuchVersion),
+    FortyOne(NoSuchVersion),
+    FortyTwo(NoSuchVersion),
+    FortyThree(NoSuchVersion),
+    FortyFour(NoSuchVersion),
+    FortyFive(NoSuchVersion),
+    FortySix(NoSuchVersion),
+    FortySeven(NoSuchVersion),
+    FortyEight(NoSuchVersion),
+    FortyNine(NoSuchVersion),
 
-    Fifty(UnknownVersion),
-    FiftyOne(UnknownVersion),
-    FiftyTwo(UnknownVersion),
-    FiftyThree(UnknownVersion),
-    FiftyFour(UnknownVersion),
-    FiftyFive(UnknownVersion),
-    FiftySix(UnknownVersion),
-    FiftySeven(UnknownVersion),
-    FiftyEight(UnknownVersion),
-    FiftyNine(UnknownVersion),
+    Fifty(NoSuchVersion),
+    FiftyOne(NoSuchVersion),
+    FiftyTwo(NoSuchVersion),
+    FiftyThree(NoSuchVersion),
+    FiftyFour(NoSuchVersion),
+    FiftyFive(NoSuchVersion),
+    FiftySix(NoSuchVersion),
+    FiftySeven(NoSuchVersion),
+    FiftyEight(NoSuchVersion),
+    FiftyNine(NoSuchVersion),
 
-    Sixty(UnknownVersion),
-    SixtyOne(UnknownVersion),
-    SixtyTwo(UnknownVersion),
-    SixtyThree(UnknownVersion),
-    SixtyFour(UnknownVersion),
-    SixtyFive(UnknownVersion),
-    SixtySix(UnknownVersion),
-    SixtySeven(UnknownVersion),
-    SixtyEight(UnknownVersion),
-    SixtyNine(UnknownVersion),
+    Sixty(NoSuchVersion),
+    SixtyOne(NoSuchVersion),
+    SixtyTwo(NoSuchVersion),
+    SixtyThree(NoSuchVersion),
+    SixtyFour(NoSuchVersion),
+    SixtyFive(NoSuchVersion),
+    SixtySix(NoSuchVersion),
+    SixtySeven(NoSuchVersion),
+    SixtyEight(NoSuchVersion),
+    SixtyNine(NoSuchVersion),
 
-    Seventy(UnknownVersion),
-    SeventyOne(UnknownVersion),
-    SeventyTwo(UnknownVersion),
-    SeventyThree(UnknownVersion),
-    SeventyFour(UnknownVersion),
-    SeventyFive(UnknownVersion),
-    SeventySix(UnknownVersion),
-    SeventySeven(UnknownVersion),
-    SeventyEight(UnknownVersion),
-    SeventyNine(UnknownVersion),
+    Seventy(NoSuchVersion),
+    SeventyOne(NoSuchVersion),
+    SeventyTwo(NoSuchVersion),
+    SeventyThree(NoSuchVersion),
+    SeventyFour(NoSuchVersion),
+    SeventyFive(NoSuchVersion),
+    SeventySix(NoSuchVersion),
+    SeventySeven(NoSuchVersion),
+    SeventyEight(NoSuchVersion),
+    SeventyNine(NoSuchVersion),
 
-    Eighty(UnknownVersion),
-    EightyOne(UnknownVersion),
-    EightyTwo(UnknownVersion),
-    EightyThree(UnknownVersion),
-    EightyFour(UnknownVersion),
-    EightyFive(UnknownVersion),
-    EightySix(UnknownVersion),
-    EightySeven(UnknownVersion),
-    EightyEight(UnknownVersion),
-    EightyNine(UnknownVersion),
+    Eighty(NoSuchVersion),
+    EightyOne(NoSuchVersion),
+    EightyTwo(NoSuchVersion),
+    EightyThree(NoSuchVersion),
+    EightyFour(NoSuchVersion),
+    EightyFive(NoSuchVersion),
+    EightySix(NoSuchVersion),
+    EightySeven(NoSuchVersion),
+    EightyEight(NoSuchVersion),
+    EightyNine(NoSuchVersion),
 
-    Ninety(UnknownVersion),
-    NinetyOne(UnknownVersion),
-    NinetyTwo(UnknownVersion),
-    NinetyThree(UnknownVersion),
-    NinetyFour(UnknownVersion),
-    NinetyFive(UnknownVersion),
-    NinetySix(UnknownVersion),
-    NinetySeven(UnknownVersion),
-    NinetyEight(UnknownVersion),
-    NinetyNine(UnknownVersion),
+    Ninety(NoSuchVersion),
+    NinetyOne(NoSuchVersion),
+    NinetyTwo(NoSuchVersion),
+    NinetyThree(NoSuchVersion),
+    NinetyFour(NoSuchVersion),
+    NinetyFive(NoSuchVersion),
+    NinetySix(NoSuchVersion),
+    NinetySeven(NoSuchVersion),
+    NinetyEight(NoSuchVersion),
+    NinetyNine(NoSuchVersion),
 
-    OneHundred(UnknownVersion),
-    OneOhOne(UnknownVersion),
-    OneOhTwo(UnknownVersion),
+    OneHundred(Vec<(String, u32, f32, (u32, u32), bool)>),
+    OneOhOne(Vec<(String, u32, f32, (u32, u32), bool, u32)>),
+    OneOhTwo(Vec<(String, u32, f32, (u32, u32), bool, u32, u32)>),
     OneOhThree(Vec<Item>),
+}
+
+impl Versioned for CharacterInventory {
+    fn to_latest(self) -> Self {
+        todo!()
+    }
 }
 
 /// an enum with all versions of the player's profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum PlayerProfile {
-    Zero(UnknownVersion),
+    Zero(NoSuchVersion),
     One(UnknownVersion),
     Two(UnknownVersion),
     Three(UnknownVersion),
@@ -161,64 +178,459 @@ pub enum PlayerProfile {
     TwentyFour(UnknownVersion),
     TwentyFive(UnknownVersion),
     TwentySix(UnknownVersion),
-    TwentySeven(UnknownVersion),
-    TwentyEight(UnknownVersion),
-    TwentyNine(UnknownVersion),
-    Thirty(UnknownVersion),
-    ThirtyOne(UnknownVersion),
-    ThirtyTwo(UnknownVersion),
+    TwentySeven(Profile),
+    TwentyEight(Profile),
+    TwentyNine(Profile),
+    Thirty(Profile),
+    ThirtyOne(Profile),
+    ThirtyTwo(Profile),
     ThirtyThree(Profile),
-    ThirtyFour(UnknownVersion),
-    ThirtyFive(UnknownVersion),
+    ThirtyFour(Profile),
+    ThirtyFive(Profile),
     ThirtySix(Profile),
-    ThirtySeven(UnknownVersion),
-    ThirtyEight(UnknownVersion),
-    ThirtyNine(UnknownVersion),
+}
+
+impl PlayerProfile {
+    pub fn to_inner(self) -> Option<Profile> {
+        use PlayerProfile::*;
+        match self {
+            TwentySeven(profile) => Some(profile),
+            TwentyEight(profile) => Some(profile),
+            TwentyNine(profile) => Some(profile),
+            Thirty(profile) => Some(profile),
+            ThirtyOne(profile) => Some(profile),
+            ThirtyTwo(profile) => Some(profile),
+            ThirtyThree(profile) => Some(profile),
+            ThirtyFour(profile) => Some(profile),
+            ThirtyFive(profile) => Some(profile),
+            ThirtySix(profile) => Some(profile),
+            _ => None,
+        }
+        
+        // ThirtySix(p)
+    }
 }
 
 /// an enum with player skills versions
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum CharacterSkills {
-    Zero(UnknownVersion),
-    One(UnknownVersion),
+    Zero(NoSuchVersion),
+    One(Vec<(u32, f32)>),
     Two(Vec<Skill>),
 }
 
-/// an enum with all versions of the player's inner profile data type
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
-pub enum CharacterDataTemp {
-    Zero(UnknownVersion),
-    One(UnknownVersion),
-    Two(UnknownVersion),
-    Three(UnknownVersion),
-    Four(UnknownVersion),
-    Five(UnknownVersion),
-    Six(UnknownVersion),
-    Seven(UnknownVersion),
-    Eight(UnknownVersion),
-    Nine(UnknownVersion),
-    Ten(UnknownVersion),
-    Eleven(UnknownVersion),
-    Twelve(UnknownVersion),
-    Thirteen(UnknownVersion),
-    Fourteen(UnknownVersion),
-    Fifteen(UnknownVersion),
-    Sixteen(UnknownVersion),
-    Seventeen(UnknownVersion),
-    Eighteen(UnknownVersion),
-    NineTeen(UnknownVersion),
-    Twenty(UnknownVersion),
-    TwentyOne(UnknownVersion),
-    TwentyTwo(UnknownVersion),
-    TwentyThree(UnknownVersion),
-    TwentyFour(CharacterDataPreHH),
-    TwentyFive(CharacterDataPostHH),
+impl CharacterSkills {
+    pub fn new() -> Self {
+        CharacterSkills::Two(Vec::new())
+    }
 }
 
-// /// an enum with all versions of the player's inner profile data type
+impl Versioned for CharacterSkills {
+    fn to_latest(self) -> Self {
+        todo!()
+    }
+}
+
+/// an enum with all versions of the player's inner profile data type
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+pub enum Player {
+    Zero(NoSuchVersion),
+    One(PlayerOne),
+    Two(PlayerTwo),
+    Three(PlayerThree),
+    Four(PlayerFour),
+    Five(PlayerFive),
+    Six(PlayerSix),
+    Seven(PlayerSeven),
+    Eight(PlayerEight),
+    Nine(PlayerNine),
+    Ten(PlayerTen),
+    Eleven(PlayerEleven),
+    Twelve(PlayerTwelve),
+    Thirteen(PlayerThirteen),
+    Fourteen(PlayerFourteen),
+    Fifteen(PlayerFifteen),
+    Sixteen(PlayerSixteen),
+    Seventeen(PlayerSeventeen),
+    Eighteen(PlayerEighteen),
+    Nineteen(PlayerNineteen),
+    Twenty(PlayerTwenty),
+    TwentyOne(PlayerTwentyOne),
+    TwentyTwo(PlayerTwentyTwo),
+    TwentyThree(PlayerTwentyThree),
+    TwentyFour(PlayerTwentyFour),
+    TwentyFive(PlayerTwentyFive),
+}
+pub type LatestPlayer = PlayerTwentyFive;
+impl Player {
+    pub fn to_latest(self) -> LatestPlayer {
+        use Player::*;
+        match self {
+            Zero(_) => panic!("shouldnt occur"),
+            One(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                
+            }
+            Two(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                
+            }
+            Three(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Four(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Five(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Six(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Seven(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Eight(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Nine(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Ten(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Eleven(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Twelve(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Thirteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Fourteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Fifteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Sixteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Seventeen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Eighteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Nineteen(inner) => {
+                inner
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+                    .upgrade()
+            }
+            Twenty(inner) => {
+                inner.upgrade().upgrade().upgrade().upgrade().upgrade()
+            }
+            TwentyOne(inner) => {
+                inner.upgrade().upgrade().upgrade().upgrade()
+            }
+            TwentyTwo(inner) => {
+                inner.upgrade().upgrade().upgrade()
+            }
+            TwentyThree(inner) => inner.upgrade().upgrade(),
+            TwentyFour(inner) => inner.upgrade(),
+            TwentyFive(inner) => inner,
+        }
+    }
+}
+
+// /// an enum with all versions of the minimap
 // #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 // pub enum VersionedMiniMap {
-//     Zero(UnknownVersion),
+//     Zero(NoSuchVersion),
 //     One(UnknownVersion),
 //     Two(UnknownVersion),
 //     Three(UnknownVersion),

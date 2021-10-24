@@ -4,10 +4,10 @@ use std::rc::Rc;
 
 /// module for character files
 pub mod character;
-/// module for map files
-pub mod map;
 /// module for data types used throughout
 pub mod common;
+/// module for map files
+pub mod map;
 pub mod prelude;
 
 pub use character::CharacterFile as FchFile;

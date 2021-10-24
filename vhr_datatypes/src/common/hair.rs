@@ -1,3 +1,35 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+pub struct HairStyle(pub String);
+
+impl HairStyle {
+    pub fn hair_1() -> HairStyle {
+        HairStyle(String::from("Hair1"))
+    }
+    // pub const HAIR2: HairStyle = HairStyle(String::from("Hair2"));
+    // pub const HAIR3: HairStyle = HairStyle(String::from("Hair3"));
+    // pub const HAIR4: HairStyle = HairStyle(String::from("Hair4"));
+    // pub const HAIR5: HairStyle = HairStyle(String::from("Hair5"));
+    // pub const HAIR6: HairStyle = HairStyle(String::from("Hair6"));
+    // pub const HAIR7: HairStyle = HairStyle(String::from("Hair7"));
+    // pub const HAIR8: HairStyle = HairStyle(String::from("Hair8"));
+    // pub const HAIR9: HairStyle = HairStyle(String::from("Hair9"));
+    // pub const HAIR10: HairStyle = HairStyle(String::from("Hair10"));
+    // pub const HAIR11: HairStyle = HairStyle(String::from("Hair11"));
+    // pub const HAIR12: HairStyle = HairStyle(String::from("Hair12"));
+    // pub const HAIR13: HairStyle = HairStyle(String::from("Hair13"));
+    // pub const HAIR14: HairStyle = HairStyle(String::from("Hair14"));
+}
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+pub struct BeardStyle(pub String);
+
+impl BeardStyle {
+    pub fn beard_1() -> BeardStyle {
+        BeardStyle(String::from("Beard1"))
+    }
+}
+
 #[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub enum HairType {

@@ -46,11 +46,11 @@ fn main() {
             }
         }
         if let Some(data) = profile.data {
-            use vhr_datatypes::character::CharacterDataTemp::*;
+            use vhr_datatypes::character::Player::*;
             match data.inner {
                 TwentyFour(data) => {
                     println!("found version 24 character data");
-                    use vhr_datatypes::character::character_data::CharacterDataPreHH;
+                    use vhr_datatypes::character::character_data::PlayerTwentyFour;
                     // let CharacterDataPreHH {
                     //     max_hp,
                     //     current_hp,
@@ -73,7 +73,7 @@ fn main() {
                 }
                 TwentyFive(data) => {
                     println!("found version 25 character data");
-                    use vhr_datatypes::character::character_data::CharacterDataPostHH;
+                    use vhr_datatypes::character::character_data::PlayerTwentyFive;
                     // let CharacterDataPostHH {
                     //     max_hp,
                     //     current_hp,

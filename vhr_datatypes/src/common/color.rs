@@ -18,6 +18,12 @@ impl Color {
         g: 0.2,
         b: 0.2,
     };
+    // todo: figure out a good default
+    pub const SKIN: Color = Color {
+        r: 141.0 / 255.0,
+        g: 85.0 / 255.0,
+        b: 36.0 / 255.0,
+    };
 }
 
 // pub struct ColorLens {
