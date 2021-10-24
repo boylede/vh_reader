@@ -1,8 +1,6 @@
 #![warn(clippy::all, rust_2018_idioms)]
 mod app;
 pub use app::CharacterEditor;
-#[cfg(not(target_arch = "wasm32"))]
-pub use app::FolderViewer;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
