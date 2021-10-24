@@ -10,7 +10,10 @@ pub enum Error {
     UnconsumedData,
     OverlargeData,
     NonAsciiString,
-    Other,
+    IndexOverflowed,
+    CharacterEncoding,
+    UnknownSize,
+    Other(String),
 }
 
 impl Display for Error {
@@ -26,9 +29,11 @@ impl Display for Error {
                 UnconsumedData => "There was unexpected data at the end of the input",
                 OverlargeData => "The data was larger than the format allowed",
                 NonAsciiString => "An input string contained non-ascii characters",
-
-                Other => {
-                    "This error message has not been written yet"
+                IndexOverflowed => "The buffer index overflowed",
+                CharacterEncoding => "A character was not encoded as expected",
+                UnknownSize => "A size was expected but not known",
+                Other(msg) => {
+                    &msg
                 }
             }
         )
@@ -36,20 +41,20 @@ impl Display for Error {
 }
 
 impl serde::ser::Error for Error {
-    fn custom<T>(_msg: T) -> Self
+    fn custom<T>(msg: T) -> Self
     where
         T: Display,
     {
-        Error::Other
+        Error::Other(msg.to_string())
     }
 }
 
 impl serde::de::Error for Error {
-    fn custom<T>(_msg: T) -> Self
+    fn custom<T>(msg: T) -> Self
     where
         T: Display,
     {
-        Error::Other
+        Error::Other(msg.to_string())
     }
 }
 

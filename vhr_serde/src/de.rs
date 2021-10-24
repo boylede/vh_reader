@@ -19,11 +19,12 @@ impl<'de> VHDeserializer<'de> {
         VHDeserializer { input, index: 0 }
     }
     fn increment(&mut self) -> Result<()> {
-        self.index = self.index.checked_add(1).ok_or(Error::Other)?; // buffer larger than usize?
+        self.index = self.index.checked_add(1).ok_or(Error::IndexOverflowed)?; // buffer larger than usize?
         Ok(())
     }
     fn take_byte(&mut self) -> Result<u8> {
         let value = self.input.get(self.index).ok_or_else(|| {
+            // println!("reached end at {} of {}", self.index, self.input.len());
             Error::ReachedUnexpectedEnd
         })?;
         self.increment()?;
@@ -61,7 +62,7 @@ impl<'de> VHDeserializer<'de> {
     fn take_char(&mut self) -> Result<char> {
         let mut value = self.take_byte()?;
         value &= 0b01111111; // clear high bit
-        let c = char::from_u32(value as u32).ok_or(Error::Other)?;
+        let c = char::from_u32(value as u32).ok_or(Error::CharacterEncoding)?;
         Ok(c)
     }
     fn take_string(&mut self) -> Result<String> {
@@ -139,7 +140,7 @@ where
     if remaining == 0 {
         Ok(t)
     } else {
-        // // println!("{} bytes remaining.", remaining);
+        // println!("{} bytes remaining.", remaining);
         Err(Error::UnconsumedData)
     }
 }
@@ -153,20 +154,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         Err(Error::WontImplement)
     }
 
-    // Uses the `parse_bool` parsing function defined above to read the JSON
-    // identifier `true` or `false` from the input.
-    //
-    // Parsing refers to looking at the input and deciding that it contains the
-    // JSON value `true` or `false`.
-    //
-    // Deserialization refers to mapping that JSON value into Serde's data
-    // model by invoking one of the `Visitor` methods. In the case of JSON and
-    // bool that mapping is straightforward so the distinction may seem silly,
-    // but in other cases Deserializers sometimes perform non-obvious mappings.
-    // For example the TOML format has a Datetime type and Serde's data model
-    // does not. In the `toml` crate, a Datetime in the input is deserialized by
-    // mapping it to a Serde data model "struct" type with a special name and a
-    // single field containing the Datetime represented as a string.
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -290,13 +277,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         V: Visitor<'de>,
     {
         let len = self.take_byte()?;
-        println!("des bb len: {}", len);
+        // println!("des bb len: {}", len);
         let mut buf = Vec::with_capacity(len as usize);
         if len > 0 {
             for _ in 0..len {
                 let b = self.take_byte()?;
                 buf.push(b);
-            }            
+            }
         }
         visitor.visit_bytes(&buf)
         // unimplemented!()
@@ -307,26 +294,18 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         V: Visitor<'de>,
     {
         let len = self.take_byte()?;
-        println!("des obb len: {}", len);
+        // println!("des obb len: {}", len);
         let mut buf = Vec::with_capacity(len as usize);
         if len > 0 {
             for _ in 0..len {
                 let b = self.take_byte()?;
                 buf.push(b);
-            }            
+            }
         }
         visitor.visit_byte_buf(buf)
         // unimplemented!()
     }
 
-    // An absent optional is represented as the JSON `null` and a present
-    // optional is represented as just the contained value.
-    //
-    // As commented in `Serializer` implementation, this is a lossy
-    // representation. For example the values `Some(())` and `None` both
-    // serialize as just `null`. Unfortunately this is typically what people
-    // expect when working with JSON. Other formats are encouraged to behave
-    // more intelligently if possible.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -415,7 +394,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        // println!("{} ({})", name, len);
+        // println!("tuple struct {} ({}) @ {:x}", name, len, self.index);
         self.deserialize_seq(visitor)
     }
 
@@ -456,19 +435,21 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        // println!("{} ({})", name, fields.len());
+        // println!("struct {} ({})  @ {:x}", name, fields.len(), self.index);
         self.deserialize_tuple(fields.len(), visitor)
     }
-
+    /*
     fn deserialize_enum<V>(
         self,
-        _name: &'static str,
-        _variants: &'static [&'static str],
+        name: &'static str,
+        variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
+        let variant = self.take_u32()?;
+        println!("found enum variant {} for {},{:?}", variant, name, variants);
         // if self.peek_char()? == '"' {
         //     // Visit a unit variant.
         //     visitor.visit_enum(self.parse_string()?.into_deserializer())
@@ -485,6 +466,19 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         //     Err(Error::ExpectedEnum)
         // }
         unimplemented!()
+    }
+    */
+    fn deserialize_enum<V>(
+        self,
+        enum_name: &'static str,
+        variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        // println!("found enum {} with variants: {:?}", enum_name, variants);
+        visitor.visit_enum(self)
     }
 
     // An identifier in Serde is the type that identifies a field of a struct or
@@ -516,6 +510,50 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     {
         // self.deserialize_any(visitor)
         unimplemented!()
+    }
+}
+
+impl<'de, 'a> EnumAccess<'de> for &'a mut VHDeserializer<'de> {
+    type Error = Error;
+    type Variant = Self;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
+    where
+        V: serde::de::DeserializeSeed<'de>,
+    {
+        let variant = self.take_u32()?;
+        // println!("found enum variant {}", variant);
+        let val: Result<_> = seed.deserialize(variant.into_deserializer());
+        Ok((val?, self))
+    }
+}
+
+impl<'de, 'a> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de> {
+    type Error = Error;
+
+    fn unit_variant(self) -> Result<()> {
+        Ok(())
+    }
+
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        serde::de::DeserializeSeed::deserialize(seed, self)
+    }
+
+    fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        serde::de::Deserializer::deserialize_tuple(self, len, visitor)
+    }
+
+    fn struct_variant<V>(self, fields: &'static [&'static str], visitor: V) -> Result<V::Value>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        serde::de::Deserializer::deserialize_tuple(self, fields.len(), visitor)
     }
 }
 

@@ -25,7 +25,7 @@ impl VHSerializer {
         for i in 0..5u32 {
             let byte = (integer & 0x7f) as u8;
             // if high bit not set
-            
+
             if byte <= 127 {
                 self.push_u8(byte)?;
                 break;
@@ -132,18 +132,23 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
     fn serialize_str(self, v: &str) -> Result<()> {
         let original_len = v.len();
-            self.push_varint(original_len)?;
-            let mut new_string: Vec<u8> = v
-                .chars()
-                .filter(|c| c.is_ascii())
-                .map(|c| c as u8)
-                .collect();
-            if new_string.len() < original_len {
-                return Err(Error::NonAsciiString);
-            } else {
-                self.output.append(&mut new_string);
-                Ok(())
-            }
+        // if original_len > 255 {
+        //     println!("str longer than 255");
+        //     return Err(Error::OverlargeData);
+        // } else {
+        self.push_varint(original_len)?;
+        let mut new_string: Vec<u8> = v
+            .chars()
+            .filter(|c| c.is_ascii())
+            .map(|c| c as u8)
+            .collect();
+        if new_string.len() < original_len {
+            return Err(Error::NonAsciiString);
+        } else {
+            self.output.append(&mut new_string);
+            Ok(())
+        }
+        // }
     }
 
     // use short form here
@@ -178,7 +183,12 @@ impl<'a> Serializer for &'a mut VHSerializer {
         variant_index: u32,
         variant: &'static str,
     ) -> Result<()> {
-        unimplemented!()
+        // unimplemented!()
+        println!(
+            "serializing unit variant {}, {}, {}",
+            name, variant_index, variant
+        );
+        Ok(())
     }
 
     fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<()>
@@ -207,7 +217,7 @@ impl<'a> Serializer for &'a mut VHSerializer {
             self.serialize_u32(len as u32)?;
             Ok(self)
         } else {
-            Err(Error::Other)
+            Err(Error::UnknownSize)
         }
     }
 
@@ -237,13 +247,14 @@ impl<'a> Serializer for &'a mut VHSerializer {
         if let Some(len) = len {
             // todo: error on too large
             if len > 255 {
+                println!("map longer than 255");
                 Err(Error::OverlargeData)
             } else {
                 self.push_u8(len as u8)?;
                 Ok(self)
             }
         } else {
-            Err(Error::Other)
+            Err(Error::UnknownSize)
         }
     }
 
