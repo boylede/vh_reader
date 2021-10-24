@@ -1,0 +1,12 @@
+[package]
+name = "vhr_egui"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+eframe = "0.14.0"
+serde = { version = "1", features = ["derive"], optional = true }

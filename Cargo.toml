@@ -4,5 +4,7 @@ members = [
     "vhr_datatypes",
     "vhr_serde",
     "vhr_gui",
+    "vhr_egui",
     "vhr_map",
+    "vhr_open",
 ]
