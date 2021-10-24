@@ -51,7 +51,24 @@ typedef struct {
     quad owner_id;
 } Pin <read=ReadPin, optimize=false>;
 
+typedef struct {
+    PString name;
+    float x;
+    float y; // always zero?
+    float z;
+    char type; // an enum for the icon.
+    int flags; // bit 24 should be if the icon is crossed out.
+    //quad owner_id;
+} OldPin <read=ReadOldPin, optimize=false>;
+
 string ReadPin( Pin &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
+
+string ReadOldPin( OldPin &it ) {
     if( exists( it.name.value ) )
         return it.name.value;
     else
@@ -94,20 +111,33 @@ typedef struct {
 // assumed map data inside gzip stream
 typedef struct {
     int texture_size;
+    char spots[texture_size*texture_size];
     // vec of bools but no size?
     // vec of others bools but no size?
     int pin_count;
-    Pin pins[pin_count];
+    OldPin pins[pin_count];
     char announce_my_position;
-} MiniMapInnerData;
+} MiniMapInnerDataSinglePlayer;
+
+typedef struct {
+    int texture_size;
+    char spots[texture_size*texture_size];
+    // vec of bools but no size?
+    // vec of others bools but no size?
+    int pin_count;
+    OldPin pins[pin_count];
+    //char announce_my_position;
+} MiniMapInnerDatathree;
 
 typedef struct {
     int mini_map_version;
     if (mini_map_version >= 7) {
         int compressed_size;
         char compressed[compressed_size];
+    } if (mini_map_version > 3) {
+        MiniMapInnerDataSinglePlayer data;
     } else {
-        MiniMapInnerData data;
+        MiniMapInnerDatathree data;
     }
     
     //FSkip(compressed_size);
@@ -324,7 +354,7 @@ typedef struct {
     PString name;
     float health;
     float stamina;
-} OldFood <read=ReadFood>;
+} OldFood <read=ReadOldFood>;
 
 typedef struct {
     PString name;
@@ -332,6 +362,13 @@ typedef struct {
 } Food <read=ReadFood>;
 
 string ReadFood( Food &it ) {
+    if( exists( it.name.value ) )
+        return it.name.value;
+    else
+        return "";
+}
+
+string ReadOldFood( OldFood &it ) {
     if( exists( it.name.value ) )
         return it.name.value;
     else
@@ -347,8 +384,8 @@ typedef enum SkillName {
     SKILL_BLOCKING = 6,
     SKILL_AXES = 7,
     SKILL_BOWS = 8,
-    // 9
-    // 10
+    SKILL_FIREMAGIC = 9,
+    SKILL_FROSTMAGIC = 10,
     SKILL_UNARMED = 11,
     SKILL_PICKAXES = 12,
     SKILL_WOODCUTTING = 13,
@@ -356,7 +393,10 @@ typedef enum SkillName {
     SKILL_JUMP = 100,
     SKILL_SNEAK = 101,
     SKILL_RUN = 102,
-    SKILL_SWIM = 103
+    SKILL_SWIM = 103,
+    // H&H
+    SKILL_RIDE = 110,
+    SKILL_ALL = 999,
 } SkillName;
 
 typedef struct {
@@ -368,6 +408,12 @@ typedef struct {
 string ReadSkill ( Skill &sk ) {
     return EnumToString(sk.id);
 }
+
+typedef struct {
+    int version; // two as of h&h
+    int skill_count;
+    Skill skills[skill_count] <name="Skill">;
+} SkillList;
 
 typedef enum {
     GENDER_MALE = 0,
@@ -401,10 +447,13 @@ typedef struct {
     Triple hair;
     Gender gender;
     int food_count;
-    Food foods[food_count] <optimize=false, name="food">;
-    int two <bgcolor=cLtYellow>;
-    int skill_count;
-    Skill skills[skill_count] <name="Skill">;
+    if (data_version > 24) {
+        Food foods[food_count] <optimize=false, name="food">;
+    } else {
+        OldFood foods[food_count] <optimize=false, name="food">;
+    }
+    
+    SkillList skills;
     
 } Character <read=ReadCharacter>;
 
