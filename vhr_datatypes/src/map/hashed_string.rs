@@ -1,21 +1,20 @@
-use std::collections::{HashMap, HashSet};
-use serde::{Deserialize, Serialize};
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 
 const KNOWN_STRINGS: &str = &include_str!("../../../assets/data/known_strings.txt");
 
 lazy_static! {
-    pub(crate) static ref KNOWN_STRING_LOOKUP: HashMap<u32, &'static str> = {
-        KNOWN_STRINGS.lines().map(|v|(hash_str(v), v)).collect()
-    };
+    pub(crate) static ref KNOWN_STRING_LOOKUP: HashMap<u32, &'static str> =
+        { KNOWN_STRINGS.lines().map(|v| (hash_str(v), v)).collect() };
 }
 
 pub fn lookup_string(hash: u32) -> Option<&'static str> {
-    KNOWN_STRING_LOOKUP.get(&hash).map(|s|*s)
+    KNOWN_STRING_LOOKUP.get(&hash).map(|s| *s)
 }
 
 pub fn print_unique_strings() {
-    let k: HashSet<&str> = KNOWN_STRING_LOOKUP.iter().map(|(k,v)| *v).collect();
+    let k: HashSet<&str> = KNOWN_STRING_LOOKUP.iter().map(|(k, v)| *v).collect();
     let mut v: Vec<&str> = k.into_iter().collect();
     v.sort();
     for s in v.iter() {
@@ -24,7 +23,7 @@ pub fn print_unique_strings() {
 }
 
 #[derive(Hash, Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
-pub struct HashedString{
+pub struct HashedString {
     #[serde(skip)]
     order: usize, //todo: we want to use this to serialize in the same order as it was deserialized
     id: u32,
