@@ -5,7 +5,6 @@ authors = ["Daniel Boyle <boylede+github@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-druid = { version = "0.7.0", features = ["im"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_repr = "0.1"
 serde_bytes = "0.11"

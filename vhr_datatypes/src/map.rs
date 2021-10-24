@@ -1,5 +1,3 @@
-use druid::im::Vector;
-use druid::{Data, Lens};
 use serde::ser::SerializeSeq;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_bytes::ByteBuf;

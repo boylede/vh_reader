@@ -1,8 +1,7 @@
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize_repr, Deserialize_repr)]
+#[derive(PartialEq, Eq, Clone, Debug, Serialize_repr, Deserialize_repr)]
 #[repr(u32)]
 #[non_exhaustive]
 pub enum SkillName {
@@ -83,7 +82,7 @@ impl std::str::FromStr for SkillName {
     }
 }
 
-#[derive(Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Skill {
     pub id: SkillName,
     pub level: f32,
@@ -116,6 +115,7 @@ impl Skill {
     }
 }
 
+/*
 pub struct Lensf32;
 
 impl Lens<f32, f64> for Lensf32 {
@@ -145,3 +145,4 @@ impl Lens<f64, f32> for Lensf64 {
         value
     }
 }
+ */

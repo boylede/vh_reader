@@ -1,13 +1,11 @@
-use druid::im::Vector;
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// the inventory when loaded into memory for display in the gui
-#[derive(Data, Clone, Lens, Debug)]
+#[derive(Clone, Debug)]
 pub struct Inventory {
     pub selected_item: Option<(u32, u32)>,
-    pub items: Vector<Item>,
+    pub items: Vec<Item>,
 }
 
 impl Inventory {
@@ -19,7 +17,7 @@ impl Inventory {
     }
 }
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize, PartialOrd)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize, PartialOrd)]
 pub struct Item {
     pub name: String,
     pub quantity: u32,
@@ -125,6 +123,7 @@ impl Item {
     }
 }
 
+/*
 pub struct ItemEquippedLens {}
 
 impl ItemEquippedLens {
@@ -259,3 +258,4 @@ impl Lens<Inventory, Vector<Item>> for InventoryLens {
         v
     }
 }
+ */

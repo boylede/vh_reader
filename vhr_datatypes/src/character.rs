@@ -1,5 +1,3 @@
-use druid::im::Vector;
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
@@ -31,7 +29,7 @@ trait CountSize {
     fn count_bytes(&self) -> usize;
 }
 
-#[derive(Default, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Compendium {
     pub recipes: Vec<String>,
     pub craftbenches: Vec<(String, u32)>,
@@ -69,7 +67,7 @@ impl Compendium {
     }
 }
 
-#[derive(Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Map {
     pub id: u64,
     pub spawn: MarkedPoint,
@@ -99,7 +97,7 @@ impl Map {
     }
 }
 
-#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize_repr, Deserialize_repr)]
+#[derive(PartialEq, Eq, Clone, Debug, Serialize_repr, Deserialize_repr)]
 #[repr(u32)]
 #[non_exhaustive]
 pub enum Gender {
@@ -113,7 +111,7 @@ impl Default for Gender {
     }
 }
 
-#[derive(PartialEq, Eq, Data, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub enum BeardType {
     Beard1,

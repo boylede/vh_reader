@@ -1,5 +1,3 @@
-use druid::im::Vector;
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
@@ -39,7 +37,7 @@ impl MiniMap {
 //     data: SquareVec<u8>,
 // }
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Poi {
     name: String,
     pos: Point,

@@ -1,7 +1,6 @@
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Data, Clone, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
 pub struct BiomeId(u32);
 
 impl BiomeId {

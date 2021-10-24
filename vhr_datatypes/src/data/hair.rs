@@ -1,6 +1,4 @@
-use druid::Data;
-
-#[derive(PartialEq, Eq, Data, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub enum HairType {
     None,

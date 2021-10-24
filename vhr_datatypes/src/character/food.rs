@@ -1,10 +1,9 @@
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 
 use super::Map;
 use crate::prelude::*;
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FoodBoth {
     name: String,
     health: f32,
@@ -17,7 +16,7 @@ impl FoodBoth {
     }
 }
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FoodSingle {
     name: String,
     value: f32,

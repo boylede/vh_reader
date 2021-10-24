@@ -1,11 +1,10 @@
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize, Serializer};
 use std::rc::Rc;
 
 const MAP_WIDTH: usize = 2048;
 // const FOG_LENGTH: usize = MAP_WIDTH * MAP_WIDTH;
 
-#[derive(PartialEq, Eq, Data, Clone, Lens, Debug, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Clone, Debug, Deserialize, Serialize)]
 pub struct VisibilityData {
     four: u32,
     // twenty_fourty_eight: u32,
@@ -19,7 +18,7 @@ impl VisibilityData {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Lens, Debug, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Debug, Deserialize)]
 pub struct VisibilityRow {
     inner: Vec<u8>,
 }

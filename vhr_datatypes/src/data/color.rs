@@ -1,7 +1,6 @@
-use druid::{Data, Lens};
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Data, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
@@ -36,7 +35,7 @@ impl Color {
 //         ColorLens { color: Channel::Blue }
 //     }
 // }
-
+/*
 pub enum ColorLens {
     Red,
     Green,
@@ -69,3 +68,5 @@ impl Lens<Color, f64> for ColorLens {
         value
     }
 }
+
+ */
