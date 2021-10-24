@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
-use crate::data::square_vec::SquareVec;
 
 use crate::prelude::*;
 
