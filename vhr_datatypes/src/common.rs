@@ -10,7 +10,7 @@ pub mod vis_data;
 
 pub use biome::BiomeId;
 pub use color::Color;
-pub use hair::HairType;
+pub use hair::{HairType, HairStyle, BeardStyle};
 pub use inventory::{Inventory, Item};
 pub use position::{MarkedPoint, Point};
 pub use skill::Skill;

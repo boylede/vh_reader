@@ -113,6 +113,9 @@ impl Skill {
     pub fn pre_serialize(&mut self) -> usize {
         12
     }
+    // pub fn display_name(&self) -> String {
+    //     //
+    // }
 }
 
 /*

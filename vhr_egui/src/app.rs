@@ -1,6 +1,6 @@
-use eframe::egui::Rgba;
+use eframe::egui::{Rgba};
 use eframe::{egui, epi};
-use egui::Color32;
+use egui::{Color32,color::Hsva};
 use epi::App;
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -340,6 +340,8 @@ impl epi::App for FolderViewer {
 }
 
 */
+const BLANK_INVENTORY_ROW: [Item; 8] = [Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),];
+const BLANK_INVENTORY: [[Item; 8]; 4] = [BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW];
 
 pub struct Loader(PathBuf);
 
@@ -372,10 +374,34 @@ impl Loader {
                 if let Some(profile) = loaded_file.inner.to_inner() {
                     if let Some(data) = &profile.data {
                         let player = data.inner.clone().to_latest();
+                        let skills = player.skills.clone().to_latest().unwrap_or(Vec::new());
+                        let inventory = {
+                            let inv=
+                            player.inventory.clone().to_latest().unwrap_or(Vec::new());
+                            let init = BLANK_INVENTORY
+                            .iter()
+                            .map(|r|
+                                r.to_vec()
+                            ).collect::<Vec<Vec<Item>>>();
+                            inv.iter().fold(init, |mut inventory, new_item| -> Vec<Vec<Item>> {
+                                let row = new_item.row as usize;
+                                let column = new_item.column as usize;
+                                if let Some(row) = inventory.get_mut(row) {
+                                    if let Some(item) = row.get_mut(column) {
+                                        *item = new_item.clone();
+                                    }
+                                }
+                                inventory
+                            })
+                        };
+                        let selected_inventory_item = None;
                         let next_state = CharacterEditor::Loaded(CharacterDialog {
                             current_tab: Tabs::Stats,
                             profile,
                             player,
+                            skills,
+                            selected_inventory_item,
+                            inventory,
                         });
                         Some(EditorEvent::SwapState(next_state))
                     } else {
@@ -414,6 +440,9 @@ pub struct CharacterDialog {
     current_tab: Tabs,
     profile: Profile,
     player: LatestPlayer,
+    skills: Vec<Skill>,
+    selected_inventory_item: Option<(u32,u32)>,
+    inventory: Vec<Vec<Item>>,
 }
 
 impl CharacterDialog {
@@ -486,6 +515,20 @@ impl CharacterDialog {
                                 ui.add(egui::Label::new("Build Count"));
                                 ui.add(egui::Slider::new(&mut self.profile.building_count, 0..=20000));
                                 ui.end_row();
+                                
+                                ui.add(egui::Label::new("Skills"));
+                                ui.add(egui::Button::new("Add Skill"));
+                                ui.end_row();
+
+                                for skill in self.skills.iter() {
+                                    let mut temp_skill = skill.clone();
+                                    ui.add(egui::Label::new(format!("{}", temp_skill.id)));
+                                    ui.add(egui::Slider::new(&mut temp_skill.level, 0.0..=50.0));
+                                    ui.add(egui::Slider::new(&mut temp_skill.progress, 0.0..=100.0));
+                                    ui.add(egui::Button::new("Delete Skill"));
+                                    ui.end_row();
+                                    // todo: store skill back
+                                }
                             });
                     }
                     Tabs::Appearance => {
@@ -493,11 +536,18 @@ impl CharacterDialog {
                         let mut beard_style_string = self.player.beard_type.0.clone();
                         let mut skin_color: Color32 = {
                             let Color {r, g, b} = self.player.skin;
-                            Rgba::from_rgb(r, g, b).into()
+                            Rgba::from_rgba_premultiplied(r, g, b, 1.0).into()
                         };
                         let mut hair_color: Color32 = {
+
                             let Color {r, g, b} = self.player.hair;
-                            Rgba::from_rgb(r, g, b).into()
+                            // println!("input skin rgb {} {} {}", r,g, b);
+                            let r = (r * 255.0).floor() as u8;
+                            let g = (g * 255.0).floor() as u8;
+                            let b = (b * 255.0).floor() as u8;
+                            // Hsva::new(r,g,b,1.0).into()
+                            // Rgba::from_rgb(r, g, b).into()
+                            Color32::from_rgb(r, g, b)
                         };
 
                         
@@ -538,8 +588,129 @@ impl CharacterDialog {
                                 ui.color_edit_button_srgba(&mut hair_color);
                                 ui.end_row();
                             });
+
+                            self.player.hair_type = HairStyle(hair_style_string);
+                            self.player.beard_type = BeardStyle(beard_style_string);
+
+                            self.player.skin = {
+                                let (r,g, b, _) = skin_color.to_tuple();
+                                let r = r as f32 / 255.0;
+                                let g = g as f32 / 255.0;
+                                let b = b as f32 / 255.0;
+                                Color {r,g,b}
+                            };
+                            self.player.hair = {
+                                let (r,g, b, _) = hair_color.to_tuple();
+                                // println!("output skin rgb u8 {} {} {}", r,g, b);
+                                let r = r as f32 / 255.0;
+                                let g = g as f32 / 255.0;
+                                let b = b as f32 / 255.0;
+                                // println!("output skin rgb f32 {} {} {}", r,g, b);
+                                Color {r,g,b}
+                            };
                     }
-                    Tabs::Inventory => {}
+                    Tabs::Inventory => {
+                        egui::Grid::new("inventory_grid")
+                            .num_columns(8)
+                            .spacing([10.0, 10.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+
+                        for (row_num, row) in self.inventory.iter().enumerate() {
+                            for (column_num, slot) in row.iter().enumerate() {
+                                if slot.name.len() > 0 {
+                                    if ui.add(egui::Button::new("XXX")).clicked() {
+                                        self.selected_inventory_item = Some((row_num as u32, column_num as u32));
+                                    }
+                                } else {
+                                    if ui.add(egui::Button::new("___")).clicked() {
+                                        self.selected_inventory_item = Some((row_num as u32, column_num as u32));
+                                    }
+                                }
+                                
+                            }
+                            ui.end_row();
+                        }
+                    });
+                    ui.separator();
+                    egui::Grid::new("item_grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                if let Some((r,c)) = self.selected_inventory_item {
+                                    if let Some(selected_item) = self.inventory.get_mut(r as usize).and_then(|r|r.get_mut(c as usize)) {
+                                        ui.add(egui::Label::new("Name"));
+                                        // todo: add validation, etc
+                                        let name = &mut selected_item.name;
+                                        ui.add(
+                                            egui::TextEdit::singleline(name)
+                                                .hint_text("Item Name"),
+                                        );
+                                        // todo: store the items name again
+                                        // validate that it is a known item
+                                        ui.end_row();
+                                        // pub quantity: u32,
+                                        ui.add(egui::Label::new("Quantity"));
+                                        ui.add(egui::Slider::new(&mut selected_item.quantity, 0..=100));
+                                        ui.end_row();
+                                        // pub durability: f32,
+                                        ui.add(egui::Label::new("Durability"));
+                                        ui.add(egui::Slider::new(&mut selected_item.durability, 0.0..=100.0));
+                                        ui.end_row();
+                                        // pub column: u32,
+                                        // pub row: u32,
+                                        // pub equipped: u8,
+                                        ui.add(egui::Label::new("Equipped"));
+                                        let mut b = selected_item.equipped == 1;
+                                        ui.checkbox(&mut b, "Equipped");
+                                        selected_item.equipped = match b {
+                                            true => 1,
+                                            false => 0,
+                                        };
+                                        ui.end_row();
+                                        // pub quality: u32,
+                                        ui.add(egui::Label::new("Quality"));
+                                        ui.add(egui::Slider::new(&mut selected_item.quality, 0..=6));
+                                        ui.end_row();
+                                        // pub variant: u32,
+                                        ui.add(egui::Label::new("Variant"));
+                                        ui.add(egui::Slider::new(&mut selected_item.variant, 0..=6));
+                                        ui.end_row();
+                                        // pub creator_id: u64,
+                                        ui.add(egui::Label::new("Creator Id"));
+                                        // todo: add validation, must be integer, etc
+                                        let mut id_string = selected_item.creator_id.to_string();
+                                        ui.add(
+                                            egui::TextEdit::singleline(&mut id_string)
+                                                .hint_text("Character's ID"),
+                                        );
+                                        if let Some(id) = id_string.parse::<u64>().ok() {
+                                            selected_item.creator_id = id;
+                                        }
+                                        ui.end_row();
+                                        // pub creator_name: String,
+                                        ui.add(egui::Label::new("Creator Name"));
+                                        // todo: add validation, limit length, minimum length, etc
+                                        ui.add(
+                                            egui::TextEdit::singleline(&mut selected_item.creator_name)
+                                                .hint_text("Character's Name"),
+                                        );
+                                        ui.end_row();
+                                    } else {
+                                        ui.label("can this even happen?");
+                                    }
+                                    
+                                
+                                } else {
+                                    // egui::CentralPanel::default().show(ctx, |ui| {
+                                        ui.label("Select an inventory slot");
+                                    // });
+                                }
+                                
+                            });
+                        
+                    }
                     Tabs::Maps => {}
                     Tabs::Compendium => {}
                     Tabs::HexView => {}

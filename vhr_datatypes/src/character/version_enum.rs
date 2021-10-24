@@ -142,9 +142,16 @@ pub enum CharacterInventory {
     OneOhThree(Vec<Item>),
 }
 
-impl Versioned for CharacterInventory {
-    fn to_latest(self) -> Self {
-        todo!()
+impl CharacterInventory {
+    pub fn to_latest(self) -> Option<Vec<Item>> {
+        use CharacterInventory::*;
+        match self {
+            OneHundred(_) => None,
+            OneOhOne(_) => None,
+            OneOhTwo(_) => None,
+            OneOhThree(inner) => Some(inner),
+            _ => None,
+        }
     }
 }
 
@@ -223,11 +230,13 @@ impl CharacterSkills {
     pub fn new() -> Self {
         CharacterSkills::Two(Vec::new())
     }
-}
-
-impl Versioned for CharacterSkills {
-    fn to_latest(self) -> Self {
-        todo!()
+    pub fn to_latest(self) -> Option<Vec<Skill>> {
+        use CharacterSkills::*;
+        match self {
+            Zero(_) => None,
+            One(inner) => None, // todo: convert these.
+            Two(inner) => Some(inner),
+        }
     }
 }
 

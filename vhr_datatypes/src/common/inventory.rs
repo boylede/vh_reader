@@ -32,6 +32,20 @@ pub struct Item {
 }
 
 impl Item {
+    pub const fn null_item() -> Item {
+        Item {
+            name: String::new(),
+            quantity: 0,
+            durability: 0.0,
+            column: 0,
+            row: 0,
+            equipped: 0,
+            quality: 0,
+            variant: 0,
+            creator_id: 0,
+            creator_name: String::new(),
+        }
+    }
     pub fn empty(row: u32, column: u32) -> Self {
         let mut item: Item = Default::default();
         item.row = row;
