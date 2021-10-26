@@ -201,14 +201,15 @@ impl<'a> Serializer for &'a mut VHSerializer {
     fn serialize_newtype_variant<T>(
         self,
         _name: &'static str,
-        _variant_index: u32,
-        variant: &'static str,
+        variant_index: u32,
+        _variant: &'static str,
         value: &T,
     ) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        self.serialize_u32(variant_index)?;
+        value.serialize(self)
     }
     // use long form length here
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
