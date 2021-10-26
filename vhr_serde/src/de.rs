@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, marker::PhantomData};
 
 use crate::error::{Error, Result};
 use serde::{
@@ -9,18 +9,52 @@ use serde::{
     Deserialize,
 };
 
-pub struct VHDeserializer<'de> {
-    input: &'de [u8],
-    index: usize,
+pub trait DeserializeOptions {
+    fn modify_sequence_length(&mut self, length: usize) -> usize {
+        length
+    }
 }
 
-impl<'de> VHDeserializer<'de> {
-    pub fn from_bytes(input: &'de [u8]) -> Self {
-        VHDeserializer { input, index: 0 }
+impl DeserializeOptions for () { }
+
+pub struct VHDeserializer<'de, O> {
+    input: &'de [u8],
+    index: usize,
+    options: O,
+}
+
+impl<'de> VHDeserializer<'de, ()> {
+    pub fn from_bytes(input: &'de [u8]) -> VHDeserializer<'de, ()> {
+        VHDeserializer { input, index: 0, options: ()}
+    }
+}
+
+impl<'de, O> VHDeserializer<'de, O> {
+    pub fn from_bytes_options(input: &'de [u8], options: O) -> VHDeserializer<'de, O> {
+        VHDeserializer { input, index: 0, options}
+    }
+    pub fn into_inner(self) -> &'de [u8] {
+        self.input
     }
     fn increment(&mut self) -> Result<()> {
         self.index = self.index.checked_add(1).ok_or(Error::IndexOverflowed)?; // buffer larger than usize?
         Ok(())
+    }
+    fn peek_byte(&self, offset: usize) -> Result<u8> {
+        let index = self.index.checked_add(offset).ok_or_else(||Error::ReachedUnexpectedEnd)?;
+        self.input.get(index).copied().ok_or_else(|| {
+            Error::ReachedUnexpectedEnd
+        })
+    }
+    pub fn peek_u32(&mut self) -> Result<u32> {
+        let bytes: [u8; 4] = [
+            self.peek_byte(0)?,
+            self.peek_byte(1)?,
+            self.peek_byte(2)?,
+            self.peek_byte(3)?,
+        ];
+        let num = u32::from_le_bytes(bytes);
+        Ok(num)
     }
     fn take_byte(&mut self) -> Result<u8> {
         let value = self.input.get(self.index).ok_or_else(|| {
@@ -30,14 +64,14 @@ impl<'de> VHDeserializer<'de> {
         self.increment()?;
         Ok(*value)
     }
-    fn take_u8(&mut self) -> Result<u8> {
+    pub fn take_u8(&mut self) -> Result<u8> {
         let value = self.take_byte()?;
         // println!("got u8: {}", value);
         Ok(value)
     }
     // a variable length integer
     // used to prefix strings
-    fn take_varint(&mut self) -> Result<usize> {
+    pub fn take_varint(&mut self) -> Result<usize> {
         // 32 bit max int width, 7 bits per loop = 5 loops
         // before we;ve gotten all possible bytes
         let mut integer: u32 = 0;
@@ -52,20 +86,20 @@ impl<'de> VHDeserializer<'de> {
         Ok(integer as usize)
     }
 
-    fn take_bool(&mut self) -> Result<bool> {
+    pub fn take_bool(&mut self) -> Result<bool> {
         let value = self.take_byte()?;
         let b = if value == 0 { false } else { true };
         // println!("got bool: {}", b);
         Ok(b)
     }
     /// takes an ascii character from the buffer. clears high bit.
-    fn take_char(&mut self) -> Result<char> {
+    pub fn take_char(&mut self) -> Result<char> {
         let mut value = self.take_byte()?;
         value &= 0b01111111; // clear high bit
         let c = char::from_u32(value as u32).ok_or(Error::CharacterEncoding)?;
         Ok(c)
     }
-    fn take_string(&mut self) -> Result<String> {
+    pub fn take_string(&mut self) -> Result<String> {
         let len = self.take_varint()?;
         let mut s = String::with_capacity(len);
         for _ in 0..len {
@@ -74,7 +108,7 @@ impl<'de> VHDeserializer<'de> {
 
         Ok(s)
     }
-    fn take_i32(&mut self) -> Result<i32> {
+    pub fn take_i32(&mut self) -> Result<i32> {
         let bytes: [u8; 4] = [
             self.take_byte()?,
             self.take_byte()?,
@@ -88,7 +122,7 @@ impl<'de> VHDeserializer<'de> {
         // );
         Ok(num)
     }
-    fn take_u32(&mut self) -> Result<u32> {
+    pub fn take_u32(&mut self) -> Result<u32> {
         let bytes: [u8; 4] = [
             self.take_byte()?,
             self.take_byte()?,
@@ -102,7 +136,7 @@ impl<'de> VHDeserializer<'de> {
         // );
         Ok(num)
     }
-    fn take_f32(&mut self) -> Result<f32> {
+    pub fn take_f32(&mut self) -> Result<f32> {
         let bytes: [u8; 4] = [
             self.take_byte()?,
             self.take_byte()?,
@@ -113,7 +147,7 @@ impl<'de> VHDeserializer<'de> {
         // println!("got f32: {}", num);
         Ok(num)
     }
-    fn take_u64(&mut self) -> Result<u64> {
+    pub fn take_u64(&mut self) -> Result<u64> {
         let bytes: [u8; 8] = [
             self.take_byte()?,
             self.take_byte()?,
@@ -127,6 +161,17 @@ impl<'de> VHDeserializer<'de> {
         let num = u64::from_le_bytes(bytes);
         // println!("got u64: {}", num);
         Ok(num)
+    }
+    // pub fn take_vec<T>(&mut self) -> Result<Vec<T>> where T: Deserialize<'de> {
+    //     let length = self.take_u32()?;
+    //     self.take_slice(length as usize)
+    // }
+    pub fn take_byte_slice(&mut self, length: usize) -> Result<Vec<u8>> {
+        let mut v = Vec::with_capacity(length);
+        for _ in 0..length {
+            v.push(self.take_u8()?);
+        }
+        Ok(v)
     }
 }
 
@@ -145,7 +190,7 @@ where
     }
 }
 
-impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
+impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
     type Error = Error;
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
     where
@@ -235,7 +280,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         visitor.visit_f32(num)
     }
 
-    // Float parsing is stupidly hard.
     fn deserialize_f64<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -370,6 +414,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
         //     Err(Error::ExpectedArray)
         // }
         let len = self.take_i32()? as usize;
+        let len = O::modify_sequence_length(&mut self.options, len);
         // println!("Sequence: ({})", len);
         self.deserialize_tuple(len, visitor)
     }
@@ -513,7 +558,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut VHDeserializer<'de> {
     }
 }
 
-impl<'de, 'a> EnumAccess<'de> for &'a mut VHDeserializer<'de> {
+impl<'de, 'a, O> EnumAccess<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
     type Error = Error;
     type Variant = Self;
 
@@ -528,7 +573,7 @@ impl<'de, 'a> EnumAccess<'de> for &'a mut VHDeserializer<'de> {
     }
 }
 
-impl<'de, 'a> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de> {
+impl<'de, 'a, O> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
@@ -557,12 +602,12 @@ impl<'de, 'a> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de> {
     }
 }
 
-struct ShortMapAccess<'a, 'de: 'a> {
-    deserializer: &'a mut VHDeserializer<'de>,
+struct ShortMapAccess<'a, 'de: 'a, O> {
+    deserializer: &'a mut VHDeserializer<'de, O>,
     len: usize,
 }
 
-impl<'de, 'a> MapAccess<'de> for ShortMapAccess<'a, 'de> {
+impl<'de, 'a, O> MapAccess<'de> for ShortMapAccess<'a, 'de, O> where O: DeserializeOptions {
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
@@ -586,12 +631,12 @@ impl<'de, 'a> MapAccess<'de> for ShortMapAccess<'a, 'de> {
     }
 }
 
-struct TupleAccess<'a, 'de: 'a> {
-    deserializer: &'a mut VHDeserializer<'de>,
+struct TupleAccess<'a, 'de: 'a, O> {
+    deserializer: &'a mut VHDeserializer<'de, O>,
     len: usize,
 }
 
-impl<'de, 'a> SeqAccess<'de> for TupleAccess<'a, 'de> {
+impl<'de, 'a, O> SeqAccess<'de> for TupleAccess<'a, 'de, O> where O: DeserializeOptions {
     type Error = Error;
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
     where
@@ -611,11 +656,11 @@ impl<'de, 'a> SeqAccess<'de> for TupleAccess<'a, 'de> {
     }
 }
 
-struct Unlabled<'a, 'de: 'a> {
-    de: &'a mut VHDeserializer<'de>,
+struct Unlabled<'a, 'de: 'a, O> {
+    de: &'a mut VHDeserializer<'de, O>,
 }
 
-impl<'de, 'a> MapAccess<'de> for Unlabled<'a, 'de> {
+impl<'de, 'a, O> MapAccess<'de> for Unlabled<'a, 'de, O> {
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
