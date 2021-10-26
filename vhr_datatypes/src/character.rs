@@ -2,13 +2,14 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::rc::Rc;
 
+
 use crate::prelude::*;
-
-pub use mini_map::MiniMap;
-pub use version_enum::*;
-pub use profile::Profile;
 pub use character_data::CharacterData;
+pub use mini_map::NewMiniMap;
+pub use profile::Profile;
+pub use version_enum::*;
 
+pub use mini_map::NewMiniMapWrapper;
 pub mod character_data;
 mod mini_map;
 mod profile;
@@ -21,6 +22,20 @@ pub struct HashedBytes<T> {
     pub content_size: u32,
     pub inner: T,
     pub hash: Vec<u8>,
+}
+
+impl<T> HashedBytes<T>
+where
+    T: KnownSize,
+{
+    pub fn from_inner(inner: T) -> Self {
+        let content_size = <T as KnownSize>::count_bytes(&inner) as u32;
+        HashedBytes {
+            content_size,
+            inner,
+            hash: Vec::new(), // todo actual hash - probably have to wait until serialization
+        }
+    }
 }
 
 pub type CharacterFile = HashedBytes<PlayerProfile>;
@@ -74,7 +89,7 @@ pub struct Map {
     pub position: MarkedPoint,
     pub death: MarkedPoint,
     pub home: Point,
-    pub mini_map: Option<MiniMap>,
+    pub mini_map: Option<NewMiniMapWrapper>,
 }
 
 impl Map {
@@ -94,6 +109,17 @@ impl Map {
 
         // self.map_size = size as u32;
         // size + 24
+    }
+}
+
+impl KnownSize for Map {
+    fn count_bytes(&self) -> usize {
+        <Option<NewMiniMapWrapper> as KnownSize>::count_bytes(&self.mini_map)
+            + 8
+            + 13
+            + 13
+            + 13
+            + 12
     }
 }
 

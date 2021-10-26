@@ -10,118 +10,134 @@ use serde::{
 
 use std::rc::Rc;
 
-#[derive(Debug)]
-pub enum Error {
-    Other,
-}
+// use super::square_integer::SquareInt;
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> core::fmt::Result {
-        use Error::*;
-        write!(
-            f,
-            "{}",
-            match self {
-                Other => "other error",
-            }
-        )
-    }
-}
+// #[derive(Debug)]
+// pub enum Error {
+//     Other,
+// }
 
-impl serde::ser::Error for Error {
-    fn custom<T>(_msg: T) -> Self
-    where
-        T: std::fmt::Display,
-    {
-        Error::Other
-    }
-}
+// impl std::fmt::Display for Error {
+//     fn fmt(&self, f: &mut std::fmt::Formatter) -> core::fmt::Result {
+//         use Error::*;
+//         write!(
+//             f,
+//             "{}",
+//             match self {
+//                 Other => "other error",
+//             }
+//         )
+//     }
+// }
 
-impl serde::de::Error for Error {
-    fn custom<T>(_msg: T) -> Self
-    where
-        T: std::fmt::Display,
-    {
-        Error::Other
-    }
-}
+// impl serde::ser::Error for Error {
+//     fn custom<T>(_msg: T) -> Self
+//     where
+//         T: std::fmt::Display,
+//     {
+//         Error::Other
+//     }
+// }
 
-impl serde::ser::StdError for Error {}
+// impl serde::de::Error for Error {
+//     fn custom<T>(_msg: T) -> Self
+//     where
+//         T: std::fmt::Display,
+//     {
+//         Error::Other
+//     }
+// }
+
+// impl serde::ser::StdError for Error {}
 
 #[derive(Default, Clone, PartialEq, Debug, Serialize)]
 pub struct SquareVec<T> {
-    edge_length: u32,
     inner: Vec<T>,
+    // edge_length: SquareInt,
+    // inner: Box<[T]>, //Vec<T>,
 }
 
-impl<'de, T> Deserialize<'de> for SquareVec<T>
-where
-    T: Deserialize<'de> + std::fmt::Debug,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let inner = Vec::new();
-        deserializer.deserialize_seq(SquareVecVisitor { inner })
-        // unimplemented!()
+// impl<T> SquareVec<T> {
+//     pub fn from_parts(edge_length: usize, vector: Vec<T>) -> Self {
+//         SquareVec {
+//             edge_length: SquareInt::from_u32(edge_length as u32),
+//             inner: vector.into_boxed_slice()
+//         }
+//     }
+// }
 
-        // let count = u32::deserialize(deserializer)?;
-        // let _ = u16::deserialize(deserializer);
-        // let mut assets = Vec::with_capacity(count as usize);
-        // for _ in 0..count {
-        //     let asset = AssetDescriptor::deserialize(deserializer)?;
-        //     assets.push(asset);
-        // }
-        // let padding = [0;2];
-        // Ok(AssetIndex {
-        //     count, padding, assets
-        // })
-    }
-}
+// impl<'de, T> Deserialize<'de> for SquareVec<T>
+// where
+//     T: Deserialize<'de> + std::fmt::Debug,
+// {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: Deserializer<'de>,
+//     {
+//         let inner = Vec::new();
+//         deserializer.deserialize_seq(SquareVecVisitor { inner })
+//         // unimplemented!()
 
-#[derive(Default)]
-struct SquareVecVisitor<T> {
-    inner: Vec<T>,
-    // _phantom: PhantomData<T>,
-}
+//         // let count = u32::deserialize(deserializer)?;
+//         // let _ = u16::deserialize(deserializer);
+//         // let mut assets = Vec::with_capacity(count as usize);
+//         // for _ in 0..count {
+//         //     let asset = AssetDescriptor::deserialize(deserializer)?;
+//         //     assets.push(asset);
+//         // }
+//         // let padding = [0;2];
+//         // Ok(AssetIndex {
+//         //     count, padding, assets
+//         // })
+//     }
+// }
 
-impl<'de, T> Visitor<'de> for SquareVecVisitor<T>
-where
-    T: Deserialize<'de> + std::fmt::Debug,
-{
-    type Value = SquareVec<T>;
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("square vector")
-    }
-    fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: SeqAccess<'de>,
-    {
-        // todo: figure out the error type mapping
-        println!("found a square vec with side length: {:?}", seq.size_hint());
-        let size = seq.size_hint().ok_or(Error::Other).unwrap();
-        let actual_size = size * size;
+// #[derive(Default)]
+// struct SquareVecVisitor<T> {
+//     inner: Vec<T>,
+//     // _phantom: PhantomData<T>,
+// }
 
-        self.inner.reserve(actual_size);
-        println!("getting {} elements", actual_size);
-        for _ in 0..actual_size {
-            //todo: again, fix error type mapping from option to A:Error type
-            let n: Option<T> = seq.next_element()?;
-            if let Some(nn) = n {
-                println!("got element {:?}", nn);
-                self.inner.push(nn);
-            } else {
-                println!("couldnt get element");
-            }
-        }
-        let sv = SquareVec {
-            edge_length: size as u32,
-            inner: self.inner,
-        };
-        Ok(sv)
-    }
-}
+// impl<'de, T> Visitor<'de> for SquareVecVisitor<T>
+// where
+//     T: Deserialize<'de> + std::fmt::Debug,
+// {
+//     type Value = SquareVec<T>;
+//     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         formatter.write_str("square vector")
+//     }
+//     fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
+//     where
+//         A: SeqAccess<'de>,
+//     {
+//         // todo: figure out the error type mapping
+//         println!(
+//             "found a square vec with actual length {:?} from side length {:?}",
+//             seq.size_hint(),
+//             seq.size_hint().and_then(|s| Some((s as f64).sqrt() as u32))
+//         );
+//         let size = seq.size_hint().ok_or(Error::Other).unwrap();
+//         // let actual_size = size * size;
+
+//         self.inner.reserve(size);
+//         // println!("getting {} elements", actual_size);
+//         for _ in 0..size {
+//             //todo: again, fix error type mapping from option to A:Error type
+//             let n: Option<T> = seq.next_element()?;
+//             if let Some(nn) = n {
+//                 // println!("got element {:?}", nn);
+//                 self.inner.push(nn);
+//             } else {
+//                 // println!("couldnt get element");
+//             }
+//         }
+//         let sv = SquareVec {
+//             edge_length: SquareInt::from_u32(size as u32),
+//             inner: self.inner.into_boxed_slice(),
+//         };
+//         Ok(sv)
+//     }
+// }
 /*
 use std::fmt;
 struct Duration {

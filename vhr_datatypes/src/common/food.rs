@@ -1,3 +1,4 @@
+use super::KnownSize;
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -100,4 +101,10 @@ impl Food16 {
 pub struct Food25 {
     pub name: String,
     pub time: f32,
+}
+
+impl KnownSize for Food25 {
+    fn count_bytes(&self) -> usize {
+        <String as KnownSize>::count_bytes(&self.name) + 4
+    }
 }

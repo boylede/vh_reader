@@ -1,7 +1,14 @@
+use super::KnownSize;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct HairStyle(pub String);
+
+impl KnownSize for HairStyle {
+    fn count_bytes(&self) -> usize {
+        <String as KnownSize>::count_bytes(&self.0)
+    }
+}
 
 impl HairStyle {
     pub fn hair_1() -> HairStyle {
@@ -21,12 +28,19 @@ impl HairStyle {
     // pub const HAIR13: HairStyle = HairStyle(String::from("Hair13"));
     // pub const HAIR14: HairStyle = HairStyle(String::from("Hair14"));
 }
+
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct BeardStyle(pub String);
 
 impl BeardStyle {
     pub fn beard_1() -> BeardStyle {
         BeardStyle(String::from("Beard1"))
+    }
+}
+
+impl KnownSize for BeardStyle {
+    fn count_bytes(&self) -> usize {
+        <String as KnownSize>::count_bytes(&self.0)
     }
 }
 

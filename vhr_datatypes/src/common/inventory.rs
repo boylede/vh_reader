@@ -1,3 +1,4 @@
+use super::known_size::KnownSize;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -131,6 +132,15 @@ impl Item {
     }
     pub fn pre_serialize(&mut self) -> usize {
         let mut size = 33; //hand-counted size of struct
+        size += self.name.len() + 1;
+        size += self.creator_name.len() + 1;
+        size
+    }
+}
+
+impl KnownSize for Item {
+    fn count_bytes(&self) -> usize {
+        let mut size = 33;
         size += self.name.len() + 1;
         size += self.creator_name.len() + 1;
         size

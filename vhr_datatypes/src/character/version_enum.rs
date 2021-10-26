@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{character_data::*, mini_map::*, profile::*, Map};
 use crate::prelude::*;
+use crate::common::wrapper::{Wrapper, FromWrapper, WrapperArray};
 
 /// an unknown data version
 /// provides a stub so deserialization can fail
@@ -143,6 +144,9 @@ pub enum CharacterInventory {
 }
 
 impl CharacterInventory {
+    pub fn wrap_latest(inner: Vec<Item>) -> CharacterInventory {
+        CharacterInventory::OneOhThree(inner)
+    }
     pub fn to_latest(self) -> Option<Vec<Item>> {
         use CharacterInventory::*;
         match self {
@@ -155,8 +159,18 @@ impl CharacterInventory {
     }
 }
 
+impl KnownSize for CharacterInventory {
+    fn count_bytes(&self) -> usize {
+        if let CharacterInventory::OneOhThree(inner) = self {
+            <Vec<Item> as KnownSize>::count_bytes(&inner) + 4
+        } else {
+            unimplemented!()
+        }
+    }
+}
+
 /// an enum with all versions of the player's profile data type
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum PlayerProfile {
     Zero(NoSuchVersion),
     One(UnknownVersion),
@@ -213,8 +227,30 @@ impl PlayerProfile {
             ThirtySix(profile) => Some(profile),
             _ => None,
         }
-        
+
         // ThirtySix(p)
+    }
+    pub fn wrap_latest(inner: Profile) -> Self {
+        PlayerProfile::ThirtySix(inner)
+    }
+}
+
+impl KnownSize for PlayerProfile {
+    fn count_bytes(&self) -> usize {
+        use PlayerProfile::*;
+        match self {
+            TwentySeven(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            TwentyEight(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            TwentyNine(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            Thirty(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtyOne(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtyTwo(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtyThree(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtyFour(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtyFive(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            ThirtySix(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
+            _ => panic!("not known"),
+        }
     }
 }
 
@@ -230,12 +266,26 @@ impl CharacterSkills {
     pub fn new() -> Self {
         CharacterSkills::Two(Vec::new())
     }
+    pub fn wrap_latest(inner: Vec<Skill>) -> CharacterSkills {
+        CharacterSkills::Two(inner)
+    }
     pub fn to_latest(self) -> Option<Vec<Skill>> {
         use CharacterSkills::*;
         match self {
             Zero(_) => None,
             One(inner) => None, // todo: convert these.
             Two(inner) => Some(inner),
+        }
+    }
+}
+
+impl KnownSize for CharacterSkills {
+    fn count_bytes(&self) -> usize {
+        use CharacterSkills::*;
+        match self {
+            Zero(_) => panic!("no"),
+            One(inner) => panic!("no"),
+            Two(inner) => <Vec<Skill> as KnownSize>::count_bytes(&inner) + 4,
         }
     }
 }
@@ -270,368 +320,344 @@ pub enum Player {
     TwentyFour(PlayerTwentyFour),
     TwentyFive(PlayerTwentyFive),
 }
+
 pub type LatestPlayer = PlayerTwentyFive;
 impl Player {
+    pub fn wrap_latest(inner: PlayerTwentyFive) -> Player {
+        Player::TwentyFive(inner)
+    }
     pub fn to_latest(self) -> LatestPlayer {
         use Player::*;
         match self {
             Zero(_) => panic!("shouldnt occur"),
-            One(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                
-            }
-            Two(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                
-            }
-            Three(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Four(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Five(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Six(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Seven(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Eight(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Nine(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Ten(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Eleven(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Twelve(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Thirteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Fourteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Fifteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Sixteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Seventeen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Eighteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Nineteen(inner) => {
-                inner
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-                    .upgrade()
-            }
-            Twenty(inner) => {
-                inner.upgrade().upgrade().upgrade().upgrade().upgrade()
-            }
-            TwentyOne(inner) => {
-                inner.upgrade().upgrade().upgrade().upgrade()
-            }
-            TwentyTwo(inner) => {
-                inner.upgrade().upgrade().upgrade()
-            }
+            One(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Two(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Three(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Four(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Five(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Six(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Seven(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Eight(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Nine(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Ten(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Eleven(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Twelve(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Thirteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Fourteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Fifteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Sixteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Seventeen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Eighteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Nineteen(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Twenty(inner) => inner.upgrade().upgrade().upgrade().upgrade().upgrade(),
+            TwentyOne(inner) => inner.upgrade().upgrade().upgrade().upgrade(),
+            TwentyTwo(inner) => inner.upgrade().upgrade().upgrade(),
             TwentyThree(inner) => inner.upgrade().upgrade(),
             TwentyFour(inner) => inner.upgrade(),
             TwentyFive(inner) => inner,
+        }
+    }
+}
+// todo this can be generically implemented
+impl FromWrapper for Player {
+    fn from(wrapper: WrapperArray) -> Self {
+        let mut deserializer = wrapper.get_vhrd(());
+        <Player as Deserialize>::deserialize(&mut deserializer).unwrap()
+    }
+}
+
+
+impl KnownSize for Player {
+    fn count_bytes(&self) -> usize {
+        if let Player::TwentyFive(inner) = self {
+            <PlayerTwentyFive as KnownSize>::count_bytes(&inner) + 4
+        } else {
+            unimplemented!()
         }
     }
 }

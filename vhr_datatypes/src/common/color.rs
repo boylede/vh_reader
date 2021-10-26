@@ -1,3 +1,4 @@
+use super::KnownSize;
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -24,6 +25,12 @@ impl Color {
         g: 85.0 / 255.0,
         b: 36.0 / 255.0,
     };
+}
+
+impl KnownSize for Color {
+    fn count_bytes(&self) -> usize {
+        12
+    }
 }
 
 // pub struct ColorLens {
