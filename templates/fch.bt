@@ -134,7 +134,7 @@ typedef struct {
     if (mini_map_version >= 7) {
         int compressed_size;
         char compressed[compressed_size];
-    } if (mini_map_version > 3) {
+    } else if (mini_map_version > 3) {
         MiniMapInnerDataSinglePlayer data;
     } else {
         MiniMapInnerDatathree data;
