@@ -1,6 +1,6 @@
-use eframe::egui::{Rgba};
+use eframe::egui::Rgba;
 use eframe::{egui, epi};
-use egui::{Color32,color::Hsva};
+use egui::{color::Hsva, Color32};
 use epi::App;
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -340,8 +340,22 @@ impl epi::App for FolderViewer {
 }
 
 */
-const BLANK_INVENTORY_ROW: [Item; 8] = [Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),Item::null_item(),];
-const BLANK_INVENTORY: [[Item; 8]; 4] = [BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW,BLANK_INVENTORY_ROW];
+const BLANK_INVENTORY_ROW: [Item; 8] = [
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+    Item::null_item(),
+];
+const BLANK_INVENTORY: [[Item; 8]; 4] = [
+    BLANK_INVENTORY_ROW,
+    BLANK_INVENTORY_ROW,
+    BLANK_INVENTORY_ROW,
+    BLANK_INVENTORY_ROW,
+];
 
 pub struct Loader(PathBuf);
 
@@ -373,29 +387,30 @@ impl Loader {
             Ok(loaded_file) => {
                 if let Some(profile) = loaded_file.inner.to_inner() {
                     if let Some(data) = &profile.data {
+                        let original_path = self.0.clone();
                         let player = data.inner.clone().to_latest();
                         let skills = player.skills.clone().to_latest().unwrap_or(Vec::new());
                         let inventory = {
-                            let inv=
-                            player.inventory.clone().to_latest().unwrap_or(Vec::new());
+                            let inv = player.inventory.clone().to_latest().unwrap_or(Vec::new());
                             let init = BLANK_INVENTORY
-                            .iter()
-                            .map(|r|
-                                r.to_vec()
-                            ).collect::<Vec<Vec<Item>>>();
-                            inv.iter().fold(init, |mut inventory, new_item| -> Vec<Vec<Item>> {
-                                let row = new_item.row as usize;
-                                let column = new_item.column as usize;
-                                if let Some(row) = inventory.get_mut(row) {
-                                    if let Some(item) = row.get_mut(column) {
-                                        *item = new_item.clone();
+                                .iter()
+                                .map(|r| r.to_vec())
+                                .collect::<Vec<Vec<Item>>>();
+                            inv.iter()
+                                .fold(init, |mut inventory, new_item| -> Vec<Vec<Item>> {
+                                    let row = new_item.row as usize;
+                                    let column = new_item.column as usize;
+                                    if let Some(row) = inventory.get_mut(row) {
+                                        if let Some(item) = row.get_mut(column) {
+                                            *item = new_item.clone();
+                                        }
                                     }
-                                }
-                                inventory
-                            })
+                                    inventory
+                                })
                         };
                         let selected_inventory_item = None;
                         let next_state = CharacterEditor::Loaded(CharacterDialog {
+                            original_path,
                             current_tab: Tabs::Stats,
                             profile,
                             player,
@@ -408,15 +423,15 @@ impl Loader {
                         println!("todo: handle files with no character data");
                         None
                     }
-                    
                 } else {
                     // todo: store this as a change in state instead of checking repeatedly
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        ui.label("I didn't understand this file. The profile was an unexpected version");
+                        ui.label(
+                            "I didn't understand this file. The profile was an unexpected version",
+                        );
                     });
                     None
                 }
-                
             }
             Err(e) => {
                 todo!("couldnt load file, try another and revert to file picker state?");
@@ -437,11 +452,12 @@ enum Tabs {
 }
 
 pub struct CharacterDialog {
+    original_path: PathBuf,
     current_tab: Tabs,
     profile: Profile,
     player: LatestPlayer,
     skills: Vec<Skill>,
-    selected_inventory_item: Option<(u32,u32)>,
+    selected_inventory_item: Option<(u32, u32)>,
     inventory: Vec<Vec<Item>>,
 }
 
@@ -454,271 +470,316 @@ impl CharacterDialog {
                     if ui.button("Quit").clicked() {
                         frame.quit();
                     }
+                    if ui.button("Save as...").clicked() {
+                        let directory = self.original_path.parent().unwrap();
+                        let file_name = self.original_path.file_name().unwrap().to_str().unwrap();
+                        let file_picker = rfd::FileDialog::new()
+                            .set_directory(directory)
+                            .set_file_name(file_name);
+                        // if let Some(path) = &self.default_path {
+                        //     file_picker = file_picker.set_directory(path);
+                        // }
+                        if let Some(path) = file_picker.save_file() {
+                            // let next_state = CharacterEditor::Loading(Loader(path));
+                            // return Some(EditorEvent::SwapState(next_state));
+                            println!("saving file to {}", path.display());
+                            let mut new_profile = self.profile.clone();
+                            let mut new_data = self.player.clone();
+                            new_data.skills = CharacterSkills::wrap_latest(self.skills.clone());
+                            new_data.inventory = CharacterInventory::wrap_latest(
+                                self.inventory
+                                    .iter()
+                                    .flatten()
+                                    .filter(|i| i.name.len() > 0)
+                                    .cloned()
+                                    .collect(),
+                            );
+                            new_profile.data =
+                                Some(CharacterData::from_inner(Player::wrap_latest(new_data)));
+                            let character_file_data =
+                                HashedBytes::from_inner(PlayerProfile::wrap_latest(new_profile));
+                            let mut out_file = File::create(path).expect("Failed opening file");
+                            let output_bytes = vhr_serde::ser::to_bytes(&character_file_data)
+                                .expect("Failed to serialize character");
+                            out_file
+                                .write_all(&output_bytes)
+                                .expect("Failed to write output file");
+                        }
+                    }
                 });
             });
         });
 
+        // this copy is necessary to avoid multiple borrows
+        let mut c_tab: Tabs = self.current_tab;
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut c_tab, Tabs::Stats, "Stats");
+                ui.selectable_value(&mut c_tab, Tabs::Appearance, "Appearance");
+                ui.selectable_value(&mut c_tab, Tabs::Inventory, "Inventory");
+                ui.selectable_value(&mut c_tab, Tabs::Maps, "Maps");
+                ui.selectable_value(&mut c_tab, Tabs::Compendium, "Compendium");
+                ui.selectable_value(&mut c_tab, Tabs::HexView, "Hex View");
+            });
 
+            ui.separator();
+            match c_tab {
+                Tabs::Stats => {
+                    egui::Grid::new("stats_grid")
+                        .num_columns(2)
+                        .spacing([40.0, 4.0])
+                        .striped(true)
+                        .show(ui, |ui| {
+                            ui.add(egui::Label::new("Name"));
+                            // todo: add validation, limit length, minimum length, etc
+                            ui.add(
+                                egui::TextEdit::singleline(&mut self.profile.name)
+                                    .hint_text("Character's Name"),
+                            );
+                            ui.end_row();
 
-            
-            // this copy is necessary to avoid multiple borrows
-            let mut c_tab: Tabs = self.current_tab;
-            egui::CentralPanel::default().show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.selectable_value(&mut c_tab, Tabs::Stats, "Stats");
-                    ui.selectable_value(&mut c_tab, Tabs::Appearance, "Appearance");
-                    ui.selectable_value(&mut c_tab, Tabs::Inventory, "Inventory");
-                    ui.selectable_value(&mut c_tab, Tabs::Maps, "Maps");
-                    ui.selectable_value(&mut c_tab, Tabs::Compendium, "Compendium");
-                    ui.selectable_value(&mut c_tab, Tabs::HexView, "Hex View");
-                });
-
-                ui.separator();
-                match c_tab {
-                    Tabs::Stats => {
-                        egui::Grid::new("stats_grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                ui.add(egui::Label::new("Name"));
-                                // todo: add validation, limit length, minimum length, etc
-                                ui.add(
-                                    egui::TextEdit::singleline(&mut self.profile.name)
-                                        .hint_text("Character's Name"),
-                                );
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Id"));
-                                // todo: add validation, must be integer, etc
-                                let mut id_string = self.profile.player_id.to_string();
-                                ui.add(
-                                    egui::TextEdit::singleline(&mut id_string)
-                                        .hint_text("Character's ID"),
-                                );
-                                if let Some(id) = id_string.parse::<u64>().ok() {
-                                    self.profile.player_id = id;
-                                }
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Kill Count"));
-                                ui.add(egui::Slider::new(&mut self.profile.kill_count, 0..=100));
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Death Count"));
-                                ui.add(egui::Slider::new(&mut self.profile.death_count, 0..=1000));
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Craft Count"));
-                                ui.add(egui::Slider::new(&mut self.profile.crafting_count, 0..=5000));
-                                ui.end_row();
-                                ui.add(egui::Label::new("Build Count"));
-                                ui.add(egui::Slider::new(&mut self.profile.building_count, 0..=20000));
-                                ui.end_row();
-                                
-                                ui.add(egui::Label::new("Skills"));
-                                ui.add(egui::Button::new("Add Skill"));
-                                ui.end_row();
-
-                                for skill in self.skills.iter() {
-                                    let mut temp_skill = skill.clone();
-                                    ui.add(egui::Label::new(format!("{}", temp_skill.id)));
-                                    ui.add(egui::Slider::new(&mut temp_skill.level, 0.0..=50.0));
-                                    ui.add(egui::Slider::new(&mut temp_skill.progress, 0.0..=100.0));
-                                    ui.add(egui::Button::new("Delete Skill"));
-                                    ui.end_row();
-                                    // todo: store skill back
-                                }
-                            });
-                    }
-                    Tabs::Appearance => {
-                        let mut hair_style_string = self.player.hair_type.0.clone();
-                        let mut beard_style_string = self.player.beard_type.0.clone();
-                        let mut skin_color: Color32 = {
-                            let Color {r, g, b} = self.player.skin;
-                            Rgba::from_rgba_premultiplied(r, g, b, 1.0).into()
-                        };
-                        let mut hair_color: Color32 = {
-
-                            let Color {r, g, b} = self.player.hair;
-                            // println!("input skin rgb {} {} {}", r,g, b);
-                            let r = (r * 255.0).floor() as u8;
-                            let g = (g * 255.0).floor() as u8;
-                            let b = (b * 255.0).floor() as u8;
-                            // Hsva::new(r,g,b,1.0).into()
-                            // Rgba::from_rgb(r, g, b).into()
-                            Color32::from_rgb(r, g, b)
-                        };
-
-                        
-                        egui::Grid::new("appearance_grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                ui.add(egui::Label::new("Gender"));
-                                ui.horizontal(|ui| {
-                                    ui.selectable_value(&mut self.player.gender, Gender::Male, "Male");
-                                    ui.selectable_value(&mut self.player.gender, Gender::Female, "Female");
-                                    // ui.selectable_value(&mut self.player.gender, Enum::Third, "Third");
-                                });
-                                ui.end_row();
-                                
-                                ui.add(egui::Label::new("Hair Style"));
-                                // todo: add validation, limit length, minimum length, etc
-                                ui.add(
-                                    egui::TextEdit::singleline(&mut hair_style_string)
-                                        .hint_text("Hair Style"),
-                                );
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Beard Style"));
-                                // todo: add validation, limit length, minimum length, etc
-                                ui.add(
-                                    egui::TextEdit::singleline(&mut beard_style_string)
-                                        .hint_text("Beard Style"),
-                                );
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Skin Color"));
-                                ui.color_edit_button_srgba(&mut skin_color);
-                                ui.end_row();
-
-                                ui.add(egui::Label::new("Hair Color"));
-                                ui.color_edit_button_srgba(&mut hair_color);
-                                ui.end_row();
-                            });
-
-                            self.player.hair_type = HairStyle(hair_style_string);
-                            self.player.beard_type = BeardStyle(beard_style_string);
-
-                            self.player.skin = {
-                                let (r,g, b, _) = skin_color.to_tuple();
-                                let r = r as f32 / 255.0;
-                                let g = g as f32 / 255.0;
-                                let b = b as f32 / 255.0;
-                                Color {r,g,b}
-                            };
-                            self.player.hair = {
-                                let (r,g, b, _) = hair_color.to_tuple();
-                                // println!("output skin rgb u8 {} {} {}", r,g, b);
-                                let r = r as f32 / 255.0;
-                                let g = g as f32 / 255.0;
-                                let b = b as f32 / 255.0;
-                                // println!("output skin rgb f32 {} {} {}", r,g, b);
-                                Color {r,g,b}
-                            };
-                    }
-                    Tabs::Inventory => {
-                        egui::Grid::new("inventory_grid")
-                            .num_columns(8)
-                            .spacing([10.0, 10.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-
-                        for (row_num, row) in self.inventory.iter().enumerate() {
-                            for (column_num, slot) in row.iter().enumerate() {
-                                if slot.name.len() > 0 {
-                                    if ui.add(egui::Button::new("XXX")).clicked() {
-                                        self.selected_inventory_item = Some((row_num as u32, column_num as u32));
-                                    }
-                                } else {
-                                    if ui.add(egui::Button::new("___")).clicked() {
-                                        self.selected_inventory_item = Some((row_num as u32, column_num as u32));
-                                    }
-                                }
-                                
+                            ui.add(egui::Label::new("Id"));
+                            // todo: add validation, must be integer, etc
+                            let mut id_string = self.profile.player_id.to_string();
+                            ui.add(
+                                egui::TextEdit::singleline(&mut id_string)
+                                    .hint_text("Character's ID"),
+                            );
+                            if let Some(id) = id_string.parse::<u64>().ok() {
+                                self.profile.player_id = id;
                             }
                             ui.end_row();
-                        }
-                    });
+
+                            ui.add(egui::Label::new("Kill Count"));
+                            ui.add(egui::Slider::new(&mut self.profile.kill_count, 0..=100));
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Death Count"));
+                            ui.add(egui::Slider::new(&mut self.profile.death_count, 0..=1000));
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Craft Count"));
+                            ui.add(egui::Slider::new(
+                                &mut self.profile.crafting_count,
+                                0..=5000,
+                            ));
+                            ui.end_row();
+                            ui.add(egui::Label::new("Build Count"));
+                            ui.add(egui::Slider::new(
+                                &mut self.profile.building_count,
+                                0..=20000,
+                            ));
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Skills"));
+                            ui.add(egui::Button::new("Add Skill"));
+                            ui.end_row();
+
+                            for skill in self.skills.iter_mut() {
+                                // let mut temp_skill = skill.clone();
+                                ui.add(egui::Label::new(format!("{}", skill.id)));
+                                ui.add(egui::Slider::new(&mut skill.level, 0.0..=50.0));
+                                ui.add(egui::Slider::new(&mut skill.progress, 0.0..=100.0));
+                                ui.add(egui::Button::new("Delete Skill"));
+                                ui.end_row();
+                                // todo: store skill back
+                            }
+                        });
+                }
+                Tabs::Appearance => {
+                    let mut hair_style_string = self.player.hair_type.0.clone();
+                    let mut beard_style_string = self.player.beard_type.0.clone();
+                    let mut skin_color: Color32 = {
+                        let Color { r, g, b } = self.player.skin;
+                        let r = (r * 255.0).floor() as u8;
+                        let g = (g * 255.0).floor() as u8;
+                        let b = (b * 255.0).floor() as u8;
+                        // Rgba::from_rgba_premultiplied(r, g, b, 1.0).into()
+                        Color32::from_rgb(r, g, b)
+                    };
+                    let mut hair_color: Color32 = {
+                        let Color { r, g, b } = self.player.hair;
+                        // println!("input skin rgb {} {} {}", r,g, b);
+                        let r = (r * 255.0).floor() as u8;
+                        let g = (g * 255.0).floor() as u8;
+                        let b = (b * 255.0).floor() as u8;
+                        // Hsva::new(r,g,b,1.0).into()
+                        // Rgba::from_rgb(r, g, b).into()
+                        Color32::from_rgb(r, g, b)
+                    };
+
+                    egui::Grid::new("appearance_grid")
+                        .num_columns(2)
+                        .spacing([40.0, 4.0])
+                        .striped(true)
+                        .show(ui, |ui| {
+                            ui.add(egui::Label::new("Gender"));
+                            ui.horizontal(|ui| {
+                                ui.selectable_value(&mut self.player.gender, Gender::Male, "Male");
+                                ui.selectable_value(
+                                    &mut self.player.gender,
+                                    Gender::Female,
+                                    "Female",
+                                );
+                                // ui.selectable_value(&mut self.player.gender, Enum::Third, "Third");
+                            });
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Hair Style"));
+                            // todo: add validation, limit length, minimum length, etc
+                            ui.add(
+                                egui::TextEdit::singleline(&mut hair_style_string)
+                                    .hint_text("Hair Style"),
+                            );
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Beard Style"));
+                            // todo: add validation, limit length, minimum length, etc
+                            ui.add(
+                                egui::TextEdit::singleline(&mut beard_style_string)
+                                    .hint_text("Beard Style"),
+                            );
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Skin Color"));
+                            ui.color_edit_button_srgba(&mut skin_color);
+                            ui.end_row();
+
+                            ui.add(egui::Label::new("Hair Color"));
+                            ui.color_edit_button_srgba(&mut hair_color);
+                            ui.end_row();
+                        });
+
+                    self.player.hair_type = HairStyle(hair_style_string);
+                    self.player.beard_type = BeardStyle(beard_style_string);
+
+                    self.player.skin = {
+                        let (r, g, b, _) = skin_color.to_tuple();
+                        let r = r as f32 / 255.0;
+                        let g = g as f32 / 255.0;
+                        let b = b as f32 / 255.0;
+                        Color { r, g, b }
+                    };
+                    self.player.hair = {
+                        let (r, g, b, _) = hair_color.to_tuple();
+                        // println!("output skin rgb u8 {} {} {}", r,g, b);
+                        let r = r as f32 / 255.0;
+                        let g = g as f32 / 255.0;
+                        let b = b as f32 / 255.0;
+                        // println!("output skin rgb f32 {} {} {}", r,g, b);
+                        Color { r, g, b }
+                    };
+                }
+                Tabs::Inventory => {
+                    egui::Grid::new("inventory_grid")
+                        .num_columns(8)
+                        .spacing([10.0, 10.0])
+                        .striped(true)
+                        .show(ui, |ui| {
+                            for (row_num, row) in self.inventory.iter().enumerate() {
+                                for (column_num, slot) in row.iter().enumerate() {
+                                    if slot.name.len() > 0 {
+                                        if ui.add(egui::Button::new("XXX")).clicked() {
+                                            self.selected_inventory_item =
+                                                Some((row_num as u32, column_num as u32));
+                                        }
+                                    } else {
+                                        if ui.add(egui::Button::new("___")).clicked() {
+                                            self.selected_inventory_item =
+                                                Some((row_num as u32, column_num as u32));
+                                        }
+                                    }
+                                }
+                                ui.end_row();
+                            }
+                        });
                     ui.separator();
                     egui::Grid::new("item_grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                if let Some((r,c)) = self.selected_inventory_item {
-                                    if let Some(selected_item) = self.inventory.get_mut(r as usize).and_then(|r|r.get_mut(c as usize)) {
-                                        ui.add(egui::Label::new("Name"));
-                                        // todo: add validation, etc
-                                        let name = &mut selected_item.name;
-                                        ui.add(
-                                            egui::TextEdit::singleline(name)
-                                                .hint_text("Item Name"),
-                                        );
-                                        // todo: store the items name again
-                                        // validate that it is a known item
-                                        ui.end_row();
-                                        // pub quantity: u32,
-                                        ui.add(egui::Label::new("Quantity"));
-                                        ui.add(egui::Slider::new(&mut selected_item.quantity, 0..=100));
-                                        ui.end_row();
-                                        // pub durability: f32,
-                                        ui.add(egui::Label::new("Durability"));
-                                        ui.add(egui::Slider::new(&mut selected_item.durability, 0.0..=100.0));
-                                        ui.end_row();
-                                        // pub column: u32,
-                                        // pub row: u32,
-                                        // pub equipped: u8,
-                                        ui.add(egui::Label::new("Equipped"));
-                                        let mut b = selected_item.equipped == 1;
-                                        ui.checkbox(&mut b, "Equipped");
-                                        selected_item.equipped = match b {
-                                            true => 1,
-                                            false => 0,
-                                        };
-                                        ui.end_row();
-                                        // pub quality: u32,
-                                        ui.add(egui::Label::new("Quality"));
-                                        ui.add(egui::Slider::new(&mut selected_item.quality, 0..=6));
-                                        ui.end_row();
-                                        // pub variant: u32,
-                                        ui.add(egui::Label::new("Variant"));
-                                        ui.add(egui::Slider::new(&mut selected_item.variant, 0..=6));
-                                        ui.end_row();
-                                        // pub creator_id: u64,
-                                        ui.add(egui::Label::new("Creator Id"));
-                                        // todo: add validation, must be integer, etc
-                                        let mut id_string = selected_item.creator_id.to_string();
-                                        ui.add(
-                                            egui::TextEdit::singleline(&mut id_string)
-                                                .hint_text("Character's ID"),
-                                        );
-                                        if let Some(id) = id_string.parse::<u64>().ok() {
-                                            selected_item.creator_id = id;
-                                        }
-                                        ui.end_row();
-                                        // pub creator_name: String,
-                                        ui.add(egui::Label::new("Creator Name"));
-                                        // todo: add validation, limit length, minimum length, etc
-                                        ui.add(
-                                            egui::TextEdit::singleline(&mut selected_item.creator_name)
-                                                .hint_text("Character's Name"),
-                                        );
-                                        ui.end_row();
-                                    } else {
-                                        ui.label("can this even happen?");
+                        .num_columns(2)
+                        .spacing([40.0, 4.0])
+                        .striped(true)
+                        .show(ui, |ui| {
+                            if let Some((r, c)) = self.selected_inventory_item {
+                                if let Some(selected_item) = self
+                                    .inventory
+                                    .get_mut(r as usize)
+                                    .and_then(|r| r.get_mut(c as usize))
+                                {
+                                    ui.add(egui::Label::new("Name"));
+                                    // todo: add validation, etc
+                                    let name = &mut selected_item.name;
+                                    ui.add(egui::TextEdit::singleline(name).hint_text("Item Name"));
+                                    // todo: store the items name again
+                                    // validate that it is a known item
+                                    ui.end_row();
+                                    // pub quantity: u32,
+                                    ui.add(egui::Label::new("Quantity"));
+                                    ui.add(egui::Slider::new(&mut selected_item.quantity, 0..=100));
+                                    ui.end_row();
+                                    // pub durability: f32,
+                                    ui.add(egui::Label::new("Durability"));
+                                    ui.add(egui::Slider::new(
+                                        &mut selected_item.durability,
+                                        0.0..=100.0,
+                                    ));
+                                    ui.end_row();
+                                    // pub column: u32,
+                                    // pub row: u32,
+                                    // pub equipped: u8,
+                                    ui.add(egui::Label::new("Equipped"));
+                                    let mut b = selected_item.equipped == 1;
+                                    ui.checkbox(&mut b, "Equipped");
+                                    selected_item.equipped = match b {
+                                        true => 1,
+                                        false => 0,
+                                    };
+                                    ui.end_row();
+                                    // pub quality: u32,
+                                    ui.add(egui::Label::new("Quality"));
+                                    ui.add(egui::Slider::new(&mut selected_item.quality, 0..=6));
+                                    ui.end_row();
+                                    // pub variant: u32,
+                                    ui.add(egui::Label::new("Variant"));
+                                    ui.add(egui::Slider::new(&mut selected_item.variant, 0..=6));
+                                    ui.end_row();
+                                    // pub creator_id: u64,
+                                    ui.add(egui::Label::new("Creator Id"));
+                                    // todo: add validation, must be integer, etc
+                                    let mut id_string = selected_item.creator_id.to_string();
+                                    ui.add(
+                                        egui::TextEdit::singleline(&mut id_string)
+                                            .hint_text("Character's ID"),
+                                    );
+                                    if let Some(id) = id_string.parse::<u64>().ok() {
+                                        selected_item.creator_id = id;
                                     }
-                                    
-                                
+                                    ui.end_row();
+                                    // pub creator_name: String,
+                                    ui.add(egui::Label::new("Creator Name"));
+                                    // todo: add validation, limit length, minimum length, etc
+                                    ui.add(
+                                        egui::TextEdit::singleline(&mut selected_item.creator_name)
+                                            .hint_text("Character's Name"),
+                                    );
+                                    ui.end_row();
                                 } else {
-                                    // egui::CentralPanel::default().show(ctx, |ui| {
-                                        ui.label("Select an inventory slot");
-                                    // });
+                                    ui.label("can this even happen?");
                                 }
-                                
-                            });
-                        
-                    }
-                    Tabs::Maps => {}
-                    Tabs::Compendium => {}
-                    Tabs::HexView => {}
+                            } else {
+                                // egui::CentralPanel::default().show(ctx, |ui| {
+                                ui.label("Select an inventory slot");
+                                // });
+                            }
+                        });
                 }
-            });
-            if c_tab != self.current_tab {
-                self.current_tab = c_tab;
+                Tabs::Maps => {}
+                Tabs::Compendium => {}
+                Tabs::HexView => {}
             }
+        });
+        if c_tab != self.current_tab {
+            self.current_tab = c_tab;
+        }
         // maps tab
         // let maps: &Vec<Map> = &profile.maps;
         // for (i, map) in maps.iter().enumerate() {
@@ -738,7 +799,7 @@ impl CharacterDialog {
         //     PlayerProfile::ThirtySix(profile) => Some(profile),
         //     _ => None,
         // }  else {
-            
+
         // }
 
         None
