@@ -16,19 +16,6 @@ pub struct Profile {
     pub data: Option<CharacterData>,
 }
 
-impl KnownSize for Profile {
-    fn count_bytes(&self) -> usize {
-        4 + 4
-            + 4
-            + 4
-            + 8
-            + 1
-            + <Vec<Map> as KnownSize>::count_bytes(&self.maps)
-            + <String as KnownSize>::count_bytes(&self.name)
-            + <Option<CharacterData> as KnownSize>::count_bytes(&self.data)
-    }
-}
-
 // #[derive(PartialEq, Debug, Serialize, Deserialize)]
 // pub struct Profile33 {
 //     pub kill_count: u32,

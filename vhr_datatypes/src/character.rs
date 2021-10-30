@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
+use vhr_serde::{de::{VHDeserializer, DeserializeOptions}, ser::VHSerializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::rc::Rc;
-
 
 use crate::prelude::*;
 pub use character_data::CharacterData;
@@ -15,34 +14,87 @@ mod mini_map;
 mod profile;
 mod version_enum;
 
+
+// #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+// pub struct HashedWrapper<'db> {
+//     inner: &'db [u8],
+//     hash: Vec<u8>,
+// }
+
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+pub struct HashedWrapper {
+    inner: Vec<u8>,
+    hash: Vec<u8>,
+}
+
+impl<'de, T> From<HashedBytes<T>> for HashedWrapper where T: Serialize + Clone {
+    fn from(wrapper: HashedBytes<T>) -> HashedWrapper {
+        println!("character.rs:32");
+        let inner  = { 
+            let mut serializer = VHSerializer::new();
+            <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
+            serializer.to_inner()
+        };
+        // todo: generate hash
+        HashedWrapper {
+            inner,
+            hash: Vec::new(),
+        }
+    }
+}
+
+impl<'de, T> From<HashedWrapper> for HashedBytes<T> where T: Deserialize<'de> + Clone {
+    fn from(wrapper: HashedWrapper) -> HashedBytes<T> {
+        println!("character.rs:48");
+        let inner  = { 
+            let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
+            <T as Deserialize>::deserialize(&mut deserializer).unwrap()
+        };
+        // todo: generate hash
+        HashedBytes {
+            inner,
+            hash: HashMatches::Unchecked,
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+pub enum HashMatches {
+    MisMatch {
+        expected: Vec<u8>,
+        found: Vec<u8>,
+    },
+    Match {
+        hash: Vec<u8>,
+    },
+    Unchecked,
+}
+
 /// a container that hashes its content and lists the size of the content up front
 /// todo: implement serialize to calculate the hash, and deserialize to notice bad hashes (but not fail because who cares)
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
-pub struct HashedBytes<T> {
-    pub content_size: u32,
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
+#[serde(from = "HashedWrapper", into="HashedWrapper")]
+pub struct HashedBytes<T: Clone> {
+    // pub content_size: u32,
     pub inner: T,
-    pub hash: Vec<u8>,
+    pub hash: HashMatches,
 }
 
 impl<T> HashedBytes<T>
 where
-    T: KnownSize,
+    T: Serialize + Clone,
 {
-    pub fn from_inner(inner: T) -> Self {
-        let content_size = <T as KnownSize>::count_bytes(&inner) as u32;
+    pub fn from_inner(inner: T) -> HashedWrapper {
+        println!("character.rs:88");
         HashedBytes {
-            content_size,
             inner,
-            hash: Vec::new(), // todo actual hash - probably have to wait until serialization
-        }
+            hash: HashMatches::Unchecked,
+        }.into()
     }
 }
 
 pub type CharacterFile = HashedBytes<PlayerProfile>;
 
-trait CountSize {
-    fn count_bytes(&self) -> usize;
-}
 
 // #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 // pub struct Compendium {
@@ -56,32 +108,6 @@ trait CountSize {
 //     pub tutorials: Vec<(String, String)>,
 // }
 
-// impl Compendium {
-//     fn pre_serialize(&mut self) -> usize {
-//         self.recipes.len()
-//             + 4
-//             + self
-//                 .craftbenches
-//                 .iter()
-//                 .map(|c| c.0.len() + 1 + 4)
-//                 .sum::<usize>()
-//             + self
-//                 .materials_list
-//                 .iter()
-//                 .map(|m| m.len() + 1)
-//                 .sum::<usize>()
-//             + self.places.iter().map(|m| m.len() + 1).sum::<usize>()
-//             + self.unknown_list.iter().map(|m| m.len() + 1).sum::<usize>()
-//             + self.trophies.iter().map(|m| m.len() + 1).sum::<usize>()
-//             + (self.biomes.len() * 4)
-//             + self
-//                 .tutorials
-//                 .iter()
-//                 .map(|(a, b)| a.len() + b.len() + 2)
-//                 .sum::<usize>()
-//     }
-// }
-
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Map {
     pub id: u64,
@@ -90,37 +116,6 @@ pub struct Map {
     pub death: MarkedPoint,
     pub home: Point,
     pub mini_map: Option<NewMiniMapWrapper>,
-}
-
-impl Map {
-    pub fn pre_serialize(&mut self) -> usize {
-        unimplemented!()
-        // let mut size: usize = self.mini_map.compressed.len() + 4;
-        // //self.fog_of_war.pre_serialize();
-        // // size += self
-        // //     .pois
-        // //     .iter_mut()
-        // //     .map(|p| p.pre_serialize())
-        // //     .sum::<usize>()
-        // //     + 4;
-        // // if self.extra.is_some() {
-        // //     size += 1;
-        // // }
-
-        // self.map_size = size as u32;
-        // size + 24
-    }
-}
-
-impl KnownSize for Map {
-    fn count_bytes(&self) -> usize {
-        <Option<NewMiniMapWrapper> as KnownSize>::count_bytes(&self.mini_map)
-            + 8
-            + 13
-            + 13
-            + 13
-            + 12
-    }
 }
 
 #[derive(PartialEq, Eq, Clone, Debug, Serialize_repr, Deserialize_repr)]

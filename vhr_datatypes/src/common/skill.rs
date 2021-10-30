@@ -1,4 +1,4 @@
-use super::KnownSize;
+
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
@@ -119,11 +119,6 @@ impl Skill {
     // }
 }
 
-impl KnownSize for Skill {
-    fn count_bytes(&self) -> usize {
-        12
-    }
-}
 
 /*
 pub struct Lensf32;

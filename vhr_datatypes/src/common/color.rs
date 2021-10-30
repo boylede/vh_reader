@@ -1,4 +1,4 @@
-use super::KnownSize;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -27,11 +27,7 @@ impl Color {
     };
 }
 
-impl KnownSize for Color {
-    fn count_bytes(&self) -> usize {
-        12
-    }
-}
+
 
 // pub struct ColorLens {
 //     color: Channel,

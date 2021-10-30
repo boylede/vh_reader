@@ -1,14 +1,10 @@
-use super::KnownSize;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct HairStyle(pub String);
 
-impl KnownSize for HairStyle {
-    fn count_bytes(&self) -> usize {
-        <String as KnownSize>::count_bytes(&self.0)
-    }
-}
+
 
 impl HairStyle {
     pub fn hair_1() -> HairStyle {
@@ -38,11 +34,7 @@ impl BeardStyle {
     }
 }
 
-impl KnownSize for BeardStyle {
-    fn count_bytes(&self) -> usize {
-        <String as KnownSize>::count_bytes(&self.0)
-    }
-}
+
 
 #[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]

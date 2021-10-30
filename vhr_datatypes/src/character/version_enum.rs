@@ -2,9 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{character_data::*, mini_map::*, profile::*, Map};
+use super::{character_data::*, profile::*, };
 use crate::prelude::*;
-use crate::common::wrapper::{Wrapper, FromWrapper, WrapperArray};
+use crate::common::wrapper::{ WrapperArray};
 
 /// an unknown data version
 /// provides a stub so deserialization can fail
@@ -159,15 +159,6 @@ impl CharacterInventory {
     }
 }
 
-impl KnownSize for CharacterInventory {
-    fn count_bytes(&self) -> usize {
-        if let CharacterInventory::OneOhThree(inner) = self {
-            <Vec<Item> as KnownSize>::count_bytes(&inner) + 4
-        } else {
-            unimplemented!()
-        }
-    }
-}
 
 /// an enum with all versions of the player's profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
@@ -235,24 +226,6 @@ impl PlayerProfile {
     }
 }
 
-impl KnownSize for PlayerProfile {
-    fn count_bytes(&self) -> usize {
-        use PlayerProfile::*;
-        match self {
-            TwentySeven(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            TwentyEight(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            TwentyNine(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            Thirty(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtyOne(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtyTwo(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtyThree(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtyFour(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtyFive(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            ThirtySix(profile) => <Profile as KnownSize>::count_bytes(profile) + 4,
-            _ => panic!("not known"),
-        }
-    }
-}
 
 /// an enum with player skills versions
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
@@ -273,22 +246,12 @@ impl CharacterSkills {
         use CharacterSkills::*;
         match self {
             Zero(_) => None,
-            One(inner) => None, // todo: convert these.
+            One(_inner) => None, // todo: convert these.
             Two(inner) => Some(inner),
         }
     }
 }
 
-impl KnownSize for CharacterSkills {
-    fn count_bytes(&self) -> usize {
-        use CharacterSkills::*;
-        match self {
-            Zero(_) => panic!("no"),
-            One(inner) => panic!("no"),
-            Two(inner) => <Vec<Skill> as KnownSize>::count_bytes(&inner) + 4,
-        }
-    }
-}
 
 /// an enum with all versions of the player's inner profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
@@ -640,24 +603,6 @@ impl Player {
             TwentyThree(inner) => inner.upgrade().upgrade(),
             TwentyFour(inner) => inner.upgrade(),
             TwentyFive(inner) => inner,
-        }
-    }
-}
-// todo this can be generically implemented
-impl FromWrapper for Player {
-    fn from(wrapper: WrapperArray) -> Self {
-        let mut deserializer = wrapper.get_vhrd(());
-        <Player as Deserialize>::deserialize(&mut deserializer).unwrap()
-    }
-}
-
-
-impl KnownSize for Player {
-    fn count_bytes(&self) -> usize {
-        if let Player::TwentyFive(inner) = self {
-            <PlayerTwentyFive as KnownSize>::count_bytes(&inner) + 4
-        } else {
-            unimplemented!()
         }
     }
 }

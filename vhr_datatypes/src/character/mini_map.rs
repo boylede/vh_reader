@@ -1,26 +1,12 @@
 use std::io::Read;
 
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use vhr_serde::de::{VHDeserializer, DeserializeOptions};
 
 use flate2::read::GzDecoder;
-use crate::prelude::*;
 
 use super::version_enum::*;
 use crate::common::*;
-// use crate::common::wrapper::{Wrapper, FromWrapper, WrapperArray};
-
-// #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
-// pub struct MiniMap {
-//     inner: Vec<u8>,
-// }
-
-// impl MiniMap {
-//     pub fn len(&self) -> usize {
-//         self.inner.len()
-//     }
-// }
 
 pub type NewMiniMapWrapper = Wrapper<NewMiniMap>;
 
@@ -52,38 +38,6 @@ impl NewMiniMap {
     }
 }
 
-
-impl FromWrapper for NewMiniMap {
-    fn from(wrapper: WrapperArray) -> Self {
-        let version = {
-            let mut deserializer = wrapper.get_vhrd(());
-            let version = deserializer.peek_u32().unwrap();
-            version
-        };
-        // let buffer = deserializer.into_inner();
-        match version {
-            1 => unimplemented!(),
-            2 => unimplemented!(),
-            3 => {
-                let mut deserializer = wrapper.get_vhrd(SequenceLengthsAreSquared::first());
-                <NewMiniMap as Deserialize>::deserialize(&mut deserializer).unwrap()
-            },
-            4 => {
-                let mut deserializer = wrapper.get_vhrd(SequenceLengthsAreSquared::first());
-                <NewMiniMap as Deserialize>::deserialize(&mut deserializer).unwrap()
-            },
-            5 => unimplemented!(),
-            6 => unimplemented!(),
-            7 => {
-                let mut deserializer = wrapper.get_vhrd(SequenceLengthsAreSquared::second());
-                <NewMiniMap as Deserialize>::deserialize(&mut deserializer).unwrap()
-            },
-            _ => panic!("mini map version not known"),
-        }
-        
-        // unimplemented!()
-    }
-}
 
 /// this is seriously a hack but i've painted myself into a corner and its too late to redesign so lets
 /// just see where this goes....
@@ -123,54 +77,7 @@ impl DeserializeOptions for SequenceLengthsAreSquared {
     }
 }
 
-impl KnownSize for NewMiniMap {
-    fn count_bytes(&self) -> usize {
-        use NewMiniMap::*;
-        match self {
-            Zero(_) => panic!("!"),
-            One(inner) => unimplemented!(),
-            Two(inner) => unimplemented!(),
-            Three(inner) => unimplemented!(),
-            Four(inner) => unimplemented!(),
-            Five(inner) => unimplemented!(),
-            Six(inner) => unimplemented!(),
-            Seven(inner) => unimplemented!(),
-        }
-    }
-}
 
-// #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
-// pub struct MiniMap {
-//     pub size: u32,
-//     pub inner: VersionedMiniMap,
-// }
-
-// #[derive(Default, Clone, Lens, PartialEq, Debug, Serialize, Deserialize)]
-// /// the compressed mini map
-// /// todo: add 7zip (de) compression to (de)serialize
-// pub struct CompressedMiniMap {
-//     data: Vec<u8>,
-// }
-
-// #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
-// pub struct UncompressedMiniMap {
-//     data: Vec<u8>,
-// }
-
-// #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
-// pub struct Poi {
-//     name: String,
-//     pos: Point,
-//     kind: u8,
-//     flags: u32,
-// }
-
-// impl Poi {
-//     pub fn pre_serialize(&mut self) -> usize {
-//         let size = self.name.len() + 1;
-//         size + 8
-//     }
-// }
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapOne {
     data: Vec<u8>, // no size prepended here, texture_size ^2
@@ -226,12 +133,6 @@ pub struct MiniMapFour {
     reference: bool,
 }
 
-// impl std::fmt::Debug for MiniMapFour {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         f.debug_struct("MiniMapFour").field("data", &self.data).field("pins", &self.pins).field("reference", &self.reference).finish()
-//     }
-// }
-
 impl std::fmt::Debug for MiniMapFour {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "map length: {}", self.data.len())?;
@@ -239,19 +140,6 @@ impl std::fmt::Debug for MiniMapFour {
         write!(f, "reference: {:?}", self.reference)
     }
 }
-
-// impl MiniMapFour {
-//     pub fn from_reader(reader: &mut VHDeserializer) -> Self {
-//         let data = {
-//             let edge = reader.take_u32().unwrap() as usize;
-//             let data = reader.take_byte_slice(edge*edge).unwrap();
-//             Vec::from_parts(edge, data)
-//         };
-//         // pins: Vec<PinThree>,
-//         // reference: bool,
-//         unimplemented!()
-//     }
-// }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct MiniMapFive {

@@ -1,4 +1,4 @@
-use super::known_size::KnownSize;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -138,14 +138,6 @@ impl Item {
     }
 }
 
-impl KnownSize for Item {
-    fn count_bytes(&self) -> usize {
-        let mut size = 33;
-        size += self.name.len() + 1;
-        size += self.creator_name.len() + 1;
-        size
-    }
-}
 
 /*
 pub struct ItemEquippedLens {}

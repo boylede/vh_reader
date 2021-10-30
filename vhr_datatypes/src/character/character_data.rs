@@ -1836,29 +1836,3 @@ pub struct PlayerTwentyFive {
     pub skills: CharacterSkills,
 }
 
-impl KnownSize for PlayerTwentyFive {
-    fn count_bytes(&self) -> usize {
-        4 + 4
-            + 4
-            + 1
-            + 4
-            + <String as KnownSize>::count_bytes(&self.god_power)
-            + 4
-            + <CharacterInventory as KnownSize>::count_bytes(&self.inventory)
-            + <Vec<String> as KnownSize>::count_bytes(&self.recipes)
-            + <Vec<(String, u32)> as KnownSize>::count_bytes(&self.known_stations)
-            + <Vec<String> as KnownSize>::count_bytes(&self.materials)
-            + <Vec<String> as KnownSize>::count_bytes(&self.tutorials)
-            + <Vec<String> as KnownSize>::count_bytes(&self.uniques)
-            + <Vec<String> as KnownSize>::count_bytes(&self.trophies)
-            + <Vec<u32> as KnownSize>::count_bytes(&self.biomes)
-            + <Vec<(String, String)> as KnownSize>::count_bytes(&self.known_text)
-            + <BeardStyle as KnownSize>::count_bytes(&self.beard_type)
-            + <HairStyle as KnownSize>::count_bytes(&self.hair_type)
-            + <Color as KnownSize>::count_bytes(&self.skin)
-            + <Color as KnownSize>::count_bytes(&self.hair)
-            + 4
-            + <Vec<Food25> as KnownSize>::count_bytes(&self.food)
-            + <CharacterSkills as KnownSize>::count_bytes(&self.skills)
-    }
-}

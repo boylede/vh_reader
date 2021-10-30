@@ -1,4 +1,4 @@
-use super::KnownSize;
+
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -103,8 +103,3 @@ pub struct Food25 {
     pub time: f32,
 }
 
-impl KnownSize for Food25 {
-    fn count_bytes(&self) -> usize {
-        <String as KnownSize>::count_bytes(&self.name) + 4
-    }
-}
