@@ -34,7 +34,26 @@ impl NewMiniMap {
             Four(_) => 4,
             Five(_) => 5,
             Six(_) => 6,
-            Seven(_) => 7, 
+            Seven(_) => 7,
+        }
+    }
+    pub fn into_latest(self) -> MiniMapSeven {
+        use NewMiniMap::*;
+        match self {
+            Zero(_) => panic!("invalid map version"),
+            One(inner) => inner
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade()
+                .upgrade(),
+            Two(inner) => inner.upgrade().upgrade().upgrade().upgrade().upgrade(),
+            Three(inner) => inner.upgrade().upgrade().upgrade().upgrade(),
+            Four(inner) => inner.upgrade().upgrade().upgrade(),
+            Five(inner) => inner.upgrade().upgrade(),
+            Six(inner) => inner.upgrade(),
+            Seven(inner) => inner,
         }
     }
 }
@@ -86,64 +105,56 @@ impl SequenceLengthsAreSquared {
     /// sequence lengths in early versions: the first one is squared, then normal after that
     fn early() -> Self {
         use Modifier::*;
-        SequenceLengthsAreSquared { enable: vec![Modify], saved: 0 }
+        SequenceLengthsAreSquared {
+            enable: vec![Modify],
+            saved: 0,
+        }
     }
     /// seq lengths in pre-compressed versions: normal, then squared, then normal
     fn uncompressed() -> Self {
         use Modifier::*;
         SequenceLengthsAreSquared {
             enable: vec![Modify, Pass],
-            saved: 0
+            saved: 0,
         }
     }
     // sequence lengths in compressed versions, squared, then skipped, then normal
     fn compressed() -> Self {
         use Modifier::*;
-        SequenceLengthsAreSquared { enable: vec![Recall, ModifyAndSave], saved: 0 }
+        SequenceLengthsAreSquared {
+            enable: vec![Recall, ModifyAndSave],
+            saved: 0,
+        }
     }
-    
 }
 
 impl DeserializeOptions for SequenceLengthsAreSquared {
     fn omit_sequence_length(&mut self) -> bool {
         use Modifier::*;
-        match self.enable.iter().last()  {
-            Some(Pass) => {
-                false
-            },
-            Some(Modify) => {
-                false
-            },
-            Some(ModifyAndSave) => {
-                false
-            }
-            Some(Recall) => {
-                true
-            },
+        match self.enable.iter().last() {
+            Some(Pass) => false,
+            Some(Modify) => false,
+            Some(ModifyAndSave) => false,
+            Some(Recall) => true,
             None => false,
         }
     }
     fn modify_sequence_length(&mut self, length: usize) -> usize {
         use Modifier::*;
         match self.enable.pop() {
-            Some(Pass) => {
-                length
-            },
-            Some(Modify) => {
-                length*length
-            },
+            Some(Pass) => length,
+            Some(Modify) => length * length,
             Some(ModifyAndSave) => {
-                println!("saving value {} as {}", length, length*length);
-                self.saved = length*length;
-                length*length
+                println!("saving value {} as {}", length, length * length);
+                self.saved = length * length;
+                length * length
             }
             Some(Recall) => {
                 println!("recalling value {}", self.saved);
                 self.saved
-            },
+            }
             None => length,
         }
-
     }
 }
 
@@ -154,7 +165,6 @@ impl SerializeOptions for SequenceLengthsAreSquared {
             Some(Pass) => Some(length),
             Some(Modify) => Some(f32::sqrt(length as f32).floor() as usize),
             Some(ModifyAndSave) => {
-                
                 let sqrt = f32::sqrt(length as f32).floor() as usize;
                 // println!("saving value {} as {}", length, sqrt);
                 self.saved = sqrt;
@@ -165,11 +175,13 @@ impl SerializeOptions for SequenceLengthsAreSquared {
                 let sqrt = f32::sqrt(length as f32).floor() as usize;
                 // println!("expected {}", sqrt);
                 if sqrt != self.saved {
-                    panic!("tried to serialize a sequence using an incorrect size, saved previously.");
+                    panic!(
+                        "tried to serialize a sequence using an incorrect size, saved previously."
+                    );
                 } else {
                     None
                 }
-            },
+            }
             None => Some(length),
         }
     }
@@ -178,22 +190,28 @@ impl SerializeOptions for SequenceLengthsAreSquared {
         match self.enable.pop() {
             Some(Pass) => false,
             Some(Modify) => false,
-            Some(ModifyAndSave) => {
-                false
-            }
-            Some(Recall) => {
-                true
-            },
+            Some(ModifyAndSave) => false,
+            Some(Recall) => true,
             None => false,
         }
     }
-
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapOne {
     data: Vec<u8>,
 }
+
+impl MiniMapOne {
+    pub fn upgrade(self) -> MiniMapTwo {
+        let MiniMapOne { data } = self;
+        MiniMapTwo {
+            data,
+            pins: Vec::new(),
+        }
+    }
+}
+
 impl std::fmt::Debug for MiniMapOne {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "map length: {}", self.data.len())
@@ -204,6 +222,16 @@ impl std::fmt::Debug for MiniMapOne {
 pub struct MiniMapTwo {
     data: Vec<u8>,
     pins: Vec<PinTwo>,
+}
+
+impl MiniMapTwo {
+    pub fn upgrade(self) -> MiniMapThree {
+        let MiniMapTwo { data, pins } = self;
+        MiniMapThree {
+            data,
+            pins: pins.into_iter().map(|p| p.upgrade()).collect(),
+        }
+    }
 }
 
 impl std::fmt::Debug for MiniMapTwo {
@@ -218,10 +246,33 @@ pub struct PinTwo {
     pos: Point,
     kind: u32,
 }
+
+impl PinTwo {
+    pub fn upgrade(self) -> PinThree {
+        let PinTwo { text, pos, kind } = self;
+        PinThree {
+            text,
+            pos,
+            kind,
+            checked: false,
+        }
+    }
+}
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapThree {
     data: Vec<u8>,
     pins: Vec<PinThree>,
+}
+
+impl MiniMapThree {
+    pub fn upgrade(self) -> MiniMapFour {
+        let MiniMapThree { data, pins } = self;
+        MiniMapFour {
+            data,
+            pins,
+            reference: false,
+        }
+    }
 }
 
 impl std::fmt::Debug for MiniMapThree {
@@ -238,11 +289,46 @@ pub struct PinThree {
     kind: u32,
     checked: bool,
 }
+
+impl PinThree {
+    pub fn upgrade(self) -> PinSix {
+        let PinThree {
+            text,
+            pos,
+            kind,
+            checked,
+        } = self;
+        PinSix {
+            text,
+            pos,
+            kind,
+            checked,
+            owner: 0,
+        }
+    }
+}
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapFour {
     data: Vec<u8>,
     pins: Vec<PinThree>,
     reference: bool,
+}
+
+impl MiniMapFour {
+    pub fn upgrade(self) -> MiniMapFive {
+        let MiniMapFour {
+            data,
+            pins,
+            reference,
+        } = self;
+        let others_explored = vec![0u8; data.len()];
+        MiniMapFive {
+            data,
+            others_explored,
+            pins,
+            reference,
+        }
+    }
 }
 
 impl std::fmt::Debug for MiniMapFour {
@@ -260,12 +346,36 @@ pub struct MiniMapFive {
     pins: Vec<PinThree>,
     reference: bool,
 }
+
+impl MiniMapFive {
+    pub fn upgrade(self) -> MiniMapSix {
+        let MiniMapFive {
+            data,
+            others_explored,
+            pins,
+            reference,
+        } = self;
+        MiniMapSix {
+            data,
+            others_explored,
+            pins: pins.into_iter().map(|p| p.upgrade()).collect(),
+            reference,
+        }
+    }
+}
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapSix {
-    data: Vec<u8>,
-    others_explored: Vec<u8>,
-    pins: Vec<PinSix>,
-    reference: bool,
+    pub data: Vec<u8>,
+    pub others_explored: Vec<u8>,
+    pub pins: Vec<PinSix>,
+    pub reference: bool,
+}
+
+impl MiniMapSix {
+    pub fn upgrade(self) -> MiniMapSeven {
+        let inner = self;
+        MiniMapSeven { inner }
+    }
 }
 
 impl std::fmt::Debug for MiniMapSix {
@@ -293,7 +403,7 @@ pub struct PinSix {
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(from = "CompressedWrapper", into = "CompressedWrapper")]
 pub struct MiniMapSeven {
-    inner: MiniMapSix,
+    pub inner: MiniMapSix,
 }
 
 impl MiniMapSeven {
