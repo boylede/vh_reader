@@ -1,12 +1,14 @@
 use eframe::egui::Rgba;
 use eframe::{egui, epi};
-use egui::{color::Hsva, Color32};
+use egui::{color::Hsva, Color32, Vec2};
 use epi::App;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
 use std::io::{Read, Seek, Write};
 use std::path::{Path, PathBuf};
+
+use image::{GenericImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
 
 use vhr_datatypes::character::*;
 use vhr_datatypes::map::{hashed_string::HashedString, Entity, MapDatabaseFile};
@@ -409,6 +411,59 @@ impl Loader {
                                 })
                         };
                         let selected_inventory_item = None;
+                        let loaded_minimaps = profile
+                            .maps
+                            .iter()
+                            .filter_map(|map| {
+                                // let minimap = map.mini_map;
+                                // unimplemented!()
+                                map.mini_map
+                                    .as_ref()
+                                    .and_then(|mm| Some(mm.inner.clone().into_latest()))
+                            })
+                            .map(|minimap| {
+                                let edge =
+                                    (minimap.inner.data.len() as f32).sqrt().floor() as usize;
+                                let pixels: Vec<Color32> = minimap
+                                    .inner
+                                    .data
+                                    .iter()
+                                    .zip(minimap.inner.others_explored.iter())
+                                    .map(|(a, b)| {
+                                        match (*a == 0,*b == 0) {
+                                            // both visited
+                                            (false,false) => egui::Color32::WHITE,
+                                            // i've visited but not others
+                                            (false,true) => egui::Color32::LIGHT_GRAY,
+                                            // others have visited but i havent
+                                            (true,false) => egui::Color32::GRAY,
+                                            (true,true) => egui::Color32::BLACK,
+                                        }
+    //                                     pub const TRANSPARENT: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 0);
+    // pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
+    // pub const LIGHT_GRAY: Color32 = Color32::from_rgb(220, 220, 220);
+    // pub const GRAY: Color32 = Color32::from_rgb(160, 160, 160);
+    // pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
+    // pub const RED: Color32 = Color32::from_rgb(255, 0, 0);
+    // pub const YELLOW: Color32 = Color32::from_rgb(255, 255, 0);
+    // pub const GREEN: Color32 = Color32::from_rgb(0, 255, 0);
+    // pub const BLUE: Color32 = Color32::from_rgb(0, 0, 255);
+    // pub const LIGHT_BLUE: Color32 = Color32::from_rgb(140, 160, 255);
+    // pub const GOLD: Color32 = Color32::from_rgb(255, 215, 0);
+
+    // pub const DEBUG_COLOR: Color32 = Color32::from_rgba_premultiplied(0, 200, 0, 128);
+                                        
+                                    })
+                                    .collect();
+                                let texture = frame
+                                    .tex_allocator()
+                                    .alloc_srgba_premultiplied((edge, edge), &pixels);
+
+                                let size = egui::Vec2::new(256.0 as f32, 256.0 as f32);
+                                (size, texture)
+                            })
+                            .collect();
+                        let minimap_zoom = 1.0;
                         let next_state = CharacterEditor::Loaded(CharacterDialog {
                             original_path,
                             current_tab: Tabs::Stats,
@@ -417,6 +472,8 @@ impl Loader {
                             skills,
                             selected_inventory_item,
                             inventory,
+                            loaded_minimaps,
+                            minimap_zoom,
                         });
                         Some(EditorEvent::SwapState(next_state))
                     } else {
@@ -460,11 +517,13 @@ pub struct CharacterDialog {
     skills: Vec<Skill>,
     selected_inventory_item: Option<(u32, u32)>,
     inventory: Vec<Vec<Item>>,
+    loaded_minimaps: Vec<(egui::Vec2, egui::TextureId)>,
+    minimap_zoom: f32,
 }
 
 impl CharacterDialog {
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) -> Option<EditorEvent> {
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+        egui::TopBottomPanel::top("menu_bar_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
                 egui::menu::menu(ui, "File", |ui| {
@@ -513,7 +572,7 @@ impl CharacterDialog {
 
         // this copy is necessary to avoid multiple borrows
         let mut c_tab: Tabs = self.current_tab;
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::TopBottomPanel::top("tab_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut c_tab, Tabs::Stats, "Stats");
                 ui.selectable_value(&mut c_tab, Tabs::Appearance, "Appearance");
@@ -773,7 +832,24 @@ impl CharacterDialog {
                             }
                         });
                 }
-                Tabs::Maps => {}
+                Tabs::Maps => {
+                    egui::SidePanel::left("map_list").show(ctx, |ui| {
+                        for map in &self.loaded_minimaps {
+                            ui.add(egui::Label::new("Map!"));
+                        }
+                    });
+                    egui::TopBottomPanel::bottom("map_panel").show(ctx, |ui| {
+                        ui.add(egui::Slider::new(&mut self.minimap_zoom, 0.0..=10.0));
+                        for (size, texture) in self.loaded_minimaps.iter() {
+                            // ui.heading("This is an image:");
+                            let scaled_size = Vec2 {x: size.x * self.minimap_zoom, y: size.y * self.minimap_zoom};
+                            ui.image(*texture, scaled_size);
+
+                            // ui.heading("This is an image you can click:");
+                            // ui.add(egui::ImageButton::new(*texture, *size));
+                        }
+                    });
+                }
                 Tabs::Compendium => {}
                 Tabs::HexView => {}
             }
