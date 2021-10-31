@@ -5,6 +5,8 @@ use vhr_serde::{
     ser::VHSerializer,
 };
 
+use sha2::{Sha512, Digest};
+
 use crate::prelude::*;
 pub use character_data::CharacterData;
 pub use mini_map::NewMiniMap;
@@ -39,11 +41,9 @@ where
             <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
             serializer.to_inner()
         };
-        // todo: generate hash
-        let mut hash = Vec::with_capacity(64);
-        for _ in 0..64 {
-            hash.push(0);
-        }
+        let mut hasher = Sha512::new();
+        hasher.update(&inner);
+        let hash = hasher.finalize().to_vec();
         HashedWrapper {
             inner,
             hash,
@@ -56,14 +56,28 @@ where
     T: Deserialize<'de> + Clone,
 {
     fn from(wrapper: HashedWrapper) -> HashedBytes<T> {
+        let mut hasher = Sha512::new();
+        hasher.update(&wrapper.inner);
+        let hash = hasher.finalize().to_vec();
+        let hash_match = if hash == wrapper.hash {
+            println!("hash matched!");
+            HashMatches::Match {hash}
+        } else {
+            println!("hash didn't match!");
+            HashMatches::MisMatch {
+                found: hash,
+                expected: wrapper.hash
+            }
+        };
+
         let inner = {
             let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
             <T as Deserialize>::deserialize(&mut deserializer).unwrap()
         };
-        // todo: check hash
+        
         HashedBytes {
             inner,
-            hash: HashMatches::Unchecked,
+            hash: hash_match,
         }
     }
 }
