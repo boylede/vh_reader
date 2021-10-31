@@ -434,7 +434,8 @@ impl Loader {
                 }
             }
             Err(e) => {
-                todo!("couldnt load file, try another and revert to file picker state?");
+                println!("{:?}", e);
+                todo!("couldnt deserialize file, try another and revert to file picker state?");
                 None
             }
         }
@@ -495,9 +496,9 @@ impl CharacterDialog {
                                     .collect(),
                             );
                             new_profile.data =
-                                Some(CharacterData::from_inner(Player::wrap_latest(new_data)));
+                                Some(CharacterData::wrap(Player::wrap_latest(new_data)));
                             let character_file_data =
-                                HashedBytes::from_inner(PlayerProfile::wrap_latest(new_profile));
+                                HashingWrapper::wrap(PlayerProfile::wrap_latest(new_profile));
                             let mut out_file = File::create(path).expect("Failed opening file");
                             let output_bytes = vhr_serde::ser::to_bytes(&character_file_data)
                                 .expect("Failed to serialize character");

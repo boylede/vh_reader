@@ -13,7 +13,7 @@ impl<T> Wrapper<T>
 where
     T: Wrapped,
 {
-    pub fn from_inner(inner: T) -> Wrapper<T> {
+    pub fn wrap(inner: T) -> Wrapper<T> {
         Wrapper { inner }
     }
 }
