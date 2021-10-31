@@ -13,28 +13,28 @@ pub type NewMiniMapWrapper = Wrapper<NewMiniMap>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum NewMiniMap {
-    Zero(NoSuchVersion), // invalid
+    Zero(NoSuchVersion),
     One(MiniMapOne),
     Two(MiniMapTwo),
     Three(MiniMapThree),
     Four(MiniMapFour),
     Five(MiniMapFive),
     Six(MiniMapSix),
-    Seven(MiniMapSeven), // compressed
+    Seven(MiniMapSeven),
 }
 
 impl NewMiniMap {
     pub fn version(&self) -> usize {
         use NewMiniMap::*;
         match self {
-            Zero(_) => 0, // invalid
+            Zero(_) => 0,
             One(_) => 1,
             Two(_) => 2,
             Three(_) => 3,
             Four(_) => 4,
             Five(_) => 5,
             Six(_) => 6,
-            Seven(_) => 7, // compressed
+            Seven(_) => 7, 
         }
     }
 }
@@ -58,30 +58,6 @@ impl Wrapped for NewMiniMap {
         WrapperArray { inner }
     }
 }
-
-// impl<'de> From<WrapperArray> for Wrapper<NewMiniMap>  {
-//     fn from(wrapper: WrapperArray) -> Wrapper<NewMiniMap> {
-//         // let length = wrapper.inner.len() as u32;
-//         // let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
-//         // let inner = <T as Deserialize>::deserialize(&mut deserializer).unwrap();
-//         // Wrapper { inner }
-//         unimplemented!()
-//     }
-// }
-
-// impl<'de> From<Wrapper<NewMiniMap>> for WrapperArray {
-//     fn from(wrapper: Wrapper<NewMiniMap>) -> WrapperArray {
-//         // let inner  = {
-//         //     let mut serializer = VHSerializer::new();
-//         //     <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
-//         //     serializer.to_inner()
-//         // };
-//         // WrapperArray {
-//         //     inner,
-//         // }
-//         unimplemented!()
-//     }
-// }
 
 /// this is seriously a hack but i've painted myself into a corner and its too late to redesign so lets
 /// just see where this goes....
@@ -107,10 +83,12 @@ impl std::fmt::Debug for SequenceLengthsAreSquared {
 }
 
 impl SequenceLengthsAreSquared {
-    fn compressed() -> Self {
+    /// sequence lengths in early versions: the first one is squared, then normal after that
+    fn early() -> Self {
         use Modifier::*;
-        SequenceLengthsAreSquared { enable: vec![Recall, ModifyAndSave], saved: 0 }
+        SequenceLengthsAreSquared { enable: vec![Modify], saved: 0 }
     }
+    /// seq lengths in pre-compressed versions: normal, then squared, then normal
     fn uncompressed() -> Self {
         use Modifier::*;
         SequenceLengthsAreSquared {
@@ -118,6 +96,12 @@ impl SequenceLengthsAreSquared {
             saved: 0
         }
     }
+    // sequence lengths in compressed versions, squared, then skipped, then normal
+    fn compressed() -> Self {
+        use Modifier::*;
+        SequenceLengthsAreSquared { enable: vec![Recall, ModifyAndSave], saved: 0 }
+    }
+    
 }
 
 impl DeserializeOptions for SequenceLengthsAreSquared {
@@ -159,14 +143,7 @@ impl DeserializeOptions for SequenceLengthsAreSquared {
             },
             None => length,
         }
-        // if let Some(true) = self.enable.pop() {
-        //     println!("squaring {} = {}", length, length * length);
-        //     // self.enable -= 1;
-        //     length * length
-        // } else {
-        //     println!("not squaring {}", length);
-        //     length
-        // }
+
     }
 }
 
@@ -179,14 +156,14 @@ impl SerializeOptions for SequenceLengthsAreSquared {
             Some(ModifyAndSave) => {
                 
                 let sqrt = f32::sqrt(length as f32).floor() as usize;
-                println!("saving value {} as {}", length, sqrt);
+                // println!("saving value {} as {}", length, sqrt);
                 self.saved = sqrt;
                 Some(sqrt)
             }
             Some(Recall) => {
-                println!("recalling value {}", self.saved);
+                // println!("recalling value {}", self.saved);
                 let sqrt = f32::sqrt(length as f32).floor() as usize;
-                println!("expected {}", sqrt);
+                // println!("expected {}", sqrt);
                 if sqrt != self.saved {
                     panic!("tried to serialize a sequence using an incorrect size, saved previously.");
                 } else {
@@ -215,7 +192,7 @@ impl SerializeOptions for SequenceLengthsAreSquared {
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapOne {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
+    data: Vec<u8>,
 }
 impl std::fmt::Debug for MiniMapOne {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -225,7 +202,7 @@ impl std::fmt::Debug for MiniMapOne {
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapTwo {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
+    data: Vec<u8>,
     pins: Vec<PinTwo>,
 }
 
@@ -243,7 +220,7 @@ pub struct PinTwo {
 }
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapThree {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
+    data: Vec<u8>,
     pins: Vec<PinThree>,
 }
 
@@ -316,7 +293,6 @@ pub struct PinSix {
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(from = "CompressedWrapper", into = "CompressedWrapper")]
 pub struct MiniMapSeven {
-    // compressed_len: usize,
     inner: MiniMapSix,
 }
 

@@ -622,16 +622,3 @@ impl Wrapped for Player {
         WrapperArray { inner }
     }
 }
-
-// /// an enum with all versions of the minimap
-// #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
-// pub enum VersionedMiniMap {
-//     Zero(NoSuchVersion),
-//     One(UnknownVersion),
-//     Two(UnknownVersion),
-//     Three(UnknownVersion),
-//     Four(UncompressedMiniMap),
-//     Five(UnknownVersion),
-//     Six(UnknownVersion),
-//     Seven(CompressedMiniMap),
-// }

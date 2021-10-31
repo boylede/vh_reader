@@ -5,7 +5,6 @@ use crate::prelude::*;
 use super::version_enum::*;
 use crate::common::food::*;
 use crate::common::hair::{BeardStyle, HairStyle};
-// use super::Compendium;
 
 pub type CharacterData = Wrapper<Player>;
 
@@ -32,7 +31,7 @@ impl PlayerOne {
         } = self;
         PlayerTwo {
             current_health,
-            zdoid: (0, 0), // todo: idk no ones going to use this
+            zdoid: (0, 0),
             inventory,
             recipes,
             unknown,
@@ -115,39 +114,13 @@ impl PlayerThree {
 pub struct PlayerFour {
     pub current_health: f32,
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-    // unique items skipped until 6
-    // trophies skipped until 9
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
-    // beard and hear skipped until version 4
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-    // skin and hair skipped until version 5
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
+
 }
 
 impl PlayerFour {
@@ -180,51 +153,16 @@ impl PlayerFour {
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerFive {
-    // skip max health until 7
     pub current_health: f32,
-    // skip stamina until 10
-    // skip first spawn until 8
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-    // unique items skipped until 6
-    // trophies skipped until 9
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
-    // beard and hear skipped until version 4
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-    // skin and hair skipped until version 5
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerFive {
@@ -260,52 +198,17 @@ impl PlayerFive {
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerSix {
-    // skip max health until 7
     pub current_health: f32,
-    // skip stamina until 10
-    // skip first spawn until 8
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-    // unique items skipped until 6
     pub uniques: Vec<String>,
-    // trophies skipped until 9
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
-    // beard and hear skipped until version 4
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-    // skin and hair skipped until version 5
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerSix {
@@ -343,53 +246,18 @@ impl PlayerSix {
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerSeven {
-    // skip max health until 7
     pub max_health: f32,
     pub current_health: f32,
-    // skip stamina until 10
-    // skip first spawn until 8
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-    // unique items skipped until 6
     pub uniques: Vec<String>,
-    // trophies skipped until 9
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
-    // beard and hear skipped until version 4
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-    // skin and hair skipped until version 5
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerSeven {
@@ -431,50 +299,17 @@ impl PlayerSeven {
 pub struct PlayerEight {
     pub max_health: f32,
     pub current_health: f32,
-    // skip stamina until 10
-    // skip first spawn until 8
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-
     pub uniques: Vec<String>,
-    // trophies skipped until 9
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerEight {
@@ -518,50 +353,18 @@ impl PlayerEight {
 pub struct PlayerNine {
     pub max_health: f32,
     pub current_health: f32,
-    // skip stamina until 10
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
-
     pub uniques: Vec<String>,
-    // trophies skipped until 9
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerNine {
@@ -607,47 +410,19 @@ impl PlayerNine {
 pub struct PlayerTen {
     pub max_health: f32,
     pub current_health: f32,
-    // skip stamina until 10
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerTen {
@@ -697,45 +472,18 @@ pub struct PlayerEleven {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
     pub gender: Gender,
-    // foods skipped until 12
-    // foods look like this:
-    // count: u32,
-    // versions before 14:
-    // String, f32, f32, f32, f32, f32, f32,
-    // only version 13: another f32.
-    // versions 14 and after
-    // String name
-    // if version 25 or better
-    // f32 time
-    // else
-    // f32 health
-    // if version 16 or better (but not 25 or better)
-    // f32 stamina
-    // skills skipped until version 17
 }
 
 impl PlayerEleven {
@@ -787,33 +535,19 @@ pub struct PlayerTwelve {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
     pub gender: Gender,
-    // foods skipped until 12
-    pub food: Vec<Food12>, // foods version named
-                           // skills skipped until version 17
+    pub food: Vec<Food12>, 
 }
 
 impl PlayerTwelve {
@@ -866,33 +600,20 @@ pub struct PlayerThirteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
     pub gender: Gender,
-    // foods skipped until 12
-    pub food: Vec<Food13>, // foods version named
-                           // skills skipped until version 17
+    pub food: Vec<Food13>,
+
 }
 
 impl PlayerThirteen {
@@ -946,32 +667,19 @@ pub struct PlayerFourteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-    // for versions up to 15, there are strings that
-    // will be ignored so idk what they are
     pub unknown: Vec<String>,
-    // skip known_stations until 15
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-    // gender skipped until version 11
     pub gender: Gender,
-    pub food: Vec<Food14>, // foods version named
-                           // skills skipped until version 17
+    pub food: Vec<Food14>,
 }
 
 impl PlayerFourteen {
@@ -1025,31 +733,19 @@ pub struct PlayerFifteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
-    // skip known_stations until 15
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
-    pub food: Vec<Food15>, // foods version named
-                           // skills skipped until version 17
+    pub food: Vec<Food15>,
 }
 
 impl PlayerFifteen {
@@ -1102,30 +798,19 @@ pub struct PlayerSixteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
-    pub food: Vec<Food16>, // foods version named
-                           // skills skipped until version 17
+    pub food: Vec<Food16>,
 }
 
 impl PlayerSixteen {
@@ -1179,30 +864,19 @@ pub struct PlayerSeventeen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
-    pub food: Vec<Food16>, // foods version named
-    // skills skipped until version 17
+    pub food: Vec<Food16>,
     pub skills: CharacterSkills,
 }
 
@@ -1258,30 +932,20 @@ pub struct PlayerEighteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    // biomes skipped until 18
     pub biomes: Vec<u32>,
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
-    pub food: Vec<Food16>, // foods version named
+    pub food: Vec<Food16>,
     pub skills: CharacterSkills,
 }
 
@@ -1339,29 +1003,19 @@ pub struct PlayerNineteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-    // for all versions EXCEPT 19 and 20:
-    // pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
     pub biomes: Vec<u32>,
-    // "known texts" skipped until 22 / pair strings
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
-    pub food: Vec<Food16>, // foods version named
+    pub food: Vec<Food16>,
     pub skills: CharacterSkills,
 }
 
@@ -1418,18 +1072,11 @@ pub struct PlayerTwenty {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    // skip death timer until 20
     pub death_timer: f32,
-    // skip gp until 23
-    // skip gp cooldown until 24
-    // inventory sub-routine is parent-version agnostic
     pub inventory: CharacterInventory,
-    // compendium
     pub recipes: Vec<String>,
-
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
-
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
     pub biomes: Vec<u32>,
@@ -1437,7 +1084,6 @@ pub struct PlayerTwenty {
     pub hair_type: HairStyle,
     pub skin: Color,
     pub hair: Color,
-
     pub gender: Gender,
     pub food: Vec<Food16>,
     pub skills: CharacterSkills,

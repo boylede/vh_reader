@@ -19,12 +19,8 @@ mod mini_map;
 mod profile;
 mod version_enum;
 
-// #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
-// pub struct HashedWrapper<'db> {
-//     inner: &'db [u8],
-//     hash: Vec<u8>,
-// }
-
+/// A wrapper over a byte buffer that also contains a hash of the byte buffer
+/// this is the representation found in the serialized output or deserialization input
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct HashedWrapper {
     inner: Vec<u8>,
@@ -89,8 +85,8 @@ pub enum HashMatches {
     Unchecked,
 }
 
-/// a container that hashes its content and lists the size of the content up front
-/// todo: implement serialize to calculate the hash, and deserialize to notice bad hashes (but not fail because who cares)
+/// a container that wraps a serializable type and will provide the hash of that serialization 
+/// after serializing. (De)Serialization converts to/from HashedWrapper
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[serde(from = "HashedWrapper", into = "HashedWrapper")]
 pub struct HashedBytes<T: Clone> {
