@@ -7,6 +7,7 @@ pub mod position;
 pub mod skill;
 pub mod vis_data;
 pub mod wrapper;
+pub mod compressed_wrapper;
 
 pub use biome::BiomeId;
 pub use color::Color;
