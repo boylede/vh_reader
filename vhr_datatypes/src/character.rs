@@ -27,11 +27,11 @@ pub struct HashedWrapper {
     hash: Vec<u8>,
 }
 
-impl<'de, T> From<HashedBytes<T>> for HashedWrapper
+impl<'de, T> From<HashingWrapper<T>> for HashedWrapper
 where
     T: Serialize + Clone,
 {
-    fn from(wrapper: HashedBytes<T>) -> HashedWrapper {
+    fn from(wrapper: HashingWrapper<T>) -> HashedWrapper {
         let inner = {
             let mut serializer = VHSerializer::new();
             <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
@@ -47,23 +47,18 @@ where
     }
 }
 
-impl<'de, T> From<HashedWrapper> for HashedBytes<T>
+impl<'de, T> From<HashedWrapper> for HashingWrapper<T>
 where
     T: Deserialize<'de> + Clone,
 {
-    fn from(wrapper: HashedWrapper) -> HashedBytes<T> {
+    fn from(wrapper: HashedWrapper) -> HashingWrapper<T> {
         let mut hasher = Sha512::new();
         hasher.update(&wrapper.inner);
         let hash = hasher.finalize().to_vec();
         let hash_match = if hash == wrapper.hash {
-            println!("hash matched!");
-            HashMatches::Match {hash}
+            HashMatches::Match
         } else {
-            println!("hash didn't match!");
-            HashMatches::MisMatch {
-                found: hash,
-                expected: wrapper.hash
-            }
+            HashMatches::Mismatch
         };
 
         let inner = {
@@ -71,7 +66,7 @@ where
             <T as Deserialize>::deserialize(&mut deserializer).unwrap()
         };
         
-        HashedBytes {
+        HashingWrapper {
             inner,
             hash: hash_match,
         }
@@ -80,35 +75,36 @@ where
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum HashMatches {
-    MisMatch { expected: Vec<u8>, found: Vec<u8> },
-    Match { hash: Vec<u8> },
-    Unchecked,
+    /// indicates the hash matched input
+    Match,
+    /// indicates the hash did not match input
+    Mismatch,
 }
 
 /// a container that wraps a serializable type and will provide the hash of that serialization 
 /// after serializing. (De)Serialization converts to/from HashedWrapper
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[serde(from = "HashedWrapper", into = "HashedWrapper")]
-pub struct HashedBytes<T: Clone> {
+pub struct HashingWrapper<T: Clone> {
     // pub content_size: u32,
     pub inner: T,
     pub hash: HashMatches,
 }
 
-impl<T> HashedBytes<T>
+impl<T> HashingWrapper<T>
 where
     T: Serialize + Clone,
 {
-    pub fn from_inner(inner: T) -> HashedWrapper {
-        HashedBytes {
+    pub fn wrap(inner: T) -> HashedWrapper {
+        HashingWrapper {
             inner,
-            hash: HashMatches::Unchecked,
+            hash: HashMatches::Match,
         }
         .into()
     }
 }
 
-pub type CharacterFile = HashedBytes<PlayerProfile>;
+pub type CharacterFile = HashingWrapper<PlayerProfile>;
 
 // #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 // pub struct Compendium {
