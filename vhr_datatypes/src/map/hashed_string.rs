@@ -22,6 +22,40 @@ pub fn print_unique_strings() {
     }
 }
 
+/// a type that serializes a string into a weak 32bit hash
+/// for deserialization it may fail due to incomplete hash lookup table
+/// in that case the Unknown variant will be emitted
+/// this type is used for as a key in a property map lookup
+#[derive(Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[serde(from = "HashedKey", into = "HashedKey")]
+pub enum KeyHashingWrapper {
+    Known(String),
+    Unknown(u32),
+}
+
+/// the serialized type that represents a key
+/// this is represented as a u32 on disk
+/// but originates from a string, so we will deseraialize into a string
+/// for human readability
+#[derive(Serialize, Deserialize, Clone)]
+pub struct HashedKey {
+    inner: u32,
+}
+
+
+impl<'de> From<HashedKey> for KeyHashingWrapper {
+    fn from(wrapper: HashedKey) -> KeyHashingWrapper {
+
+        unimplemented!()
+    }
+}
+
+impl<'de> From<KeyHashingWrapper> for HashedKey {
+    fn from(wrapper: KeyHashingWrapper) -> HashedKey {
+        unimplemented!()
+    }
+}
+
 #[derive(Hash, Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
 pub struct HashedString {
     #[serde(skip)]
