@@ -18,5 +18,4 @@ pub use position::{MarkedPoint, Point};
 pub use skill::Skill;
 pub use square_vec::SquareVec;
 pub use vis_data::VisibilityData;
-pub use wrapper::{Wrapper, WrapperArray};
-
+pub use wrapper::{Wrapped, Wrapper, WrapperArray};

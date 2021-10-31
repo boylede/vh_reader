@@ -1,15 +1,57 @@
-use crate::error::{Error, Result};
+use crate::{
+    de::VHDeserializer,
+    error::{Error, Result},
+};
 use serde::{
     ser::{self, Serializer},
     Serialize,
 };
 
-#[derive(Default)]
-pub struct VHSerializer {
-    output: Vec<u8>,
+pub trait SerializeOptions {
+    fn modify_sequence_length(&mut self, length: usize) -> Option<usize> {
+        Some(length)
+    }
+    fn omit_sequence_length(&mut self) -> bool {
+        false
+    }
 }
 
-impl VHSerializer {
+impl SerializeOptions for () {}
+
+#[derive(Default)]
+pub struct VHSerializer<O> {
+    output: Vec<u8>,
+    options: O,
+}
+
+// impl SerializeOptions for () {}
+
+impl VHSerializer<()> {
+    pub fn new() -> Self {
+        let options = ();
+        VHSerializer {
+            output: Vec::new(),
+            options,
+        }
+    }
+}
+
+impl<O> VHSerializer<O>
+where
+    O: SerializeOptions,
+{
+    pub fn with_options(options: O) -> VHSerializer<O>
+    where
+        O: SerializeOptions,
+    {
+        VHSerializer {
+            output: Vec::new(),
+            options,
+        }
+    }
+    pub fn to_inner(self) -> Vec<u8> {
+        self.output
+    }
     fn push_bool(&mut self, v: bool) -> Result<()> {
         self.output.push(if v { 1 } else { 0 });
         Ok(())
@@ -57,12 +99,15 @@ pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
-    let mut serializer = VHSerializer { output: Vec::new() };
+    let mut serializer = VHSerializer::new();
     value.serialize(&mut serializer)?;
     Ok(serializer.output)
 }
 
-impl<'a> Serializer for &'a mut VHSerializer {
+impl<'a, O> Serializer for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -215,7 +260,10 @@ impl<'a> Serializer for &'a mut VHSerializer {
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if let Some(len) = len {
             // todo: error on too large
-            self.serialize_u32(len as u32)?;
+            let len = self.options.modify_sequence_length(len);
+            if let Some(len) = len {
+                self.serialize_u32(len as u32)?;
+            }
             Ok(self)
         } else {
             Err(Error::UnknownSize)
@@ -275,7 +323,10 @@ impl<'a> Serializer for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeSeq for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeSeq for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -291,7 +342,10 @@ impl<'a> ser::SerializeSeq for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeTuple for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeTuple for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -307,7 +361,10 @@ impl<'a> ser::SerializeTuple for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleStruct for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeTupleStruct for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -323,7 +380,10 @@ impl<'a> ser::SerializeTupleStruct for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleVariant for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeTupleVariant for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -339,7 +399,10 @@ impl<'a> ser::SerializeTupleVariant for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeMap for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeMap for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -362,7 +425,10 @@ impl<'a> ser::SerializeMap for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeStruct for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeStruct for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 
@@ -378,7 +444,10 @@ impl<'a> ser::SerializeStruct for &'a mut VHSerializer {
     }
 }
 
-impl<'a> ser::SerializeStructVariant for &'a mut VHSerializer {
+impl<'a, O> ser::SerializeStructVariant for &'a mut VHSerializer<O>
+where
+    O: SerializeOptions,
+{
     type Ok = ();
     type Error = Error;
 

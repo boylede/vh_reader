@@ -1,10 +1,7 @@
-
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct HairStyle(pub String);
-
-
 
 impl HairStyle {
     pub fn hair_1() -> HairStyle {
@@ -33,8 +30,6 @@ impl BeardStyle {
         BeardStyle(String::from("Beard1"))
     }
 }
-
-
 
 #[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]

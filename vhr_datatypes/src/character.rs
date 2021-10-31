@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
-use vhr_serde::{de::{VHDeserializer, DeserializeOptions}, ser::VHSerializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use vhr_serde::{
+    de::{DeserializeOptions, VHDeserializer},
+    ser::VHSerializer,
+};
 
 use crate::prelude::*;
 pub use character_data::CharacterData;
@@ -14,7 +17,6 @@ mod mini_map;
 mod profile;
 mod version_enum;
 
-
 // #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 // pub struct HashedWrapper<'db> {
 //     inner: &'db [u8],
@@ -27,30 +29,38 @@ pub struct HashedWrapper {
     hash: Vec<u8>,
 }
 
-impl<'de, T> From<HashedBytes<T>> for HashedWrapper where T: Serialize + Clone {
+impl<'de, T> From<HashedBytes<T>> for HashedWrapper
+where
+    T: Serialize + Clone,
+{
     fn from(wrapper: HashedBytes<T>) -> HashedWrapper {
-        println!("character.rs:32");
-        let inner  = { 
+        let inner = {
             let mut serializer = VHSerializer::new();
             <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
             serializer.to_inner()
         };
         // todo: generate hash
+        let mut hash = Vec::with_capacity(64);
+        for _ in 0..64 {
+            hash.push(0);
+        }
         HashedWrapper {
             inner,
-            hash: Vec::new(),
+            hash,
         }
     }
 }
 
-impl<'de, T> From<HashedWrapper> for HashedBytes<T> where T: Deserialize<'de> + Clone {
+impl<'de, T> From<HashedWrapper> for HashedBytes<T>
+where
+    T: Deserialize<'de> + Clone,
+{
     fn from(wrapper: HashedWrapper) -> HashedBytes<T> {
-        println!("character.rs:48");
-        let inner  = { 
+        let inner = {
             let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
             <T as Deserialize>::deserialize(&mut deserializer).unwrap()
         };
-        // todo: generate hash
+        // todo: check hash
         HashedBytes {
             inner,
             hash: HashMatches::Unchecked,
@@ -60,20 +70,15 @@ impl<'de, T> From<HashedWrapper> for HashedBytes<T> where T: Deserialize<'de> + 
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum HashMatches {
-    MisMatch {
-        expected: Vec<u8>,
-        found: Vec<u8>,
-    },
-    Match {
-        hash: Vec<u8>,
-    },
+    MisMatch { expected: Vec<u8>, found: Vec<u8> },
+    Match { hash: Vec<u8> },
     Unchecked,
 }
 
 /// a container that hashes its content and lists the size of the content up front
 /// todo: implement serialize to calculate the hash, and deserialize to notice bad hashes (but not fail because who cares)
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
-#[serde(from = "HashedWrapper", into="HashedWrapper")]
+#[serde(from = "HashedWrapper", into = "HashedWrapper")]
 pub struct HashedBytes<T: Clone> {
     // pub content_size: u32,
     pub inner: T,
@@ -85,16 +90,15 @@ where
     T: Serialize + Clone,
 {
     pub fn from_inner(inner: T) -> HashedWrapper {
-        println!("character.rs:88");
         HashedBytes {
             inner,
             hash: HashMatches::Unchecked,
-        }.into()
+        }
+        .into()
     }
 }
 
 pub type CharacterFile = HashedBytes<PlayerProfile>;
-
 
 // #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 // pub struct Compendium {

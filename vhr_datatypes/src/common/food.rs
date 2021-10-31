@@ -1,4 +1,3 @@
-
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -102,4 +101,3 @@ pub struct Food25 {
     pub name: String,
     pub time: f32,
 }
-

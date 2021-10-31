@@ -1835,4 +1835,3 @@ pub struct PlayerTwentyFive {
     pub food: Vec<Food25>,
     pub skills: CharacterSkills,
 }
-

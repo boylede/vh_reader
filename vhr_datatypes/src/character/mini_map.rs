@@ -1,9 +1,10 @@
-use std::io::Read;
+use std::io::{Read, Write};
 
 use serde::{Deserialize, Serialize};
-use vhr_serde::de::{VHDeserializer, DeserializeOptions};
+use vhr_serde::de::{DeserializeOptions, VHDeserializer};
+use vhr_serde::ser::{SerializeOptions, VHSerializer};
 
-use flate2::read::GzDecoder;
+use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 
 use super::version_enum::*;
 use crate::common::*;
@@ -38,45 +39,179 @@ impl NewMiniMap {
     }
 }
 
+impl Wrapped for NewMiniMap {
+    fn strip(wrapper: WrapperArray) -> Wrapper<Self> {
+        // todo: this is only valid for some versions of the map
+        let option = SequenceLengthsAreSquared::uncompressed();
+        let mut deserializer = VHDeserializer::from_owned(wrapper.inner, option);
+        let inner = <Self as Deserialize>::deserialize(&mut deserializer).unwrap();
+        Wrapper { inner }
+    }
+    fn wrap(item: Wrapper<Self>) -> WrapperArray {
+        let inner = {
+            // todo: this is only valid for some versions of the map
+            let option = SequenceLengthsAreSquared::uncompressed();
+            let mut serializer = VHSerializer::with_options(option);
+            <Self as Serialize>::serialize(&item.inner, &mut serializer).unwrap();
+            serializer.to_inner()
+        };
+        WrapperArray { inner }
+    }
+}
+
+// impl<'de> From<WrapperArray> for Wrapper<NewMiniMap>  {
+//     fn from(wrapper: WrapperArray) -> Wrapper<NewMiniMap> {
+//         // let length = wrapper.inner.len() as u32;
+//         // let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
+//         // let inner = <T as Deserialize>::deserialize(&mut deserializer).unwrap();
+//         // Wrapper { inner }
+//         unimplemented!()
+//     }
+// }
+
+// impl<'de> From<Wrapper<NewMiniMap>> for WrapperArray {
+//     fn from(wrapper: Wrapper<NewMiniMap>) -> WrapperArray {
+//         // let inner  = {
+//         //     let mut serializer = VHSerializer::new();
+//         //     <T as Serialize>::serialize(&wrapper.inner, &mut serializer).unwrap();
+//         //     serializer.to_inner()
+//         // };
+//         // WrapperArray {
+//         //     inner,
+//         // }
+//         unimplemented!()
+//     }
+// }
 
 /// this is seriously a hack but i've painted myself into a corner and its too late to redesign so lets
 /// just see where this goes....
 struct SequenceLengthsAreSquared {
-    enable: Vec<bool>,
+    enable: Vec<Modifier>,
+    saved: usize,
+}
+
+#[derive(Debug)]
+enum Modifier {
+    Pass,
+    Modify,
+    ModifyAndSave,
+    Recall,
 }
 
 impl std::fmt::Debug for SequenceLengthsAreSquared {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("SequenceLengthsAreSquared").field("enable", &self.enable).finish()
+        f.debug_struct("SequenceLengthsAreSquared")
+            .field("enable", &self.enable)
+            .finish()
     }
 }
 
 impl SequenceLengthsAreSquared {
-    fn first() -> Self {
-        SequenceLengthsAreSquared {
-            enable: vec![true],
-        }
+    fn compressed() -> Self {
+        use Modifier::*;
+        SequenceLengthsAreSquared { enable: vec![Recall, ModifyAndSave], saved: 0 }
     }
-    fn second() -> Self {
+    fn uncompressed() -> Self {
+        use Modifier::*;
         SequenceLengthsAreSquared {
-            enable: vec![true,false],
+            enable: vec![Modify, Pass],
+            saved: 0
         }
     }
 }
 
 impl DeserializeOptions for SequenceLengthsAreSquared {
-    fn modify_sequence_length(&mut self, length: usize) -> usize {
-        if let Some(true) = self.enable.pop() {
-            println!("squaring {} = {}", length, length*length);
-            // self.enable -= 1;
-            length * length
-        } else {
-            length
+    fn omit_sequence_length(&mut self) -> bool {
+        use Modifier::*;
+        match self.enable.iter().last()  {
+            Some(Pass) => {
+                false
+            },
+            Some(Modify) => {
+                false
+            },
+            Some(ModifyAndSave) => {
+                false
+            }
+            Some(Recall) => {
+                true
+            },
+            None => false,
         }
-
+    }
+    fn modify_sequence_length(&mut self, length: usize) -> usize {
+        use Modifier::*;
+        match self.enable.pop() {
+            Some(Pass) => {
+                length
+            },
+            Some(Modify) => {
+                length*length
+            },
+            Some(ModifyAndSave) => {
+                println!("saving value {} as {}", length, length*length);
+                self.saved = length*length;
+                length*length
+            }
+            Some(Recall) => {
+                println!("recalling value {}", self.saved);
+                self.saved
+            },
+            None => length,
+        }
+        // if let Some(true) = self.enable.pop() {
+        //     println!("squaring {} = {}", length, length * length);
+        //     // self.enable -= 1;
+        //     length * length
+        // } else {
+        //     println!("not squaring {}", length);
+        //     length
+        // }
     }
 }
 
+impl SerializeOptions for SequenceLengthsAreSquared {
+    fn modify_sequence_length(&mut self, length: usize) -> Option<usize> {
+        use Modifier::*;
+        match self.enable.pop() {
+            Some(Pass) => Some(length),
+            Some(Modify) => Some(f32::sqrt(length as f32).floor() as usize),
+            Some(ModifyAndSave) => {
+                
+                let sqrt = f32::sqrt(length as f32).floor() as usize;
+                println!("saving value {} as {}", length, sqrt);
+                self.saved = sqrt;
+                Some(sqrt)
+            }
+            Some(Recall) => {
+                println!("recalling value {}", self.saved);
+                let sqrt = f32::sqrt(length as f32).floor() as usize;
+                println!("expected {}", sqrt);
+                if sqrt != self.saved {
+                    panic!("tried to serialize a sequence using an incorrect size, saved previously.");
+                } else {
+                    None
+                }
+            },
+            None => Some(length),
+        }
+    }
+    fn omit_sequence_length(&mut self) -> bool {
+        use Modifier::*;
+        match self.enable.pop() {
+            Some(Pass) => false,
+            Some(Modify) => false,
+            Some(ModifyAndSave) => {
+                false
+            }
+            Some(Recall) => {
+                true
+            },
+            None => false,
+        }
+    }
+
+}
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapOne {
@@ -126,9 +261,9 @@ pub struct PinThree {
     kind: u32,
     checked: bool,
 }
-#[derive(Clone, PartialEq,  Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapFour {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
+    data: Vec<u8>,
     pins: Vec<PinThree>,
     reference: bool,
 }
@@ -143,15 +278,15 @@ impl std::fmt::Debug for MiniMapFour {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct MiniMapFive {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
-    others_explored: Box<[u8]>,
+    data: Vec<u8>,
+    others_explored: Vec<u8>,
     pins: Vec<PinThree>,
     reference: bool,
 }
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct MiniMapSix {
-    data: Vec<u8>, // no size prepended here, texture_size ^2
-    others_explored: Box<[u8]>,
+    data: Vec<u8>,
+    others_explored: Vec<u8>,
     pins: Vec<PinSix>,
     reference: bool,
 }
@@ -159,7 +294,11 @@ pub struct MiniMapSix {
 impl std::fmt::Debug for MiniMapSix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "data: {} bytes not printed", self.data.len())?;
-        writeln!(f, "others: {} bytes not printed", self.others_explored.len())?;
+        writeln!(
+            f,
+            "others: {} bytes not printed",
+            self.others_explored.len()
+        )?;
         f.debug_list().entries(&self.pins).finish()?;
         writeln!(f, "reference: {:?}", self.reference)
     }
@@ -175,19 +314,15 @@ pub struct PinSix {
 }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-#[serde(from = "CompressedWrapper")]
+#[serde(from = "CompressedWrapper", into = "CompressedWrapper")]
 pub struct MiniMapSeven {
     // compressed_len: usize,
     inner: MiniMapSix,
 }
 
-
-
 impl MiniMapSeven {
     pub fn from_six(inner: MiniMapSix) -> Self {
-        MiniMapSeven {
-            inner
-        }
+        MiniMapSeven { inner }
     }
 }
 
@@ -203,16 +338,36 @@ impl CompressedWrapper {
 }
 
 // todo: can we make this generic? lots of errors when i tried first
-impl<'de> From<CompressedWrapper> for MiniMapSeven  {
+impl<'de> From<CompressedWrapper> for MiniMapSeven {
     fn from(wrapper: CompressedWrapper) -> MiniMapSeven {
         // println!("decompressing {} bytes", wrapper.inner.len());
         let mut buf = Vec::with_capacity(wrapper.inner.len());
         let mut decoder = GzDecoder::new(wrapper.inner.as_slice());
         decoder.read_to_end(&mut buf).unwrap();
-        let mut deserializer = VHDeserializer::from_bytes_options(&buf, ());
+        // println!("minimap decompressed raw: {:?}", buf);
+        let option = SequenceLengthsAreSquared::compressed();
+        let mut deserializer = VHDeserializer::from_bytes_options(&buf, option);
         let minimap = <MiniMapSix as Deserialize>::deserialize(&mut deserializer).unwrap();
         // println!("minimap decompressed: {:?}", minimap);
         MiniMapSeven::from_six(minimap)
     }
 }
 
+impl<'de> From<MiniMapSeven> for CompressedWrapper {
+    fn from(wrapper: MiniMapSeven) -> CompressedWrapper {
+        let six = wrapper.inner;
+        let option = SequenceLengthsAreSquared::compressed();
+        let mut serializer = VHSerializer::with_options(option);
+        <MiniMapSix as Serialize>::serialize(&six, &mut serializer).unwrap();
+        let uncompressed = serializer.to_inner();
+        // println!("minimap to-compress: {:?}", uncompressed);
+        let mut compressed_buffer = Vec::with_capacity(uncompressed.len());
+        {
+            let mut encoder = GzEncoder::new(&mut compressed_buffer, Compression::new(2));
+            encoder.write_all(&uncompressed).unwrap();
+        }
+        CompressedWrapper {
+            inner: compressed_buffer,
+        }
+    }
+}

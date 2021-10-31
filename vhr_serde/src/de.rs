@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::{fs::File, marker::PhantomData};
 
 use crate::error::{Error, Result};
@@ -13,27 +14,51 @@ pub trait DeserializeOptions {
     fn modify_sequence_length(&mut self, length: usize) -> usize {
         length
     }
+    fn omit_sequence_length(&mut self) -> bool {
+        false
+    }
 }
 
-impl DeserializeOptions for () { }
+impl DeserializeOptions for () {}
+
+// pub struct VHDeserializer<'de, O> {
+//     input: &'de [u8],
+//     index: usize,
+//     options: O,
+// }
 
 pub struct VHDeserializer<'de, O> {
-    input: &'de [u8],
+    input: Cow<'de, [u8]>,
     index: usize,
     options: O,
 }
 
 impl<'de> VHDeserializer<'de, ()> {
     pub fn from_bytes(input: &'de [u8]) -> VHDeserializer<'de, ()> {
-        VHDeserializer { input, index: 0, options: ()}
+        VHDeserializer {
+            input: input.into(),
+            index: 0,
+            options: (),
+        }
     }
 }
 
 impl<'de, O> VHDeserializer<'de, O> {
     pub fn from_bytes_options(input: &'de [u8], options: O) -> VHDeserializer<'de, O> {
-        VHDeserializer { input, index: 0, options}
+        VHDeserializer {
+            input: input.into(),
+            index: 0,
+            options,
+        }
     }
-    pub fn into_inner(self) -> &'de [u8] {
+    pub fn from_owned(input: Vec<u8>, options: O) -> VHDeserializer<'de, O> {
+        VHDeserializer {
+            input: input.into(),
+            index: 0,
+            options,
+        }
+    }
+    pub fn into_inner(self) -> Cow<'de, [u8]> {
         self.input
     }
     fn increment(&mut self) -> Result<()> {
@@ -41,10 +66,14 @@ impl<'de, O> VHDeserializer<'de, O> {
         Ok(())
     }
     fn peek_byte(&self, offset: usize) -> Result<u8> {
-        let index = self.index.checked_add(offset).ok_or_else(||Error::ReachedUnexpectedEnd)?;
-        self.input.get(index).copied().ok_or_else(|| {
-            Error::ReachedUnexpectedEnd
-        })
+        let index = self
+            .index
+            .checked_add(offset)
+            .ok_or_else(|| Error::ReachedUnexpectedEnd)?;
+        self.input
+            .get(index)
+            .copied()
+            .ok_or_else(|| Error::ReachedUnexpectedEnd)
     }
     pub fn peek_u32(&mut self) -> Result<u32> {
         let bytes: [u8; 4] = [
@@ -57,12 +86,15 @@ impl<'de, O> VHDeserializer<'de, O> {
         Ok(num)
     }
     fn take_byte(&mut self) -> Result<u8> {
-        let value = self.input.get(self.index).ok_or_else(|| {
-            // println!("reached end at {} of {}", self.index, self.input.len());
-            Error::ReachedUnexpectedEnd
-        })?;
+        let value = {
+            let v = self.input.get(self.index).ok_or_else(|| {
+                // println!("reached end at {} of {}", self.index, self.input.len());
+                Error::ReachedUnexpectedEnd
+            })?;
+            *v
+        };
         self.increment()?;
-        Ok(*value)
+        Ok(value)
     }
     pub fn take_u8(&mut self) -> Result<u8> {
         let value = self.take_byte()?;
@@ -180,7 +212,9 @@ where
     T: Deserialize<'a>,
 {
     let mut deserializer = VHDeserializer::from_bytes(s);
+
     let t = T::deserialize(&mut deserializer)?;
+
     let remaining = deserializer.input.len() - deserializer.index;
     if remaining == 0 {
         Ok(t)
@@ -190,7 +224,10 @@ where
     }
 }
 
-impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
+impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O>
+where
+    O: DeserializeOptions,
+{
     type Error = Error;
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
     where
@@ -320,8 +357,10 @@ impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where 
     where
         V: Visitor<'de>,
     {
-        let len = self.take_byte()?;
-        // println!("des bb len: {}", len);
+        // ugh this sucks are there two different lengths used here too?
+        // let len = self.take_byte()?;
+        let len: u32 = self.take_u32()?;
+        println!("deserialize bytes len: {} @ {:#x}", len, self.index);
         let mut buf = Vec::with_capacity(len as usize);
         if len > 0 {
             for _ in 0..len {
@@ -329,6 +368,7 @@ impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where 
                 buf.push(b);
             }
         }
+        println!("visiting");
         visitor.visit_bytes(&buf)
         // unimplemented!()
     }
@@ -338,7 +378,7 @@ impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where 
         V: Visitor<'de>,
     {
         let len = self.take_byte()?;
-        // println!("des obb len: {}", len);
+        println!("deserialize bytebuf len: {}", len);
         let mut buf = Vec::with_capacity(len as usize);
         if len > 0 {
             for _ in 0..len {
@@ -413,8 +453,16 @@ impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where 
         // } else {
         //     Err(Error::ExpectedArray)
         // }
-        let len = self.take_i32()? as usize;
-        let len = O::modify_sequence_length(&mut self.options, len);
+        let len = if !O::omit_sequence_length(&mut self.options) {
+            let len = self.take_i32()? as usize;
+            let len = O::modify_sequence_length(&mut self.options, len);
+            len
+        } else {
+            let len = O::modify_sequence_length(&mut self.options, 0);
+            len
+        };
+        // let len = self.take_i32()? as usize;
+        // let len = O::modify_sequence_length(&mut self.options, len);
         // println!("Sequence: ({})", len);
         self.deserialize_tuple(len, visitor)
     }
@@ -558,7 +606,10 @@ impl<'de, 'a, O> de::Deserializer<'de> for &'a mut VHDeserializer<'de, O> where 
     }
 }
 
-impl<'de, 'a, O> EnumAccess<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
+impl<'de, 'a, O> EnumAccess<'de> for &'a mut VHDeserializer<'de, O>
+where
+    O: DeserializeOptions,
+{
     type Error = Error;
     type Variant = Self;
 
@@ -573,7 +624,10 @@ impl<'de, 'a, O> EnumAccess<'de> for &'a mut VHDeserializer<'de, O> where O: Des
     }
 }
 
-impl<'de, 'a, O> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de, O> where O: DeserializeOptions {
+impl<'de, 'a, O> serde::de::VariantAccess<'de> for &'a mut VHDeserializer<'de, O>
+where
+    O: DeserializeOptions,
+{
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
@@ -607,7 +661,10 @@ struct ShortMapAccess<'a, 'de: 'a, O> {
     len: usize,
 }
 
-impl<'de, 'a, O> MapAccess<'de> for ShortMapAccess<'a, 'de, O> where O: DeserializeOptions {
+impl<'de, 'a, O> MapAccess<'de> for ShortMapAccess<'a, 'de, O>
+where
+    O: DeserializeOptions,
+{
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
@@ -636,7 +693,10 @@ struct TupleAccess<'a, 'de: 'a, O> {
     len: usize,
 }
 
-impl<'de, 'a, O> SeqAccess<'de> for TupleAccess<'a, 'de, O> where O: DeserializeOptions {
+impl<'de, 'a, O> SeqAccess<'de> for TupleAccess<'a, 'de, O>
+where
+    O: DeserializeOptions,
+{
     type Error = Error;
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
     where

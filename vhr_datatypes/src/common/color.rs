@@ -1,4 +1,3 @@
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -26,8 +25,6 @@ impl Color {
         b: 36.0 / 255.0,
     };
 }
-
-
 
 // pub struct ColorLens {
 //     color: Channel,

@@ -2,9 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{character_data::*, profile::*, };
+use vhr_serde::de::VHDeserializer;
+use vhr_serde::ser::VHSerializer;
+
+use super::{character_data::*, profile::*};
+use crate::common::wrapper::WrapperArray;
 use crate::prelude::*;
-use crate::common::wrapper::{ WrapperArray};
 
 /// an unknown data version
 /// provides a stub so deserialization can fail
@@ -159,7 +162,6 @@ impl CharacterInventory {
     }
 }
 
-
 /// an enum with all versions of the player's profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum PlayerProfile {
@@ -226,7 +228,6 @@ impl PlayerProfile {
     }
 }
 
-
 /// an enum with player skills versions
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub enum CharacterSkills {
@@ -251,7 +252,6 @@ impl CharacterSkills {
         }
     }
 }
-
 
 /// an enum with all versions of the player's inner profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
@@ -604,6 +604,22 @@ impl Player {
             TwentyFour(inner) => inner.upgrade(),
             TwentyFive(inner) => inner,
         }
+    }
+}
+
+impl Wrapped for Player {
+    fn strip(wrapper: WrapperArray) -> Wrapper<Player> {
+        let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
+        let inner = <Player as Deserialize>::deserialize(&mut deserializer).unwrap();
+        Wrapper { inner }
+    }
+    fn wrap(item: Wrapper<Player>) -> WrapperArray {
+        let inner = {
+            let mut serializer = VHSerializer::new();
+            <Player as Serialize>::serialize(&item.inner, &mut serializer).unwrap();
+            serializer.to_inner()
+        };
+        WrapperArray { inner }
     }
 }
 
