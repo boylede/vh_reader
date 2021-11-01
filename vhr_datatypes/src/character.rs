@@ -5,7 +5,7 @@ use vhr_serde::{
     ser::VHSerializer,
 };
 
-use sha2::{Sha512, Digest};
+use sha2::{Digest, Sha512};
 
 use crate::prelude::*;
 pub use character_data::CharacterData;
@@ -40,10 +40,7 @@ where
         let mut hasher = Sha512::new();
         hasher.update(&inner);
         let hash = hasher.finalize().to_vec();
-        HashedWrapper {
-            inner,
-            hash,
-        }
+        HashedWrapper { inner, hash }
     }
 }
 
@@ -65,7 +62,7 @@ where
             let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());
             <T as Deserialize>::deserialize(&mut deserializer).unwrap()
         };
-        
+
         HashingWrapper {
             inner,
             hash: hash_match,
@@ -81,7 +78,7 @@ pub enum HashMatches {
     Mismatch,
 }
 
-/// a container that wraps a serializable type and will provide the hash of that serialization 
+/// a container that wraps a serializable type and will provide the hash of that serialization
 /// after serializing. (De)Serialization converts to/from HashedWrapper
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[serde(from = "HashedWrapper", into = "HashedWrapper")]

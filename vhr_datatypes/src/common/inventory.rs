@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// an inventory item, found in chests and the player's inventory
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize, PartialOrd)]
 pub struct Item {
     pub name: String,
@@ -15,6 +16,7 @@ pub struct Item {
 }
 
 impl Item {
+    /// an item with all zero values, a const function for use in initializing a blank item.
     pub const fn null_item() -> Item {
         Item {
             name: String::new(),

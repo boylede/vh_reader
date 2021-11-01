@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+/// a type which serializes the wrapped value and then prepends it with a length
+/// likewise on deserialization.
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[serde(from = "WrapperArray", into = "WrapperArray")]
 pub struct Wrapper<T: Wrapped> {
@@ -15,6 +17,7 @@ where
     }
 }
 
+/// the on-disk represenation of wrapped types
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct WrapperArray {
     pub inner: Vec<u8>,
@@ -57,7 +60,7 @@ where
 /// so this trait gives you that control.
 /// a normal implementation would look like:
 /// ````
-/// type MyType = ();
+/// # type MyType = ();
 /// impl Wrapped for MyType {
 ///     fn strip(wrapper: WrapperArray) -> Wrapper<MyType> {
 ///         let mut deserializer = VHDeserializer::from_owned(wrapper.inner, ());

@@ -31,6 +31,10 @@ impl BeardStyle {
     }
 }
 
+/// a list of possible hair styles
+/// for use in providing options in a gui. 
+/// the actual data format used in game files
+/// is a string.
 #[derive(PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub enum HairType {

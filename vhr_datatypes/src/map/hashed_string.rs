@@ -42,10 +42,8 @@ pub struct HashedKey {
     inner: u32,
 }
 
-
 impl<'de> From<HashedKey> for KeyHashingWrapper {
     fn from(wrapper: HashedKey) -> KeyHashingWrapper {
-
         unimplemented!()
     }
 }
@@ -55,7 +53,7 @@ impl<'de> From<KeyHashingWrapper> for HashedKey {
         unimplemented!()
     }
 }
-
+/// this type is currently used in this library, will be moved out to the other hashed types here
 #[derive(Hash, Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
 pub struct HashedString {
     #[serde(skip)]
@@ -80,7 +78,9 @@ impl std::fmt::Display for HashedString {
     }
 }
 
+/// the hashing seed
 const SEED: u32 = 5381;
+/// the hashing multiplier
 const MULTIPLIER: u32 = 1566083941;
 
 /// the iterator version of the hashing function used for string IDs

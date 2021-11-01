@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// color type, used in hair and beard colors.
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Color {
     pub r: f32,

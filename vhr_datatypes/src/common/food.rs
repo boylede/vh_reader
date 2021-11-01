@@ -34,7 +34,7 @@ impl Food12 {
         }
     }
 }
-
+/// food data version 13
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food13 {
     pub name: String,
@@ -53,7 +53,7 @@ impl Food13 {
         Food14 { name, health: 50.0 } // todo: lookup table for values
     }
 }
-
+/// food data version 14
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food14 {
     pub name: String,
@@ -70,8 +70,10 @@ impl Food14 {
         } // todo: lookup table for values
     }
 }
-
+/// food data version 15 is the same as vesion 15
 pub type Food15 = Food14;
+
+/// food data version 16
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food16 {
     pub name: String,
@@ -90,6 +92,7 @@ impl Food16 {
     }
 }
 
+/// food data version 25
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food25 {
     pub name: String,
