@@ -12,6 +12,6 @@ pub struct Profile {
     pub maps: Vec<Map>,
     pub name: String,
     pub player_id: u64,
-    pub flag_a: u8,
+    pub initial_seed: String,
     pub data: Option<CharacterData>,
 }

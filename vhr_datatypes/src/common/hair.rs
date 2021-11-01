@@ -106,3 +106,14 @@ pub enum HairType {
 //     "Short 3",
 //     "Thick 1",
 // ];
+
+/// a list of possible beard types
+/// for use in providing options in a gui. 
+/// the actual data format used in game files
+/// is a string.
+#[derive(PartialEq, Eq, Clone)]
+#[non_exhaustive]
+pub enum BeardType {
+    Beard1,
+    Beard2,
+}

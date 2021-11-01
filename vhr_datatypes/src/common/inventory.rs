@@ -31,6 +31,7 @@ impl Item {
             creator_name: String::new(),
         }
     }
+    /// returns a list of useful items to have for debug characters
     pub fn default_items() -> Vec<Item> {
         let mut v = vec![];
 

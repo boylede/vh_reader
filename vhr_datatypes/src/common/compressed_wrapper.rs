@@ -25,13 +25,14 @@ pub struct CompressingWrapper<T: Clone> {
 
 impl<T: Clone> CompressingWrapper<T> {
     pub fn wrap(inner: T) -> Self {
-        CompressingWrapper {
-            inner,
-        }
+        CompressingWrapper { inner }
     }
 }
 
-impl<'de, T> From<CompressedWrapper<T>> for CompressingWrapper<T> where T: Deserialize<'de> + Clone {
+impl<'de, T> From<CompressedWrapper<T>> for CompressingWrapper<T>
+where
+    T: Deserialize<'de> + Clone,
+{
     fn from(compressed: CompressedWrapper<T>) -> CompressingWrapper<T> {
         // println!("decompressing {} bytes", wrapper.inner.len());
         let mut buf = Vec::with_capacity(compressed.inner.len());
@@ -41,11 +42,14 @@ impl<'de, T> From<CompressedWrapper<T>> for CompressingWrapper<T> where T: Deser
         // let option = SequenceLengthsAreSquared::compressed();
         let mut deserializer = VHDeserializer::from_owned(buf, ());
         let inner = <T as Deserialize>::deserialize(&mut deserializer).unwrap();
-        CompressingWrapper {inner}
+        CompressingWrapper { inner }
     }
 }
 
-impl<'de, T> From<CompressingWrapper<T>> for CompressedWrapper<T> where T: Serialize + Clone {
+impl<'de, T> From<CompressingWrapper<T>> for CompressedWrapper<T>
+where
+    T: Serialize + Clone,
+{
     fn from(uncompressed: CompressingWrapper<T>) -> CompressedWrapper<T> {
         let inner = uncompressed.inner;
         // let option = SequenceLengthsAreSquared::compressed();

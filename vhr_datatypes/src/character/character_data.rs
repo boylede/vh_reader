@@ -120,7 +120,6 @@ pub struct PlayerFour {
     pub tutorials: Vec<String>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
-
 }
 
 impl PlayerFour {
@@ -145,7 +144,7 @@ impl PlayerFour {
             tutorials,
             beard_type,
             hair_type,
-            skin: Color::SKIN,
+            skin: Color::DEFAULT,
             hair: Color::BROWN,
         }
     }
@@ -547,7 +546,7 @@ pub struct PlayerTwelve {
     pub skin: Color,
     pub hair: Color,
     pub gender: Gender,
-    pub food: Vec<Food12>, 
+    pub food: Vec<Food12>,
 }
 
 impl PlayerTwelve {
@@ -613,7 +612,6 @@ pub struct PlayerThirteen {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food13>,
-
 }
 
 impl PlayerThirteen {
@@ -939,7 +937,7 @@ pub struct PlayerEighteen {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
@@ -1009,7 +1007,7 @@ pub struct PlayerNineteen {
     pub materials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
@@ -1079,7 +1077,7 @@ pub struct PlayerTwenty {
     pub materials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
@@ -1152,7 +1150,7 @@ pub struct PlayerTwentyOne {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
     pub skin: Color,
@@ -1227,7 +1225,7 @@ pub struct PlayerTwentyTwo {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub known_text: Vec<(String, String)>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
@@ -1306,7 +1304,7 @@ pub struct PlayerTwentyThree {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub known_text: Vec<(String, String)>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
@@ -1388,7 +1386,7 @@ pub struct PlayerTwentyFour {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub known_text: Vec<(String, String)>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
@@ -1471,7 +1469,7 @@ pub struct PlayerTwentyFive {
     pub tutorials: Vec<String>,
     pub uniques: Vec<String>,
     pub trophies: Vec<String>,
-    pub biomes: Vec<u32>,
+    pub biomes: Vec<BiomeId>,
     pub known_text: Vec<(String, String)>,
     pub beard_type: BeardStyle,
     pub hair_type: HairStyle,
