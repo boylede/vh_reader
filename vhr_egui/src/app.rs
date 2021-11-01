@@ -834,8 +834,8 @@ impl CharacterDialog {
                 }
                 Tabs::Maps => {
                     egui::SidePanel::left("map_list").show(ctx, |ui| {
-                        for map in &self.loaded_minimaps {
-                            ui.add(egui::Label::new("Map!"));
+                        for (i,_map) in self.loaded_minimaps.iter().enumerate() {
+                            ui.add(egui::Label::new(format!("Map {}", i)));
                         }
                     });
                     egui::TopBottomPanel::bottom("map_panel").show(ctx, |ui| {
