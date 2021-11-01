@@ -1,11 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::prelude::*;
-
-pub type FoodBoth = Food16;
-
-pub type FoodSingle = Food25;
-
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food12 {
     pub name: String,

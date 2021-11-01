@@ -110,42 +110,5 @@ impl Skill {
         level: 0.0,
         progress: 0.0,
     };
-    pub fn pre_serialize(&mut self) -> usize {
-        12
-    }
-    // pub fn display_name(&self) -> String {
-    //     //
-    // }
 }
 
-/*
-pub struct Lensf32;
-
-impl Lens<f32, f64> for Lensf32 {
-    fn with<V, F: FnOnce(&f64) -> V>(&self, data: &f32, f: F) -> V {
-        let num = *data as f64;
-        f(&num)
-    }
-    fn with_mut<V, F: FnOnce(&mut f64) -> V>(&self, data: &mut f32, f: F) -> V {
-        let mut num = *data as f64;
-        let value = f(&mut num);
-        *data = num as f32;
-        value
-    }
-}
-
-pub struct Lensf64;
-
-impl Lens<f64, f32> for Lensf64 {
-    fn with<V, F: FnOnce(&f32) -> V>(&self, data: &f64, f: F) -> V {
-        let num = *data as f32;
-        f(&num)
-    }
-    fn with_mut<V, F: FnOnce(&mut f32) -> V>(&self, data: &mut f64, f: F) -> V {
-        let mut num = *data as f32;
-        let value = f(&mut num);
-        *data = num as f64;
-        value
-    }
-}
- */

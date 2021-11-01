@@ -106,18 +106,6 @@ where
 
 pub type CharacterFile = HashingWrapper<PlayerProfile>;
 
-// #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
-// pub struct Compendium {
-//     pub recipes: Vec<String>,
-//     pub craftbenches: Vec<(String, u32)>,
-//     pub materials_list: Vec<String>,
-//     pub places: Vec<String>,
-//     pub unknown_list: Vec<String>,
-//     pub trophies: Vec<String>,
-//     pub biomes: Vec<BiomeId>,
-//     pub tutorials: Vec<(String, String)>,
-// }
-
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Map {
     pub id: u64,
@@ -126,25 +114,4 @@ pub struct Map {
     pub death: MarkedPoint,
     pub home: Point,
     pub mini_map: Option<NewMiniMapWrapper>,
-}
-
-#[derive(PartialEq, Eq, Clone, Debug, Serialize_repr, Deserialize_repr)]
-#[repr(u32)]
-#[non_exhaustive]
-pub enum Gender {
-    Female = 1,
-    Male = 0,
-}
-
-impl Default for Gender {
-    fn default() -> Self {
-        Gender::Male
-    }
-}
-
-#[derive(PartialEq, Eq, Clone)]
-#[non_exhaustive]
-pub enum BeardType {
-    Beard1,
-    Beard2,
 }

@@ -52,50 +52,6 @@ pub enum HairType {
     Other(String),
 }
 
-// pub struct HairLens;
-
-// impl Lens<String, HairType> for HairLens {
-//     fn with<V, F: FnOnce(&HairType) -> V>(&self, data: &String, f: F) -> V {
-//         // if builtin_hair_names.contains(&data.as_str()) {
-//         for (mat, variant) in hair_radio_group.iter() {
-//             if *mat == data.as_str() {
-//                 return f(&variant);
-//             }
-//         }
-//         return f(&HairType::Other(data.clone()))
-//         // } else {
-//         // panic!("couldn't find string {}", data);
-//         // }
-
-//     }
-//     fn with_mut<V, F: FnOnce(&mut HairType) -> V>(&self, data: &mut String, f: F) -> V {
-//         let mut hair_type: HairType = {
-//             let mut found = None;
-//             for (mat, variant) in hair_radio_group.iter() {
-//                 if *mat == data.as_str() {
-//                     found = Some(variant);
-//                     break;
-//                 }
-//             }
-//             if let Some(v) = found {
-//                 v.clone()
-//             } else {
-//                 HairType::Other(data.clone())
-//                 // panic!("couldnt find variant");
-//             }
-//         };
-//         let value = f(&mut hair_type);
-//         //todo actually set backing value
-//         value
-//     }
-// }
-
-// Then::new(
-//     LoadedCharacter::kill_count,
-//     Map::new(
-//         |get: &u32| get.to_string(),
-//         |set: &mut u32, value: String| *set = value.parse().unwrap_or(0),
-//     )
 
 // pub const hair_radio_group: &[(&str, HairType)] = &[
 //     ("No Hair", HairType::None),
