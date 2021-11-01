@@ -11,7 +11,6 @@ use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 
 use crate::common::*;
 
-
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct CompressedWrapper<T> {
     inner: Vec<u8>,

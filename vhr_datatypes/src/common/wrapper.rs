@@ -1,6 +1,3 @@
-use vhr_serde::de::VHDeserializer;
-use vhr_serde::ser::VHSerializer;
-
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
@@ -21,12 +18,6 @@ where
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct WrapperArray {
     pub inner: Vec<u8>,
-}
-
-impl WrapperArray {
-    pub fn get_vhrd<O>(&self, options: O) -> VHDeserializer<O> {
-        VHDeserializer::from_bytes_options(&self.inner, options)
-    }
 }
 
 impl<'de, T> From<WrapperArray> for Wrapper<T>

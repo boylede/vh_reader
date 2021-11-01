@@ -26,9 +26,6 @@ impl Color {
     };
 }
 
-// pub struct ColorLens {
-//     color: Channel,
-// }
 
     }
 }
