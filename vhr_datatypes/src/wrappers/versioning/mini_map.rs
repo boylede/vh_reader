@@ -1,18 +1,16 @@
-use std::io::{Read, Write};
-
+use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use serde::{Deserialize, Serialize};
+use std::io::{Read, Write};
 use vhr_serde::de::{DeserializeOptions, VHDeserializer};
 use vhr_serde::ser::{SerializeOptions, VHSerializer};
 
-use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+use crate::prelude::*;
+use crate::wrappers::versioning::{NoSuchVersion, UnknownVersion};
 
-use super::version_enum::*;
-use crate::common::*;
-
-pub type NewMiniMapWrapper = Wrapper<NewMiniMap>;
+pub type MiniMap = Wrapper<MiniMapVersions>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum NewMiniMap {
+pub enum MiniMapVersions {
     Zero(NoSuchVersion),
     One(MiniMapOne),
     Two(MiniMapTwo),
@@ -23,9 +21,9 @@ pub enum NewMiniMap {
     Seven(MiniMapSeven),
 }
 
-impl NewMiniMap {
+impl MiniMapVersions {
     pub fn version(&self) -> usize {
-        use NewMiniMap::*;
+        use MiniMapVersions::*;
         match self {
             Zero(_) => 0,
             One(_) => 1,
@@ -38,7 +36,7 @@ impl NewMiniMap {
         }
     }
     pub fn into_latest(self) -> MiniMapSeven {
-        use NewMiniMap::*;
+        use MiniMapVersions::*;
         match self {
             Zero(_) => panic!("invalid map version"),
             One(inner) => inner
@@ -58,7 +56,7 @@ impl NewMiniMap {
     }
 }
 
-impl Wrapped for NewMiniMap {
+impl Wrapped for MiniMapVersions {
     fn strip(wrapper: WrapperArray) -> Wrapper<Self> {
         // todo: this is only valid for some versions of the map
         let option = SequenceLengthsAreSquared::uncompressed();

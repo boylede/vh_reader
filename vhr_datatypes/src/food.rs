@@ -37,6 +37,7 @@ pub const KNOWN_FOODS: &[(&'static str, f32)] = &[
     ("BloodPudding", 1800.0),
     ("Bread", 1500.0),
 ];
+
 /// food data version 12
 #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Food12 {
@@ -128,7 +129,12 @@ impl Food16 {
         } = self;
         let _ = health;
         let _ = stamina;
-        let time = if let Some(t)  = KNOWN_FOODS.iter().filter(|(n,_)| *n == name.as_str()).map(|(_,t)|t).next() {
+        let time = if let Some(t) = KNOWN_FOODS
+            .iter()
+            .filter(|(n, _)| *n == name.as_str())
+            .map(|(_, t)| t)
+            .next()
+        {
             *t
         } else {
             2000.0

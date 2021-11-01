@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use vhr_serde::de::{DeserializeOptions, VHDeserializer};
 use vhr_serde::ser::{SerializeOptions, VHSerializer};
 
-use crate::common::*;
+use crate::prelude::*;
 
 /// a wrapper to help construct images out of the mini map data
 #[derive(Clone, PartialEq, Serialize, Deserialize)]

@@ -32,7 +32,7 @@ impl BeardStyle {
 }
 
 /// a list of possible hair styles
-/// for use in providing options in a gui. 
+/// for use in providing options in a gui.
 /// the actual data format used in game files
 /// is a string.
 #[derive(PartialEq, Eq, Clone)]
@@ -55,7 +55,6 @@ pub enum HairType {
     Hair14,
     Other(String),
 }
-
 
 // pub const hair_radio_group: &[(&str, HairType)] = &[
 //     ("No Hair", HairType::None),
@@ -108,7 +107,7 @@ pub enum HairType {
 // ];
 
 /// a list of possible beard types
-/// for use in providing options in a gui. 
+/// for use in providing options in a gui.
 /// the actual data format used in game files
 /// is a string.
 #[derive(PartialEq, Eq, Clone)]

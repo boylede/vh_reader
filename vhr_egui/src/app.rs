@@ -10,9 +10,8 @@ use std::path::{Path, PathBuf};
 
 use image::{GenericImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
 
-use vhr_datatypes::character::*;
-use vhr_datatypes::map::{hashed_string::HashedString, Entity, MapDatabaseFile};
 use vhr_datatypes::prelude::*;
+
 
 pub enum EditorEvent {
     SwapState(CharacterEditor),
@@ -430,29 +429,28 @@ impl Loader {
                                     .iter()
                                     .zip(minimap.inner.others_explored.iter())
                                     .map(|(a, b)| {
-                                        match (*a == 0,*b == 0) {
+                                        match (*a == 0, *b == 0) {
                                             // both visited
-                                            (false,false) => egui::Color32::WHITE,
+                                            (false, false) => egui::Color32::WHITE,
                                             // i've visited but not others
-                                            (false,true) => egui::Color32::LIGHT_GRAY,
+                                            (false, true) => egui::Color32::LIGHT_GRAY,
                                             // others have visited but i havent
-                                            (true,false) => egui::Color32::GRAY,
-                                            (true,true) => egui::Color32::BLACK,
+                                            (true, false) => egui::Color32::GRAY,
+                                            (true, true) => egui::Color32::BLACK,
                                         }
-    //                                     pub const TRANSPARENT: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 0);
-    // pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
-    // pub const LIGHT_GRAY: Color32 = Color32::from_rgb(220, 220, 220);
-    // pub const GRAY: Color32 = Color32::from_rgb(160, 160, 160);
-    // pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
-    // pub const RED: Color32 = Color32::from_rgb(255, 0, 0);
-    // pub const YELLOW: Color32 = Color32::from_rgb(255, 255, 0);
-    // pub const GREEN: Color32 = Color32::from_rgb(0, 255, 0);
-    // pub const BLUE: Color32 = Color32::from_rgb(0, 0, 255);
-    // pub const LIGHT_BLUE: Color32 = Color32::from_rgb(140, 160, 255);
-    // pub const GOLD: Color32 = Color32::from_rgb(255, 215, 0);
+                                        //                                     pub const TRANSPARENT: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 0);
+                                        // pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
+                                        // pub const LIGHT_GRAY: Color32 = Color32::from_rgb(220, 220, 220);
+                                        // pub const GRAY: Color32 = Color32::from_rgb(160, 160, 160);
+                                        // pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
+                                        // pub const RED: Color32 = Color32::from_rgb(255, 0, 0);
+                                        // pub const YELLOW: Color32 = Color32::from_rgb(255, 255, 0);
+                                        // pub const GREEN: Color32 = Color32::from_rgb(0, 255, 0);
+                                        // pub const BLUE: Color32 = Color32::from_rgb(0, 0, 255);
+                                        // pub const LIGHT_BLUE: Color32 = Color32::from_rgb(140, 160, 255);
+                                        // pub const GOLD: Color32 = Color32::from_rgb(255, 215, 0);
 
-    // pub const DEBUG_COLOR: Color32 = Color32::from_rgba_premultiplied(0, 200, 0, 128);
-                                        
+                                        // pub const DEBUG_COLOR: Color32 = Color32::from_rgba_premultiplied(0, 200, 0, 128);
                                     })
                                     .collect();
                                 let texture = frame
@@ -512,7 +510,7 @@ enum Tabs {
 pub struct CharacterDialog {
     original_path: PathBuf,
     current_tab: Tabs,
-    profile: Profile,
+    profile: Character,
     player: LatestPlayer,
     skills: Vec<Skill>,
     selected_inventory_item: Option<(u32, u32)>,
@@ -545,8 +543,8 @@ impl CharacterDialog {
                             println!("saving file to {}", path.display());
                             let mut new_profile = self.profile.clone();
                             let mut new_data = self.player.clone();
-                            new_data.skills = CharacterSkills::wrap_latest(self.skills.clone());
-                            new_data.inventory = CharacterInventory::wrap_latest(
+                            new_data.skills = SkillsVersions::wrap_latest(self.skills.clone());
+                            new_data.inventory = InventoryVersions::wrap_latest(
                                 self.inventory
                                     .iter()
                                     .flatten()
@@ -555,9 +553,9 @@ impl CharacterDialog {
                                     .collect(),
                             );
                             new_profile.data =
-                                Some(CharacterData::wrap(Player::wrap_latest(new_data)));
+                                Some(Wrapper::wrap(PlayerVersions::wrap_latest(new_data)));
                             let character_file_data =
-                                HashingWrapper::wrap(PlayerProfile::wrap_latest(new_profile));
+                                HashingWrapper::wrap(CharacterFileVersions::wrap_latest(new_profile));
                             let mut out_file = File::create(path).expect("Failed opening file");
                             let output_bytes = vhr_serde::ser::to_bytes(&character_file_data)
                                 .expect("Failed to serialize character");
@@ -834,7 +832,7 @@ impl CharacterDialog {
                 }
                 Tabs::Maps => {
                     egui::SidePanel::left("map_list").show(ctx, |ui| {
-                        for (i,_map) in self.loaded_minimaps.iter().enumerate() {
+                        for (i, _map) in self.loaded_minimaps.iter().enumerate() {
                             ui.add(egui::Label::new(format!("Map {}", i)));
                         }
                     });
@@ -842,7 +840,10 @@ impl CharacterDialog {
                         ui.add(egui::Slider::new(&mut self.minimap_zoom, 0.0..=10.0));
                         for (size, texture) in self.loaded_minimaps.iter() {
                             // ui.heading("This is an image:");
-                            let scaled_size = Vec2 {x: size.x * self.minimap_zoom, y: size.y * self.minimap_zoom};
+                            let scaled_size = Vec2 {
+                                x: size.x * self.minimap_zoom,
+                                y: size.y * self.minimap_zoom,
+                            };
                             ui.image(*texture, scaled_size);
 
                             // ui.heading("This is an image you can click:");

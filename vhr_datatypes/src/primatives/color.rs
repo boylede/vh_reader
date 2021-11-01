@@ -14,7 +14,11 @@ impl Color {
         g: 1.0,
         b: 1.0,
     };
-    pub const BLACK: Color = Color {r: 0.3,g: 0.3,b: 0.3};
+    pub const BLACK: Color = Color {
+        r: 0.3,
+        g: 0.3,
+        b: 0.3,
+    };
     pub const BROWN: Color = Color {
         r: 0.4,
         g: 0.2,

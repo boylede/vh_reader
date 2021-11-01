@@ -3,8 +3,6 @@ use std::env;
 use std::fs::File;
 use std::io::{Read, Seek, Write};
 
-use vhr_datatypes::character::*;
-use vhr_datatypes::map::{hashed_string::HashedString, Entity, MapDatabaseFile};
 use vhr_datatypes::prelude::*;
 
 fn main() {

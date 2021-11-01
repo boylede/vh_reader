@@ -9,7 +9,7 @@ use vhr_serde::ser::{SerializeOptions, VHSerializer};
 
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 
-use crate::common::*;
+use crate::prelude::*;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct CompressedWrapper<T> {

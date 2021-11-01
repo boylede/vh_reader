@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
 use std::io::{Read, Seek, Write};
-use vhr_datatypes::map::{hashed_string::HashedString, Entity, MapDatabaseFile};
+use vhr_datatypes::prelude::*;
 
 fn main() {
     // let collisions = vhr_datatypes::map::properties::find_collisions();
@@ -95,13 +95,13 @@ fn print_prefab_names(prefabs: &HashMap<HashedString, u32>) {
 
 fn count_prefabs(map: &MapDatabaseFile) -> HashMap<HashedString, u32> {
     let prefabs: HashMap<HashedString, u32> =
-        map.entities.iter().map(|e| e.prefab_id).fold(
-            HashMap::new(),
-            |mut previous, next| {
+        map.entities
+            .iter()
+            .map(|e| e.prefab_id)
+            .fold(HashMap::new(), |mut previous, next| {
                 *previous.entry(next).or_insert(0) += 1;
                 previous
-            },
-        );
+            });
     prefabs
 }
 fn print_entities_in_one_sector(map: &MapDatabaseFile) {
@@ -115,7 +115,6 @@ fn print_entities_in_one_sector(map: &MapDatabaseFile) {
     if let Some((x, y)) = smallest_sector {
         let things: Vec<Entity> = map
             .entities
-            
             .iter()
             .filter(|e| e.sector.x == x && e.sector.y == y)
             .cloned()

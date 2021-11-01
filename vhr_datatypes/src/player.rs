@@ -2,16 +2,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
-use super::version_enum::*;
-use crate::common::food::*;
-use crate::common::hair::{BeardStyle, HairStyle};
-
-pub type CharacterData = Wrapper<Player>;
-
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerOne {
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -45,7 +39,7 @@ impl PlayerOne {
 pub struct PlayerTwo {
     pub current_health: f32,
     pub zdoid: (u64, u32),
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -79,7 +73,7 @@ impl PlayerTwo {
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerThree {
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -113,7 +107,7 @@ impl PlayerThree {
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerFour {
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -153,7 +147,7 @@ impl PlayerFour {
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerFive {
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -198,7 +192,7 @@ impl PlayerFive {
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerSix {
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -247,7 +241,7 @@ impl PlayerSix {
 pub struct PlayerSeven {
     pub max_health: f32,
     pub current_health: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -299,7 +293,7 @@ pub struct PlayerEight {
     pub max_health: f32,
     pub current_health: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -353,7 +347,7 @@ pub struct PlayerNine {
     pub max_health: f32,
     pub current_health: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -411,7 +405,7 @@ pub struct PlayerTen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -471,7 +465,7 @@ pub struct PlayerEleven {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -534,7 +528,7 @@ pub struct PlayerTwelve {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -599,7 +593,7 @@ pub struct PlayerThirteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -665,7 +659,7 @@ pub struct PlayerFourteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub unknown: Vec<String>,
     pub materials: Vec<String>,
@@ -731,7 +725,7 @@ pub struct PlayerFifteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -796,7 +790,7 @@ pub struct PlayerSixteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -851,7 +845,7 @@ impl PlayerSixteen {
             hair,
             gender,
             food,
-            skills: CharacterSkills::new(),
+            skills: SkillsVersions::new(),
         }
     }
 }
@@ -862,7 +856,7 @@ pub struct PlayerSeventeen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -875,7 +869,7 @@ pub struct PlayerSeventeen {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerSeventeen {
@@ -930,7 +924,7 @@ pub struct PlayerEighteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -944,7 +938,7 @@ pub struct PlayerEighteen {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerEighteen {
@@ -1001,7 +995,7 @@ pub struct PlayerNineteen {
     pub current_health: f32,
     pub stamina: f32,
     pub first_spawn: u8,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1014,7 +1008,7 @@ pub struct PlayerNineteen {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerNineteen {
@@ -1071,7 +1065,7 @@ pub struct PlayerTwenty {
     pub stamina: f32,
     pub first_spawn: u8,
     pub death_timer: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1084,7 +1078,7 @@ pub struct PlayerTwenty {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerTwenty {
@@ -1143,7 +1137,7 @@ pub struct PlayerTwentyOne {
     pub stamina: f32,
     pub first_spawn: u8,
     pub death_timer: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1157,7 +1151,7 @@ pub struct PlayerTwentyOne {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerTwentyOne {
@@ -1218,7 +1212,7 @@ pub struct PlayerTwentyTwo {
     pub stamina: f32,
     pub first_spawn: u8,
     pub death_timer: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1233,7 +1227,7 @@ pub struct PlayerTwentyTwo {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerTwentyTwo {
@@ -1297,7 +1291,7 @@ pub struct PlayerTwentyThree {
     pub first_spawn: u8,
     pub death_timer: f32,
     pub god_power: String,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1312,7 +1306,7 @@ pub struct PlayerTwentyThree {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerTwentyThree {
@@ -1379,7 +1373,7 @@ pub struct PlayerTwentyFour {
     pub death_timer: f32,
     pub god_power: String,
     pub power_cooldown: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1394,7 +1388,7 @@ pub struct PlayerTwentyFour {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food16>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }
 
 impl PlayerTwentyFour {
@@ -1462,7 +1456,7 @@ pub struct PlayerTwentyFive {
     pub death_timer: f32,
     pub god_power: String,
     pub power_cooldown: f32,
-    pub inventory: CharacterInventory,
+    pub inventory: InventoryVersions,
     pub recipes: Vec<String>,
     pub known_stations: Vec<(String, u32)>,
     pub materials: Vec<String>,
@@ -1477,5 +1471,5 @@ pub struct PlayerTwentyFive {
     pub hair: Color,
     pub gender: Gender,
     pub food: Vec<Food25>,
-    pub skills: CharacterSkills,
+    pub skills: SkillsVersions,
 }

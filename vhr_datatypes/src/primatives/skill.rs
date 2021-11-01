@@ -111,4 +111,3 @@ impl Skill {
         progress: 0.0,
     };
 }
-
