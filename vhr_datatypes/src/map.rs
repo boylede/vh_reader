@@ -1,34 +1,13 @@
-use serde::ser::SerializeSeq;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use hashed_string::HashedString;
+use crate::common::*;
 pub mod hashed_string;
 
-const MAP_DATABASE_FILE_VERSION: i32 = 26;
-const UNKNOWN_HEADER: i32 = 0;
-
-pub struct World {
-    pub root_id: u64,
-    pub entities: MapEntities,
-}
-
-impl World {
-    pub fn store(self) -> MapDatabaseFile {
-        let mut header = MapHeader {
-            version: MAP_DATABASE_FILE_VERSION,
-            unknown: UNKNOWN_HEADER,
-            start_time: 0.0,
-            root_id: self.root_id,
-        };
-
-        unimplemented!()
-    }
-}
-
+/// the map metadata file
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct WorldMetadataFile {
     file_size: i32,
     map_version: i32,
@@ -39,74 +18,51 @@ pub struct WorldMetadataFile {
     world_gen_version: i32,
 }
 
+/// the .db file used to store map info
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct MapDatabaseFile {
-    pub header: MapHeader,
-    pub entities: MapEntities,
+    pub version: u32,
+    pub unknown: i32, // shouldnt exist?
+    pub start_time: f32,
+    pub root_id: u64,
+    pub next_id: u32,
+    pub entities: Vec<Entity>,
     pub deleted: Vec<EntityDeletionRecord>,
     pub loaded_sectors: Vec<SectorCoordinate>,
     pub keys: Keys,
     pub structures: Option<Vec<Structure>>,
-    pub footer: MapFooter,
+    pub end_time: f32,
+    pub padding: [u8; 17],
 }
 
-impl MapDatabaseFile {
-    pub fn load(self) -> World {
-        World {
-            root_id: self.header.root_id,
-            entities: self.entities,
-        }
-    }
-}
-
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
-pub struct MapHeader {
-    version: i32,
-    unknown: i32,
-    start_time: f32,
-    root_id: u64,
-}
-
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
-pub struct MapEntities {
-    pub next_id: i32,
-    // count: i32,
-    pub entities: Vec<Entity>,
-}
-
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
+/// the coordinates of a sector (chunk)
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct SectorCoordinate {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
+/// world-level events/ unlocks
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Keys {
-    package_version: i32,
-    keys_version: i32,
+    package_version: u32,
+    keys_version: u32,
     keys: Vec<String>,
 }
 
+/// something that appears in the map
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Structure {
     name: String,
-    x: f32,
-    y: f32,
-    z: f32,
+    pos: Point,
     seen: char,
 }
 
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
-pub struct MapFooter {
-    end_time: f32,
-    padding: [u8; 17],
-}
-
+/// an entity in the map
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Entity {
-    pub group_id: u64,
+    pub user_id: u64,
     pub entity_id: i32,
-    // stuff: Vec<u8>,
     pub len: i32,
     pub owner_generation: i32,
     pub data_generation: i32,
@@ -117,12 +73,11 @@ pub struct Entity {
     pub object_type: u8,
     pub is_distant: u8,
     pub prefab_id: HashedString,
-    pub sector_x: i32,
-    pub sector_y: i32,
-    pub pos: Position,
+    pub sector: SectorCoordinate,
+    pub pos: Point,
     pub rotation: Quaternion,
     pub floats: HashMap<HashedString, f32>,
-    pub points: HashMap<HashedString, Position>,
+    pub points: HashMap<HashedString, Point>,
     pub rots: HashMap<HashedString, Quaternion>,
     pub ints: HashMap<HashedString, i32>,
     pub pairs: HashMap<HashedString, (i32, i32)>,
@@ -130,22 +85,23 @@ pub struct Entity {
     pub bytes: HashMap<HashedString, ByteBuf>,
 }
 
+/// a record of when an entity was removed from the world
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
 pub struct EntityDeletionRecord {
-    a: u64,
-    b: i32,
-    c: u64,
+    user_id: u64,
+    entity_id: i32,
+    deleted: Tick,
 }
-#[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
-pub struct Position {
-    x: f32,
-    y: f32,
-    z: f32,
-}
+
+/// the tick on which an event occured
+#[derive(Default, PartialEq, Debug, Serialize, Deserialize)]
+pub struct Tick(u64);
+
+/// a rotation
 #[derive(Default, PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Quaternion {
+    w: f32,
     x: f32,
     y: f32,
     z: f32,
-    b: f32,
 }
