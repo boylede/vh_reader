@@ -64,16 +64,16 @@ where
         // 32 bit max int width, 7 bits per loop = 5 loops
         // before we;ve gotten all possible bytes
         let mut integer: u32 = v as u32;
-        for i in 0..5u32 {
-            let byte = (integer & 0x7f) as u8;
-            // if high bit not set
-
-            if byte <= 127 {
+        const LO_BITS: u32 = (1 << 7) - 1;
+        const HI_BITS: u32 = !LO_BITS;
+        for _ in 0..5u32 {
+            let byte = (integer & LO_BITS) as u8;
+            if integer & HI_BITS == 0 {
                 self.push_u8(byte)?;
                 break;
             } else {
                 self.push_u8(byte | 0x80)?;
-                integer >>= i * 7;
+                integer >>= 7;
                 // if high bit set
             }
         }
@@ -461,4 +461,22 @@ where
     fn end(self) -> Result<()> {
         Ok(())
     }
+}
+
+#[test]
+fn test_varint_set() {
+    let mut serializer = VHSerializer::new();
+    serializer.push_varint(1344).expect("failed to serialzie");
+    let out = serializer.to_inner();
+    let expected = vec![192, 10];
+    assert_eq!(out, expected, "we expected {:?} == {:?}", out, expected);
+}
+
+#[test]
+fn test_varint_set_low() {
+    let mut serializer = VHSerializer::new();
+    serializer.push_varint(28).expect("failed to serialzie");
+    let out = serializer.to_inner();
+    let expected = vec![28];
+    assert_eq!(out, expected, "we expected {:?} == {:?}", out, expected);
 }
