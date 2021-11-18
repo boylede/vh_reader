@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_bytes::ByteBuf;
 use std::collections::HashMap;
 
 use crate::prelude::*;

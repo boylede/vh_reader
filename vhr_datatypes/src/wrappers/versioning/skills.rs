@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
-use crate::wrappers::versioning::{NoSuchVersion, UnknownVersion};
+use crate::wrappers::versioning::{NoSuchVersion};
 
 /// an enum with player skills versions
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]

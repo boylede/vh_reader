@@ -12,7 +12,11 @@ categories = ["command-line-utilities", "games"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
 
+[[bin]]
+name = "vhr_gui_desktop"
+path = "src/main.rs"
 
 [dependencies]
 eframe = "0.14.0"

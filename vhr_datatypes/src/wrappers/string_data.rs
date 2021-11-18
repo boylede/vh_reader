@@ -1,10 +1,8 @@
 use base64::{decode, encode};
 use serde::{Deserialize, Serialize};
-use serde_bytes::ByteBuf;
-use std::collections::HashMap;
 
-use vhr_serde::de::{DeserializeOptions, VHDeserializer};
-use vhr_serde::ser::{SerializeOptions, VHSerializer};
+use vhr_serde::de::{ VHDeserializer};
+use vhr_serde::ser::{ VHSerializer};
 
 use crate::prelude::*;
 use crate::wrappers::versioning::inventory::InventoryVersions;

@@ -1,4 +1,3 @@
-use crate::prelude::*;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 /// Player character gender, controls the mesh model used.

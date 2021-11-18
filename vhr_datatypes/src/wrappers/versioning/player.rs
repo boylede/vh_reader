@@ -4,7 +4,7 @@ use vhr_serde::{VHDeserializer, VHSerializer};
 
 use crate::player::*;
 use crate::prelude::*;
-use crate::wrappers::versioning::{NoSuchVersion, UnknownVersion};
+use crate::wrappers::versioning::{NoSuchVersion};
 
 /// an enum with all versions of the player's inner profile data type
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]

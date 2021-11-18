@@ -1,5 +1,4 @@
-use crate::prelude::*;
-use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 
 pub mod character;
 pub mod inventory;
@@ -14,7 +13,7 @@ pub mod skills;
 pub struct UnknownVersion;
 
 impl<'de> Deserialize<'de> for UnknownVersion {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -30,7 +29,7 @@ impl<'de> Deserialize<'de> for UnknownVersion {
 pub struct NoSuchVersion;
 
 impl<'de> Deserialize<'de> for NoSuchVersion {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {

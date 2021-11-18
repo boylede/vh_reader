@@ -1,12 +1,6 @@
 // unused currently
 
-use std::io::{Read, Write};
-
 use serde::{Deserialize, Serialize};
-use vhr_serde::de::{DeserializeOptions, VHDeserializer};
-use vhr_serde::ser::{SerializeOptions, VHSerializer};
-
-use crate::prelude::*;
 
 /// a wrapper to help construct images out of the mini map data
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -26,7 +20,7 @@ impl<'de, T> From<ImageWrapper> for SquareImage<T>
 where
     T: Clone,
 {
-    fn from(image: ImageWrapper) -> SquareImage<T> {
+    fn from(_image: ImageWrapper) -> SquareImage<T> {
         unimplemented!()
     }
 }
@@ -35,7 +29,7 @@ impl<'de, T> From<SquareImage<T>> for ImageWrapper
 where
     T: Clone,
 {
-    fn from(image: SquareImage<T>) -> ImageWrapper {
+    fn from(_image: SquareImage<T>) -> ImageWrapper {
         unimplemented!()
     }
 }

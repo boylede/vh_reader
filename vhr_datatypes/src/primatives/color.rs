@@ -33,7 +33,7 @@ impl Color {
 
 /// a range which can be used to produce a color
 /// as used in the game's gui
-struct SkinRange(f32);
+pub struct SkinRange(f32);
 
 impl SkinRange {
     pub const MIN: Color = Color::BLACK;
@@ -45,9 +45,9 @@ impl SkinRange {
     }
 }
 
-// a pair of ranges, used to produce a color
-// as used in the game's gui
-struct HairRange(f32, f32);
+/// a pair of ranges, used to produce a color
+/// as used in the game's gui
+pub struct HairRange(f32, f32);
 impl HairRange {
     pub const MIN: Color = Color::WHITE;
     pub const MAX: Color = Color::BROWN;

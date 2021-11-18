@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
+
 use std::env;
 use std::fs::File;
-use std::io::{Read, Seek, Write};
+use std::io::{Read};
 
 use vhr_datatypes::prelude::*;
 
@@ -15,7 +15,7 @@ fn main() {
         in_file.read_to_end(&mut loaded_file).ok();
     }
 
-    let mut character: CharacterFile =
+    let  character: CharacterFile =
         vhr_serde::de::from_bytes(&loaded_file).expect("Couldn't deserialize file");
 
     println!("{:#?}", character);

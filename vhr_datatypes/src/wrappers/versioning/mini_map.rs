@@ -5,7 +5,7 @@ use vhr_serde::de::{DeserializeOptions, VHDeserializer};
 use vhr_serde::ser::{SerializeOptions, VHSerializer};
 
 use crate::prelude::*;
-use crate::wrappers::versioning::{NoSuchVersion, UnknownVersion};
+use crate::wrappers::versioning::{NoSuchVersion};
 
 pub type MiniMap = Wrapper<MiniMapVersions>;
 
@@ -101,7 +101,7 @@ impl std::fmt::Debug for SequenceLengthsAreSquared {
 
 impl SequenceLengthsAreSquared {
     /// sequence lengths in early versions: the first one is squared, then normal after that
-    fn early() -> Self {
+    fn _early() -> Self {
         use Modifier::*;
         SequenceLengthsAreSquared {
             enable: vec![Modify],

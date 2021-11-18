@@ -10,16 +10,16 @@ use serde::{Deserialize, Serialize};
 pub struct BiomeId(u32);
 
 impl BiomeId {
-    const NONE: BiomeId = BiomeId(0);
-    const MEADOWS: BiomeId = BiomeId(1);
-    const SWAMP: BiomeId = BiomeId(2);
-    const MOUNTAIN: BiomeId = BiomeId(4);
-    const BLACKFOREST: BiomeId = BiomeId(8);
-    const PLAINS: BiomeId = BiomeId(16);
-    const ASHLANDS: BiomeId = BiomeId(32);
-    const DEEPNOTH: BiomeId = BiomeId(64);
-    const OCEAN: BiomeId = BiomeId(256);
-    const MISTLANDS: BiomeId = BiomeId(512);
+    pub const NONE: BiomeId = BiomeId(0);
+    pub const MEADOWS: BiomeId = BiomeId(1);
+    pub const SWAMP: BiomeId = BiomeId(2);
+    pub const MOUNTAIN: BiomeId = BiomeId(4);
+    pub const BLACKFOREST: BiomeId = BiomeId(8);
+    pub const PLAINS: BiomeId = BiomeId(16);
+    pub const ASHLANDS: BiomeId = BiomeId(32);
+    pub const DEEPNOTH: BiomeId = BiomeId(64);
+    pub const OCEAN: BiomeId = BiomeId(256);
+    pub const MISTLANDS: BiomeId = BiomeId(512);
 }
 
 impl Default for BiomeId {

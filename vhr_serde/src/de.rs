@@ -1,10 +1,10 @@
 use std::borrow::Cow;
-use std::{fs::File, marker::PhantomData};
+
 
 use crate::error::{Error, Result};
 use serde::{
     de::{
-        self, DeserializeSeed, EnumAccess, IntoDeserializer, MapAccess, SeqAccess, VariantAccess,
+        self, DeserializeSeed, EnumAccess, IntoDeserializer, MapAccess, SeqAccess,
         Visitor,
     },
     Deserialize,
@@ -249,7 +249,7 @@ where
 
     // The `parse_signed` function is generic over the integer type `T` so here
     // it is invoked with `T=i8`. The next 8 methods are similar.
-    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i8<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -257,7 +257,7 @@ where
         Err(Error::NotYetImplemented)
     }
 
-    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i16<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -273,7 +273,7 @@ where
         visitor.visit_i32(num)
     }
 
-    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_i64<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -289,7 +289,7 @@ where
         visitor.visit_u8(value)
     }
 
-    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_u16<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -340,7 +340,7 @@ where
 
     // Refer to the "Understanding deserializer lifetimes" page for information
     // about the three deserialization flavors of strings in Serde.
-    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -405,7 +405,7 @@ where
     }
 
     // In Serde, unit means an anonymous value containing no data.
-    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -483,8 +483,8 @@ where
     // Tuple structs look just like sequences in JSON.
     fn deserialize_tuple_struct<V>(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
         visitor: V,
     ) -> Result<V::Value>
     where
@@ -524,7 +524,7 @@ where
 
     fn deserialize_struct<V>(
         self,
-        name: &'static str,
+        _name: &'static str,
         fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
@@ -566,8 +566,8 @@ where
     */
     fn deserialize_enum<V>(
         self,
-        enum_name: &'static str,
-        variants: &'static [&'static str],
+        _enum_name: &'static str,
+        _variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
     where
@@ -581,7 +581,7 @@ where
     // the variant of an enum. In JSON, struct fields and enum variants are
     // represented as strings. In other formats they may be represented as
     // numeric indices.
-    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -600,7 +600,7 @@ where
     // Some formats are not able to implement this at all. Formats that can
     // implement `deserialize_any` and `deserialize_ignored_any` are known as
     // self-describing.
-    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -716,46 +716,5 @@ where
 
     fn size_hint(&self) -> Option<usize> {
         Some(self.len)
-    }
-}
-
-struct Unlabled<'a, 'de: 'a, O> {
-    de: &'a mut VHDeserializer<'de, O>,
-}
-
-impl<'de, 'a, O> MapAccess<'de> for Unlabled<'a, 'de, O> {
-    type Error = Error;
-
-    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
-    where
-        K: DeserializeSeed<'de>,
-    {
-        // // Check if there are no more entries.
-        // if self.de.peek_char()? == '}' {
-        //     return Ok(None);
-        // }
-        // // Comma is required before every entry except the first.
-        // if !self.first && self.de.next_char()? != ',' {
-        //     return Err(Error::ExpectedMapComma);
-        // }
-        // self.first = false;
-        // // Deserialize a map key.
-        // seed.deserialize(&mut *self.de).map(Some)
-        unimplemented!()
-    }
-
-    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value>
-    where
-        V: DeserializeSeed<'de>,
-    {
-        // // It doesn't make a difference whether the colon is parsed at the end
-        // // of `next_key_seed` or at the beginning of `next_value_seed`. In this
-        // // case the code is a bit simpler having it here.
-        // if self.de.next_char()? != ':' {
-        //     return Err(Error::ExpectedMapColon);
-        // }
-        // // Deserialize a map value.
-        // seed.deserialize(&mut *self.de)
-        unimplemented!()
     }
 }

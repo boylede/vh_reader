@@ -5,11 +5,11 @@ use std::marker::PhantomData;
 
 use serde::{Deserialize, Serialize};
 use vhr_serde::de::{DeserializeOptions, VHDeserializer};
-use vhr_serde::ser::{SerializeOptions, VHSerializer};
+use vhr_serde::ser::{VHSerializer};
 
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 
-use crate::prelude::*;
+
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct CompressedWrapper<T> {

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
-use std::io::{Read, Seek, Write};
+use std::io::{Read, Write};
 use vhr_datatypes::prelude::*;
 
 fn main() {
@@ -24,7 +24,7 @@ fn main() {
     // }
     // println!("");
 
-    let mut map: MapDatabaseFile =
+    let map: MapDatabaseFile =
         vhr_serde::de::from_bytes(&loaded_file).expect("Couldn't deserialize map.");
 
     // println!("{:#?}", map);
@@ -56,7 +56,7 @@ fn read_commandline() -> Result<Config, CommandLineError> {
     Ok(Config { filename })
 }
 
-fn print_property_names(map: &MapDatabaseFile) {
+fn _print_property_names(map: &MapDatabaseFile) {
     println!("[");
     let names: HashSet<HashedString> = map
         .entities
@@ -84,8 +84,8 @@ fn print_property_names(map: &MapDatabaseFile) {
     println!("]");
 }
 
-fn print_prefab_names(prefabs: &HashMap<HashedString, u32>) {
-    let prefab_names: Vec<String> = prefabs.iter().map(|(k, v)| k.to_string()).collect();
+fn _print_prefab_names(prefabs: &HashMap<HashedString, u32>) {
+    let prefab_names: Vec<String> = prefabs.iter().map(|(k, _v)| k.to_string()).collect();
     println!("[");
     for name in prefab_names.iter() {
         println!("{},", name);
@@ -93,7 +93,7 @@ fn print_prefab_names(prefabs: &HashMap<HashedString, u32>) {
     println!("]");
 }
 
-fn count_prefabs(map: &MapDatabaseFile) -> HashMap<HashedString, u32> {
+fn _count_prefabs(map: &MapDatabaseFile) -> HashMap<HashedString, u32> {
     let prefabs: HashMap<HashedString, u32> =
         map.entities
             .iter()
@@ -104,7 +104,7 @@ fn count_prefabs(map: &MapDatabaseFile) -> HashMap<HashedString, u32> {
             });
     prefabs
 }
-fn print_entities_in_one_sector(map: &MapDatabaseFile) {
+fn _print_entities_in_one_sector(map: &MapDatabaseFile) {
     // let mut world = map.load();
     let smallest_sector: Option<(i32, i32)> = map
         .entities
@@ -130,4 +130,6 @@ fn save_test_output_map(map: &MapDatabaseFile) {
     out_file
         .write_all(&output_bytes)
         .expect("Failed to write output file");
+
+    println!("saved file successfully: {}", out_filename);
 }

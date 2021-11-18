@@ -6,7 +6,7 @@ const KNOWN_STRINGS: &str = &include_str!("../../../assets/data/known_strings.tx
 
 lazy_static! {
     pub(crate) static ref KNOWN_STRING_LOOKUP: HashMap<u32, &'static str> =
-        { KNOWN_STRINGS.lines().map(|v| (hash_str(v), v)).collect() };
+         KNOWN_STRINGS.lines().map(|v| (hash_str(v), v)).collect();
 }
 
 pub fn lookup_string(hash: u32) -> Option<&'static str> {
@@ -14,7 +14,7 @@ pub fn lookup_string(hash: u32) -> Option<&'static str> {
 }
 
 pub fn print_unique_strings() {
-    let k: HashSet<&str> = KNOWN_STRING_LOOKUP.iter().map(|(k, v)| *v).collect();
+    let k: HashSet<&str> = KNOWN_STRING_LOOKUP.iter().map(|(_k, v)| *v).collect();
     let mut v: Vec<&str> = k.into_iter().collect();
     v.sort();
     for s in v.iter() {
@@ -43,13 +43,13 @@ pub struct HashedKey {
 }
 
 impl<'de> From<HashedKey> for KeyHashingWrapper {
-    fn from(wrapper: HashedKey) -> KeyHashingWrapper {
+    fn from(_wrapper: HashedKey) -> KeyHashingWrapper {
         unimplemented!()
     }
 }
 
 impl<'de> From<KeyHashingWrapper> for HashedKey {
-    fn from(wrapper: KeyHashingWrapper) -> HashedKey {
+    fn from(_wrapper: KeyHashingWrapper) -> HashedKey {
         unimplemented!()
     }
 }

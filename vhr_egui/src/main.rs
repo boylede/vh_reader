@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 const VALHEIM_DATA_PATH: &str = "LocalLow\\IronGate\\Valheim\\characters";
 
 #[cfg(not(target_arch = "wasm32"))]

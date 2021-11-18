@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-use serde::de::Unexpected;
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Error {
     WontImplement,

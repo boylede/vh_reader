@@ -1,14 +1,9 @@
-use eframe::egui::Rgba;
 use eframe::{egui, epi};
-use egui::{color::Hsva, Color32, Vec2};
-use epi::App;
-use std::collections::{HashMap, HashSet};
-use std::env;
-use std::fs::File;
-use std::io::{Read, Seek, Write};
-use std::path::{Path, PathBuf};
+use egui::{ Color32, Vec2};
 
-use image::{GenericImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
+use std::fs::File;
+use std::io::{Read,  Write};
+use std::path::{ PathBuf};
 
 use vhr_datatypes::prelude::*;
 
@@ -489,7 +484,7 @@ impl Loader {
             }
             Err(e) => {
                 println!("{:?}", e);
-                todo!("couldnt deserialize file, try another and revert to file picker state?");
+                println!("couldnt deserialize file, try another and revert to file picker state?");
                 None
             }
         }

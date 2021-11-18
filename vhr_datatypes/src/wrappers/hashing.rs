@@ -1,13 +1,10 @@
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use vhr_serde::{
-    de::{DeserializeOptions, VHDeserializer},
+    de::{ VHDeserializer},
     ser::VHSerializer,
 };
 
 use sha2::{Digest, Sha512};
-
-use crate::prelude::*;
 
 /// A wrapper over a byte buffer that also contains a hash of the byte buffer
 /// this is the representation found in the serialized output or deserialization input

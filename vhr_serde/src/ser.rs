@@ -1,5 +1,4 @@
 use crate::{
-    de::VHDeserializer,
     error::{Error, Result},
 };
 use serde::{
@@ -128,7 +127,7 @@ where
         Ok(())
     }
 
-    fn serialize_i16(self, v: i16) -> Result<()> {
+    fn serialize_i16(self, _v: i16) -> Result<()> {
         // Err(Error::WontImplement)
         unimplemented!()
     }
@@ -137,7 +136,7 @@ where
         self.push_i32(v)
     }
 
-    fn serialize_i64(self, v: i64) -> Result<()> {
+    fn serialize_i64(self, _v: i64) -> Result<()> {
         unimplemented!()
     }
 
@@ -146,7 +145,7 @@ where
         Ok(())
     }
 
-    fn serialize_u16(self, v: u16) -> Result<()> {
+    fn serialize_u16(self, _v: u16) -> Result<()> {
         // Err(Error::WontImplement)
         unimplemented!()
     }
@@ -167,7 +166,7 @@ where
         Ok(())
     }
 
-    fn serialize_f64(self, v: f64) -> Result<()> {
+    fn serialize_f64(self, _v: f64) -> Result<()> {
         unimplemented!()
     }
 
@@ -197,7 +196,7 @@ where
     }
 
     // use short form here
-    fn serialize_bytes(self, v: &[u8]) -> Result<()> {
+    fn serialize_bytes(self, _v: &[u8]) -> Result<()> {
         unimplemented!()
     }
 
@@ -209,7 +208,7 @@ where
     where
         T: ?Sized + Serialize,
     {
-        self.push_bool(true);
+        self.push_bool(true)?;
         value.serialize(self)
     }
 
@@ -270,14 +269,14 @@ where
         }
     }
 
-    fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
+    fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
         Ok(self)
     }
 
     fn serialize_tuple_struct(
         self,
         _name: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
         unimplemented!()
     }
@@ -286,7 +285,7 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        variant: &'static str,
+        _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
         unimplemented!()
@@ -307,7 +306,7 @@ where
         }
     }
 
-    fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
+    fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
         Ok(self)
         // unimplemented!()
     }
@@ -316,7 +315,7 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        variant: &'static str,
+        _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
         unimplemented!()
