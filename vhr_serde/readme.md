@@ -1,5 +1,5 @@
 # vhr_serde
-A crate implementing serde's (de)serializer traits for the simplist binary format possible, as used in the game Valheim.
+A crate implementing serde's (de)serializer traits for the simplist binary format possible, as used in the game Valheim. Part of my suite of Valheim-related rust tools and code.
 
 ## License
 Licensed under either of

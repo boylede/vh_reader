@@ -1,7 +1,6 @@
 # vhr_datatypes
 
-A library of data types for Valheim Reader (VHR). 
-
+A library of data types/layouts for my suite of various unofficial Valheim-related rust tools and code.
 
 ## License
 Licensed under either of
