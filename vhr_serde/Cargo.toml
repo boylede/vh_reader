@@ -3,6 +3,14 @@ name = "vhr_serde"
 version = "0.1.0"
 authors = ["Daniel Boyle <boylede+github@gmail.com>"]
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A serde (de)serializer crate for the simplist possible binary format"
+homepage = "https://github.com/boylede/vh_reader"
+repository = "https://github.com/boylede/vh_reader"
+readme = "readme.md"
+keywords = ["gamedev", "serde", "serialization"]
+categories = ["data-structures"]
+
 
 [dependencies]
 serde = { version = "1.0", features = ["derive", "rc"] }

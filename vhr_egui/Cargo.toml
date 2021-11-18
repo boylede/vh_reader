@@ -2,6 +2,13 @@
 name = "vhr_egui"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A GUI application for reading and editing Valheim savegame character files"
+homepage = "https://github.com/boylede/vh_reader"
+repository = "https://github.com/boylede/vh_reader"
+readme = "readme.md"
+keywords = ["gamedev"]
+categories = ["command-line-utilities", "games"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

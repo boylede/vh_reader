@@ -1,7 +1,5 @@
-# vhr_datatypes
-
-A library of data types for Valheim Reader (VHR). 
-
+# vhr_serde
+A crate implementing serde's (de)serializer traits for the simplist binary format possible, as used in the game Valheim.
 
 ## License
 Licensed under either of

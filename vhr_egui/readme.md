@@ -1,6 +1,6 @@
-# vhr_datatypes
+# VHR Gui
 
-A library of data types for Valheim Reader (VHR). 
+A GUI app using my Valheim data bindings.
 
 
 ## License

@@ -2,6 +2,13 @@
 name = "vhr_map"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A command line diagnostic tool for Valheim map files"
+homepage = "https://github.com/boylede/vh_reader"
+repository = "https://github.com/boylede/vh_reader"
+readme = "readme.md"
+keywords = ["gamedev"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 vhr_datatypes = {path = "../vhr_datatypes"}
