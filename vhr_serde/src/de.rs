@@ -41,6 +41,9 @@ impl<'de> VHDeserializer<'de, ()> {
             options: (),
         }
     }
+    pub fn rewind(&mut self) {
+        self.index = 0;
+    }
 }
 
 impl<'de, O> VHDeserializer<'de, O> {
