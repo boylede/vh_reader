@@ -10,7 +10,7 @@ fn main() {
     println!("reading files from {:?}", default_path);
 
     // let app = vhr_egui::FolderViewer::with_data_path(default_path);
-    let app = vhr_egui::CharacterEditor::with_data_path(default_path);
+    let app = vhr_gui::CharacterEditor::with_data_path(default_path);
     // let app = vhr_egui::MyApp::default();
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
