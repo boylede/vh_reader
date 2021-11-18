@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
-const KNOWN_STRINGS: &str = &include_str!("../../../assets/data/known_strings.txt");
+const KNOWN_STRINGS: &str = &include_str!("../../assets/known_strings.txt");
 
 lazy_static! {
     pub(crate) static ref KNOWN_STRING_LOOKUP: HashMap<u32, &'static str> =
