@@ -1,10 +1,10 @@
 use crate::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
+pub mod character;
 pub mod inventory;
 pub mod mini_map;
 pub mod player;
-pub mod character;
 pub mod skills;
 
 /// an unknown data version

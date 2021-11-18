@@ -27,8 +27,8 @@ pub struct Entity {
     pub rots: HashMap<HashedString, Quaternion>,
     pub ints: HashMap<HashedString, i32>,
     pub pairs: HashMap<HashedString, (i32, i32)>,
-    pub bytes: HashMap<HashedString, ByteBuf>,
     pub strings: HashMap<HashedString, StringEncodingWrapper>,
+    pub bytes: HashMap<HashedString, NestedData>,
 }
 
 /// a record of when an entity was removed from the world

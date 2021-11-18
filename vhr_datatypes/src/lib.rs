@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 
 pub mod prelude;
 
+pub mod character;
 pub mod entity;
 pub mod food;
 pub mod item;
 pub mod key;
 pub mod player;
 pub mod primatives;
-pub mod character;
 pub mod wrappers;
 
 /// the map metadata file

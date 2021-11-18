@@ -9,6 +9,10 @@ use vhr_serde::ser::{SerializeOptions, VHSerializer};
 use crate::prelude::*;
 use crate::wrappers::versioning::inventory::InventoryVersions;
 
+/// a wrapper that encodes its contents with base64
+/// also might just be a normal string, we don't yet have a lookup
+/// table that would tell us which to expect so we just check and
+/// see what it looks like
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[serde(from = "StringEncodedWrapper", into = "StringEncodedWrapper")]
 pub enum StringEncodingWrapper {

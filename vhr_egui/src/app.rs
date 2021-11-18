@@ -12,7 +12,6 @@ use image::{GenericImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
 
 use vhr_datatypes::prelude::*;
 
-
 pub enum EditorEvent {
     SwapState(CharacterEditor),
 }
@@ -554,8 +553,9 @@ impl CharacterDialog {
                             );
                             new_profile.data =
                                 Some(Wrapper::wrap(PlayerVersions::wrap_latest(new_data)));
-                            let character_file_data =
-                                HashingWrapper::wrap(CharacterFileVersions::wrap_latest(new_profile));
+                            let character_file_data = HashingWrapper::wrap(
+                                CharacterFileVersions::wrap_latest(new_profile),
+                            );
                             let mut out_file = File::create(path).expect("Failed opening file");
                             let output_bytes = vhr_serde::ser::to_bytes(&character_file_data)
                                 .expect("Failed to serialize character");
